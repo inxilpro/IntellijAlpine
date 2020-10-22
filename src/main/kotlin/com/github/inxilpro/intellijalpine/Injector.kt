@@ -15,26 +15,13 @@ import java.util.*
 class Injector : MultiHostInjector {
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
         val range = ElementManipulators.getValueTextRange(host)
-        val directives =  arrayOf(
-                "x-data",
-                "x-init",
-                "x-show",
-                "x-model",
-                "x-text",
-                "x-html",
-                "x-ref",
-                "x-if",
-                "x-for",
-                "x-transition",
-                "x-spread",
-                "x-cloak"
-        )
+
         if (host is XmlAttributeValue) {
             val parent = host.getParent()
             if (parent is XmlAttribute) {
                 val name = parent.name
-                for (attr in directives) {
-                    if (name.equals(attr) || name.startsWith('@')) {
+                for (directive in Alpine.allDirectives()) {
+                    if (name.equals(directive)) {
                         registrar.startInjecting(JavascriptLanguage.INSTANCE)
                                 .addPlace(null, null, host as PsiLanguageInjectionHost, range)
                                 .doneInjecting()
@@ -43,6 +30,7 @@ class Injector : MultiHostInjector {
                 }
             }
         }
+
 //        val text = ElementManipulators.getValueText(host)
 //        var start = text.indexOf("\${")
 //        while (start >= 0) {

@@ -1,7 +1,7 @@
 package com.github.inxilpro.intellijalpine
 
 import com.intellij.psi.PsiElement
-// import com.intellij.psi.meta.PsiPresentableMetaData
+import com.intellij.psi.meta.PsiPresentableMetaData
 import com.intellij.psi.xml.XmlTag
 import com.intellij.util.ArrayUtil
 import com.intellij.xml.XmlAttributeDescriptor
@@ -10,25 +10,23 @@ import com.intellij.xml.impl.BasicXmlAttributeDescriptor
 
 class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
-        return arrayOf(
-                AttributeDescriptor("x-data"),
-                AttributeDescriptor("x-init"),
-                AttributeDescriptor("x-show"),
-                AttributeDescriptor("x-model"),
-                AttributeDescriptor("x-text"),
-                AttributeDescriptor("x-html"),
-                AttributeDescriptor("x-ref"),
-                AttributeDescriptor("x-if"),
-                AttributeDescriptor("x-for"),
-                AttributeDescriptor("x-transition"),
-                AttributeDescriptor("x-spread"),
-                AttributeDescriptor("x-cloak")
-        )
+        val descriptors = mutableListOf<AttributeDescriptor>();
+
+        for (directive in Alpine.allDirectives()) {
+            descriptors.add(AttributeDescriptor(directive))
+        }
+
+//        for (prefix in Alpine.EVENT_PREFIXES) {
+//            for (event in Alpine.COMMON_EVENTS) {
+//                descriptors.add(AttributeDescriptor(prefix + event))
+//            }
+//        }
+
+        return descriptors.toTypedArray()
     }
 
     override fun getAttributeDescriptor(name: String, xmlTag: XmlTag): XmlAttributeDescriptor? {
-        val prefixes = arrayOf("x-on:", "@")
-        for (prefix in prefixes) {
+        for (prefix in Alpine.EVENT_PREFIXES) {
             if (name.startsWith(prefix)) {
                 val descriptor = xmlTag.descriptor
                 if (descriptor != null) {
@@ -38,14 +36,14 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
                 }
             }
         }
-        // return if (Aurelia.REPEAT_FOR == name || Aurelia.VIRTUAL_REPEAT_FOR == name || Aurelia.AURELIA_APP == name) AttributeDescriptor(name) else null
+
         return null
     }
 
-    private class AttributeDescriptor(private val name: String) : BasicXmlAttributeDescriptor() {
-//        override fun getIcon() = Aurelia.ICON
-//
-//        override fun getTypeName(): String? = null
+    private class AttributeDescriptor(private val name: String) : BasicXmlAttributeDescriptor(), PsiPresentableMetaData {
+        override fun getIcon() = Alpine.ICON
+
+        override fun getTypeName(): String? = "Alpine.js"
 
         override fun init(psiElement: PsiElement) {
         }
