@@ -6,14 +6,12 @@
     <!-- Product and plugin compatibility requirements -->
     <!-- https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.xml</depends>
+    <depends>JavaScript</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.inxilpro.intellijalpine.services.MyProjectService"/>
+        <multiHostInjector implementation="com.github.inxilpro.intellijalpine.Injector"/>
+        <xml.attributeDescriptorsProvider implementation="com.github.inxilpro.intellijalpine.AttributesProvider"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="com.github.inxilpro.intellijalpine.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
 </idea-plugin>
