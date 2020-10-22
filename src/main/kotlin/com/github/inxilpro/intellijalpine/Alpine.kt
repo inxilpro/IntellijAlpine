@@ -6,56 +6,55 @@ object Alpine {
     val ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", Alpine::class.java)
 
     val DIRECTIVES = arrayOf(
-            "x-data",
-            "x-init",
-            "x-show",
-            "x-model",
-            "x-text",
-            "x-html",
-            "x-ref",
-            "x-if",
-            "x-for",
-            "x-transition",
-            "x-spread",
-            "x-cloak"
+        "x-data",
+        "x-init",
+        "x-show",
+        "x-model",
+        "x-text",
+        "x-html",
+        "x-ref",
+        "x-if",
+        "x-for",
+        "x-transition",
+        "x-spread",
+        "x-cloak"
     )
 
     val EVENT_PREFIXES = arrayOf(
-            "@",
-            "x-on:"
+        "@",
+        "x-on:"
     )
 
     val COMMON_EVENTS = arrayOf(
-            "error",
-            "load",
-            "beforeunload",
-            "unload",
-            "focus",
-            "blur",
-            "focusin",
-            "focusout",
-            "reset",
-            "submit",
-            "resize",
-            "scroll",
-            "keydown",
-            "keypress",
-            "keyup",
-            "click",
-            "mousedown",
-            "mouseenter",
-            "mouseleave",
-            "mousemove",
-            "mouseout",
-            "mouseup",
-            "select",
-            "input",
-            "readystatechange"
+        "error",
+        "load",
+        "beforeunload",
+        "unload",
+        "focus",
+        "blur",
+        "focusin",
+        "focusout",
+        "reset",
+        "submit",
+        "resize",
+        "scroll",
+        "keydown",
+        "keypress",
+        "keyup",
+        "click",
+        "mousedown",
+        "mouseenter",
+        "mouseleave",
+        "mousemove",
+        "mouseout",
+        "mouseup",
+        "select",
+        "input",
+        "readystatechange"
     )
 
-    fun allDirectives(): Array<String>
-    {
-        val descriptors = mutableListOf<String>();
+    fun allDirectives(): Array<String> {
+        val descriptors = mutableListOf<String>()
 
         for (directive in DIRECTIVES) {
             descriptors.add(directive)

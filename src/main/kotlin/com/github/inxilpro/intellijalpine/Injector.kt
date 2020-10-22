@@ -10,7 +10,7 @@ import com.intellij.psi.impl.source.xml.XmlAttributeValueImpl
 import com.intellij.psi.impl.source.xml.XmlTextImpl
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
-import java.util.*
+import java.util.Arrays
 
 class Injector : MultiHostInjector {
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
@@ -23,8 +23,8 @@ class Injector : MultiHostInjector {
                 for (directive in Alpine.allDirectives()) {
                     if (name.equals(directive)) {
                         registrar.startInjecting(JavascriptLanguage.INSTANCE)
-                                .addPlace(null, null, host as PsiLanguageInjectionHost, range)
-                                .doneInjecting()
+                            .addPlace(null, null, host as PsiLanguageInjectionHost, range)
+                            .doneInjecting()
                         return
                     }
                 }

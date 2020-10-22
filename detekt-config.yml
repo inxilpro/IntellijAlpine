@@ -3,6 +3,16 @@
 
 formatting:
   Indentation:
-    continuationIndentSize: 8
+    continuationIndentSize: 4
   ParameterListWrapping:
-    indentSize: 8
+    indentSize: 4
+
+complexity:
+  NestedBlockDepth:
+    active: false
+  TooManyFunctions:
+    active: false
+
+empty-blocks:
+  EmptyFunctionBlock:
+    ignoreOverridden: true

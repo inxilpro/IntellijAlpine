@@ -10,7 +10,7 @@ import com.intellij.xml.impl.BasicXmlAttributeDescriptor
 
 class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
-        val descriptors = mutableListOf<AttributeDescriptor>();
+        val descriptors = mutableListOf<AttributeDescriptor>()
 
         for (directive in Alpine.allDirectives()) {
             descriptors.add(AttributeDescriptor(directive))
@@ -40,7 +40,8 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
         return null
     }
 
-    private class AttributeDescriptor(private val name: String) : BasicXmlAttributeDescriptor(), PsiPresentableMetaData {
+    private class AttributeDescriptor(private val name: String) : BasicXmlAttributeDescriptor(),
+        PsiPresentableMetaData {
         override fun getIcon() = Alpine.ICON
 
         override fun getTypeName(): String? = "Alpine.js"
