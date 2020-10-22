@@ -17,7 +17,7 @@ object Alpine {
         "x-for",
         "x-transition",
         "x-spread",
-        "x-cloak"
+        "x-cloak",
     )
 
     val EVENT_PREFIXES = arrayOf(
@@ -50,7 +50,16 @@ object Alpine {
         "mouseup",
         "select",
         "input",
-        "readystatechange"
+        "readystatechange",
+    )
+
+    val MAGIC_PROPERTIES = arrayOf(
+        "el",
+        "refs",
+        "event",
+        "dispatch",
+        "nextTick",
+        "watch",
     )
 
     fun allDirectives(): Array<String> {

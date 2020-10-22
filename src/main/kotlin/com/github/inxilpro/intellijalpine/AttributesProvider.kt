@@ -16,12 +16,6 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
             descriptors.add(AttributeDescriptor(directive))
         }
 
-//        for (prefix in Alpine.EVENT_PREFIXES) {
-//            for (event in Alpine.COMMON_EVENTS) {
-//                descriptors.add(AttributeDescriptor(prefix + event))
-//            }
-//        }
-
         return descriptors.toTypedArray()
     }
 
