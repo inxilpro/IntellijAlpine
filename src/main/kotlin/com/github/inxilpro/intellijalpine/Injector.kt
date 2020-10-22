@@ -15,24 +15,32 @@ import java.util.*
 class Injector : MultiHostInjector {
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
         val range = ElementManipulators.getValueTextRange(host)
+        val directives =  arrayOf(
+                "x-data",
+                "x-init",
+                "x-show",
+                "x-model",
+                "x-text",
+                "x-html",
+                "x-ref",
+                "x-if",
+                "x-for",
+                "x-transition",
+                "x-spread",
+                "x-cloak"
+        )
         if (host is XmlAttributeValue) {
             val parent = host.getParent()
             if (parent is XmlAttribute) {
-                if (parent.name.equals("x-data")) {
-                    registrar.startInjecting(JavascriptLanguage.INSTANCE)
-                            .addPlace(null, null, host as PsiLanguageInjectionHost, range)
-                            .doneInjecting()
-                    return
+                val name = parent.name
+                for (attr in directives) {
+                    if (name.equals(attr) || name.startsWith('@')) {
+                        registrar.startInjecting(JavascriptLanguage.INSTANCE)
+                                .addPlace(null, null, host as PsiLanguageInjectionHost, range)
+                                .doneInjecting()
+                        return
+                    }
                 }
-//                val name = parent.name
-//                for (attr in Aurelia.INJECTABLE) {
-//                    if (name.endsWith(".$attr")) {
-//                        registrar.startInjecting(JavascriptLanguage.INSTANCE)
-//                                .addPlace(null, null, host as PsiLanguageInjectionHost, range)
-//                                .doneInjecting()
-//                        return
-//                    }
-//                }
             }
         }
 //        val text = ElementManipulators.getValueText(host)

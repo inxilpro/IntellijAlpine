@@ -9,24 +9,36 @@ import com.intellij.xml.XmlAttributeDescriptorsProvider
 import com.intellij.xml.impl.BasicXmlAttributeDescriptor
 
 class AttributesProvider : XmlAttributeDescriptorsProvider {
-    override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> = arrayOf(
-            AttributeDescriptor("x-data"),
-            AttributeDescriptor("x-init"),
-            AttributeDescriptor("x-cloak")
-    )
+    override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
+        return arrayOf(
+                AttributeDescriptor("x-data"),
+                AttributeDescriptor("x-init"),
+                AttributeDescriptor("x-show"),
+                AttributeDescriptor("x-model"),
+                AttributeDescriptor("x-text"),
+                AttributeDescriptor("x-html"),
+                AttributeDescriptor("x-ref"),
+                AttributeDescriptor("x-if"),
+                AttributeDescriptor("x-for"),
+                AttributeDescriptor("x-transition"),
+                AttributeDescriptor("x-spread"),
+                AttributeDescriptor("x-cloak")
+        )
+    }
 
     override fun getAttributeDescriptor(name: String, xmlTag: XmlTag): XmlAttributeDescriptor? {
-//        for (attr in Aurelia.INJECTABLE) {
-//            if (name.endsWith(".$attr")) {
-//                val descriptor = xmlTag.descriptor
-//                if (descriptor != null) {
-//                    val attrName = name.substring(0, name.length - attr.length - 1)
-//                    val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-//                    return attributeDescriptor ?: descriptor.getAttributeDescriptor("on$attrName", xmlTag)
-//                }
-//            }
-//        }
-//        return if (Aurelia.REPEAT_FOR == name || Aurelia.VIRTUAL_REPEAT_FOR == name || Aurelia.AURELIA_APP == name) AttributeDescriptor(name) else null
+        val prefixes = arrayOf("x-on:", "@")
+        for (prefix in prefixes) {
+            if (name.startsWith(prefix)) {
+                val descriptor = xmlTag.descriptor
+                if (descriptor != null) {
+                    val attrName = name.substring(prefix.length)
+                    val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
+                    return attributeDescriptor ?: descriptor.getAttributeDescriptor("on$attrName", xmlTag)
+                }
+            }
+        }
+        // return if (Aurelia.REPEAT_FOR == name || Aurelia.VIRTUAL_REPEAT_FOR == name || Aurelia.AURELIA_APP == name) AttributeDescriptor(name) else null
         return null
     }
 
