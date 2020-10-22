@@ -1,7 +1,11 @@
 <idea-plugin>
     <id>com.github.inxilpro.intellijalpine</id>
-    <name>IntellijAlpine</name>
-    <vendor>inxilpro</vendor>
+
+    <name>Alpine.js Support</name>
+
+    <vendor url="https://twitter.com/inxilpro">
+        Chris Morrell
+    </vendor>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
