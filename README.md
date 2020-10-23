@@ -14,7 +14,14 @@
 - [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
 
 <!-- Plugin description -->
-Work-in-progress plugin to add Alpine.js support to IntelliJ IDEs.
+![intellij-alpine](https://user-images.githubusercontent.com/21592/97035246-0b7a9e00-1534-11eb-9722-2492f380eca3.gif)
+
+This plugin adds support for the following [Alpine.js](https://github.com/alpinejs/alpine) features:
+
+- Auto-complete alpine directives such as `x-data`
+- Set the language to JavaScript inside your directives so that you have full
+  syntax highlighting and code complete
+
 <!-- Plugin description end -->
 
 ## Installation
