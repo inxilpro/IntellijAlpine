@@ -1,8 +1,9 @@
 # IntellijAlpine
 
 ![Build](https://github.com/inxilpro/IntellijAlpine/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/15251.svg)](https://plugins.jetbrains.com/plugin/15251-intellijalpine)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/15251.svg)](https://plugins.jetbrains.com/plugin/15251-intellijalpine)
+[![Version](https://img.shields.io/jetbrains/plugin/v/15251-alpine-js-support.svg)](https://plugins.jetbrains.com/plugin/15251-alpine-js-support)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/15251-alpine-js-support.svg)](https://plugins.jetbrains.com/plugin/15251-alpine-js-support)
+![Release](https://github.com/inxilpro/IntellijAlpine/workflows/Release/badge.svg)
 
 ## Template ToDo list
 - [x] Create a new [IntelliJ Platform Plugin Template][template] project.
