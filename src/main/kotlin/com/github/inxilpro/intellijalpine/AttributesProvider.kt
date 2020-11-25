@@ -34,7 +34,8 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
         return null
     }
 
-    private class AttributeDescriptor(private val name: String) : BasicXmlAttributeDescriptor(),
+    private class AttributeDescriptor(private val name: String) :
+        BasicXmlAttributeDescriptor(),
         PsiPresentableMetaData {
         override fun getIcon() = Alpine.ICON
 
