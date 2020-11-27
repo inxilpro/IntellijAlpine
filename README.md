@@ -29,7 +29,7 @@ This plugin adds support for the following [Alpine.js](https://github.com/alpine
 
 - Using IDE built-in plugin system:
   
-  <kbd>Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "IntellijAlpine"</kbd> >
+  <kbd>Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Alpine.js Support"</kbd> >
   <kbd>Install Plugin</kbd>
   
 - Manually:
