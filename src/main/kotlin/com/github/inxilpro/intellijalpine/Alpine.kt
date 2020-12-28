@@ -9,6 +9,8 @@ object Alpine {
         "x-data",
         "x-init",
         "x-show",
+        "x-bind",
+        "x-on",
         "x-model",
         "x-text",
         "x-html",
