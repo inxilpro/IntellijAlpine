@@ -22,58 +22,13 @@ class Injector : MultiHostInjector {
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
         val range = ElementManipulators.getValueTextRange(host)
 
-        val prefix =
-            """
-                /** @type HTMLElement */
-                let ${'$'}el;
-
-                /** @type Object */
-                let ${'$'}refs;
-
-                /**
-                 * @param {Event|string} event
-                 * @param {Object} detail
-                 * @return boolean
-                 */
-                function ${'$'}dispatch(event, detail = {}) {}
-
-                /**
-                 * @param {Function} callback
-                 * @return void
-                 */
-                function ${'$'}nextTick(callback) {}
-
-                /**
-                 * @param {string} property
-                 * @param {Function} callback
-                 * @return void
-                 */
-                function ${'$'}watch(property, callback) {}
-            """.trimIndent()
-
-        var eventDeclaration = """
-            /** @type Event */
-            let ${'$'}event;
-        """.trimIndent()
-
-        var eventPrefix = prefix + eventDeclaration
-
         if (host is XmlAttributeValue) {
             val parent = host.getParent()
             if (parent is XmlAttribute) {
                 val name = parent.name
                 for (directive in Alpine.allDirectives()) {
-                    if ("x-data" == name) {
-                        registrar.startInjecting(JavascriptLanguage.INSTANCE)
-                            .addPlace("let __data = ", ";", host as PsiLanguageInjectionHost, range)
-                            .doneInjecting()
-                        return
-                    } else if (directive == name) {
-                        var directivePrefix = prefix
-
-                        if (directive.startsWith('@') || directive.startsWith("x-on:")) {
-                            directivePrefix = eventPrefix
-                        }
+                    if (directive == name) {
+                        val directivePrefix = getPrefix(directive)
 
                         registrar.startInjecting(JavascriptLanguage.INSTANCE)
                             .addPlace(directivePrefix, ";", host as PsiLanguageInjectionHost, range)
@@ -138,5 +93,56 @@ class Injector : MultiHostInjector {
 
     override fun elementsToInjectIn(): List<Class<out PsiElement>> {
         return Arrays.asList(XmlTextImpl::class.java, XmlAttributeValueImpl::class.java)
+    }
+
+    fun getPrefix(directive: String): String {
+        var prefix = ""
+
+        val generalPrefix =
+            """
+                /** @type HTMLElement */
+                let ${'$'}el;
+
+                /** @type Object */
+                let ${'$'}refs;
+
+                /**
+                 * @param {Event|string} event
+                 * @param {Object} detail
+                 * @return boolean
+                 */
+                function ${'$'}dispatch(event, detail = {}) {}
+
+                /**
+                 * @param {Function} callback
+                 * @return void
+                 */
+                function ${'$'}nextTick(callback) {}
+
+                /**
+                 * @param {string} property
+                 * @param {Function} callback
+                 * @return void
+                 */
+                function ${'$'}watch(property, callback) {}
+            """.trimIndent()
+
+        val eventDeclaration =
+            """
+                /** @type Event */
+                let ${'$'}event;
+            """.trimIndent()
+
+        if ("x-data" == directive) {
+            prefix = "let __data = "
+        } else {
+            prefix = generalPrefix
+        }
+
+        if (directive.startsWith('@') || directive.startsWith("x-on:")) {
+            prefix += eventDeclaration
+        }
+
+        return prefix
     }
 }
