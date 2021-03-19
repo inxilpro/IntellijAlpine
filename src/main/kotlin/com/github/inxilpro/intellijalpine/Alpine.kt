@@ -1,6 +1,7 @@
 package com.github.inxilpro.intellijalpine
 
 import com.intellij.openapi.util.IconLoader
+import java.lang.StringBuilder
 
 object Alpine {
     val ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", Alpine::class.java)
@@ -76,5 +77,15 @@ object Alpine {
         }
 
         return descriptors.toTypedArray()
+    }
+
+    fun propertiesAsVars(): String {
+        val fragment = StringBuilder()
+
+        for (property in MAGIC_PROPERTIES) {
+            fragment.append("var $$property; ")
+        }
+
+        return fragment.toString()
     }
 }

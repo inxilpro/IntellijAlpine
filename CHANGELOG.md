@@ -1,9 +1,12 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# IntellijAlpine Changelog
+# Alpine.js Support
 
 ## [Unreleased]
 ### Added
+
+- Better JS language injection inside `x-` directives
+- Auto-complete for magic properties like `$el` and `$dispatch`
 
 ### Changed
 
@@ -12,6 +15,8 @@
 ### Removed
 
 ### Fixed
+
+- Removed Alpine icon which seemed to cause issues for some people
 
 ### Security
 ## [0.0.3]
