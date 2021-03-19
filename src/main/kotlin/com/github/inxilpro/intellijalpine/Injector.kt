@@ -56,7 +56,7 @@ class Injector : MultiHostInjector {
             let ${'$'}event;
         """.trimIndent()
 
-        var eventPrefix = prefix + eventDeclaration;
+        var eventPrefix = prefix + eventDeclaration
 
         if (host is XmlAttributeValue) {
             val parent = host.getParent()
@@ -69,7 +69,7 @@ class Injector : MultiHostInjector {
                             .doneInjecting()
                         return
                     } else if (directive == name) {
-                        var directivePrefix = prefix;
+                        var directivePrefix = prefix
 
                         if (directive.startsWith('@') || directive.startsWith("x-on:")) {
                             directivePrefix = eventPrefix
