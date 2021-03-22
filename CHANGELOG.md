@@ -5,6 +5,18 @@
 ## [Unreleased]
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+## [0.0.3]
+### Added
+
 - Better JS language injection inside `x-` directives
 - Auto-complete for magic properties like `$el` and `$dispatch`
 
