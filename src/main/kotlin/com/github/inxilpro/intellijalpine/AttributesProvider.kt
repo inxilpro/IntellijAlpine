@@ -1,6 +1,8 @@
 package com.github.inxilpro.intellijalpine
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
+import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
 import com.intellij.psi.xml.XmlTag
 import com.intellij.util.ArrayUtil
 import com.intellij.xml.XmlAttributeDescriptor
@@ -11,13 +13,28 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
         val descriptors = mutableListOf<AttributeDescriptor>()
 
-        for (directive in Alpine.allDirectives(xmlTag.name)) {
-            descriptors.add(AttributeDescriptor(directive))
+        // FIXME
+//        for (directive in Alpine.allDirectives(xmlTag.name)) {
+//            descriptors.add(AttributeDescriptor(directive))
+//        }
+
+        for (descriptor in getDefaultHtmlAttributes(xmlTag)) {
+            if (descriptor.name.startsWith("on")) {
+                val event = descriptor.name.substring(2)
+                for (prefix in Alpine.EVENT_PREFIXES) {
+                    descriptors.add(AttributeDescriptor(prefix + event))
+                }
+            } else {
+                for (prefix in Alpine.BIND_PREFIXES) {
+                    descriptors.add(AttributeDescriptor(prefix + descriptor.name))
+                }
+            }
         }
 
         return descriptors.toTypedArray()
     }
 
+    @Suppress("ReturnCount")
     override fun getAttributeDescriptor(name: String, xmlTag: XmlTag): XmlAttributeDescriptor? {
         for (prefix in Alpine.EVENT_PREFIXES) {
             if (name.startsWith(prefix)) {
@@ -30,7 +47,24 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
             }
         }
 
+        for (prefix in Alpine.BIND_PREFIXES) {
+            if (name.startsWith(prefix)) {
+                val descriptor = xmlTag.descriptor
+                if (descriptor != null) {
+                    val attrName = name.substring(prefix.length)
+                    val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
+                    return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
+                }
+            }
+        }
+
         return null
+    }
+
+    private fun getDefaultHtmlAttributes(xmlTag: XmlTag): Array<out XmlAttributeDescriptor> {
+        return (xmlTag.descriptor as? HtmlElementDescriptorImpl
+            ?: HtmlNSDescriptorImpl.guessTagForCommonAttributes(xmlTag) as? HtmlElementDescriptorImpl)
+            ?.getDefaultAttributeDescriptors(xmlTag) ?: emptyArray()
     }
 
     // Dropping PsiPresentableMetaData for now

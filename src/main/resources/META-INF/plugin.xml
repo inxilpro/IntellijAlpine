@@ -17,5 +17,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <multiHostInjector implementation="com.github.inxilpro.intellijalpine.Injector"/>
         <xml.attributeDescriptorsProvider implementation="com.github.inxilpro.intellijalpine.AttributesProvider"/>
+        <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.XmlExtension"/>
+        <!--
+        <completion.contributor language="any"
+                                implementationClass="com.github.inxilpro.intellijalpine.CompletionContributor"
+                                id="CompletionContributor"/>
+        -->
     </extensions>
 </idea-plugin>

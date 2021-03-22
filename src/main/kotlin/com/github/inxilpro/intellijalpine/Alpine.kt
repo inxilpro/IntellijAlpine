@@ -25,7 +25,7 @@ object Alpine {
         "x-on:"
     )
 
-    private val BIND_PREFIXES = arrayOf(
+    val BIND_PREFIXES = arrayOf(
         ":",
         "x-bind:"
     )
@@ -37,6 +37,7 @@ object Alpine {
             descriptors.add(directive)
         }
 
+        /*
         if (BindingsMap.containsKey(name)) {
             for (prefix in BIND_PREFIXES) {
                 for (directive in BindingsMap[name]!!) {
@@ -52,6 +53,7 @@ object Alpine {
                 }
             }
         }
+        */
 
         return descriptors.toTypedArray()
     }
