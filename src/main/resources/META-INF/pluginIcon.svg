@@ -1,9 +1,18 @@
-<svg width="100%" height="100%" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-    <g fill="none" fill-rule="evenodd">
-        <path d="m0 0h500v500h-500z" fill="#2e3440"/>
-        <g transform="translate(56 153)">
-            <path d="m97 194h194l97-97-97-97z" fill="#d8dee9"/>
-            <path d="m97 194h194l-92.891749-92.891749-101.108251-101.108251-97 97z" fill="#8ac0cf"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+    <g>
+        <path
+            fill="#2e3440"
+            d="M0 0L40 0L40 40L0 40L0 0Z"
+        />
+        <g>
+            <path
+                fill="#d8dee9"
+                d="M12.24 27.76L27.76 27.76L35.52 20L27.76 12.24L12.24 27.76Z"
+            />
+            <path
+                fill="#8ac0cf"
+                d="M12.24 27.76L27.76 27.76L20.33 20.33L12.24 12.24L4.48 20L12.24 27.76Z"
+            />
         </g>
     </g>
 </svg>

@@ -1,11 +1,11 @@
 package com.github.inxilpro.intellijalpine
 
-// import com.intellij.openapi.util.IconLoader
+import com.intellij.openapi.util.IconLoader
 
 object Alpine {
-    // val ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", Alpine::class.java)
+    val ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", Alpine::class.java)
 
-    private val DIRECTIVES = arrayOf(
+    val DIRECTIVES = arrayOf(
         "x-data",
         "x-init",
         "x-show",

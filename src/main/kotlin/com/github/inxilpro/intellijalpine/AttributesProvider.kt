@@ -3,6 +3,7 @@ package com.github.inxilpro.intellijalpine
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
+import com.intellij.psi.meta.PsiPresentableMetaData
 import com.intellij.psi.xml.XmlTag
 import com.intellij.util.ArrayUtil
 import com.intellij.xml.XmlAttributeDescriptor
@@ -13,10 +14,9 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
         val descriptors = mutableListOf<AttributeDescriptor>()
 
-        // FIXME
-//        for (directive in Alpine.allDirectives(xmlTag.name)) {
-//            descriptors.add(AttributeDescriptor(directive))
-//        }
+        for (directive in Alpine.DIRECTIVES) {
+            descriptors.add(AttributeDescriptor(directive))
+        }
 
         for (descriptor in getDefaultHtmlAttributes(xmlTag)) {
             if (descriptor.name.startsWith("on")) {
@@ -36,25 +36,27 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
 
     @Suppress("ReturnCount")
     override fun getAttributeDescriptor(name: String, xmlTag: XmlTag): XmlAttributeDescriptor? {
+        val descriptor = xmlTag.descriptor ?: return null
+
+        if (Alpine.DIRECTIVES.contains(name)) {
+            val attrName = "data-$name"
+            val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
+            return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
+        }
+
         for (prefix in Alpine.EVENT_PREFIXES) {
             if (name.startsWith(prefix)) {
-                val descriptor = xmlTag.descriptor
-                if (descriptor != null) {
-                    val attrName = name.substring(prefix.length)
-                    val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-                    return attributeDescriptor ?: descriptor.getAttributeDescriptor("on$attrName", xmlTag)
-                }
+                val attrName = name.substring(prefix.length)
+                val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
+                return attributeDescriptor ?: descriptor.getAttributeDescriptor("on$attrName", xmlTag)
             }
         }
 
         for (prefix in Alpine.BIND_PREFIXES) {
             if (name.startsWith(prefix)) {
-                val descriptor = xmlTag.descriptor
-                if (descriptor != null) {
-                    val attrName = name.substring(prefix.length)
-                    val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-                    return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
-                }
+                val attrName = name.substring(prefix.length)
+                val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
+                return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
             }
         }
 
@@ -67,18 +69,15 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
             ?.getDefaultAttributeDescriptors(xmlTag) ?: emptyArray()
     }
 
-    // Dropping PsiPresentableMetaData for now
-    private class AttributeDescriptor(private val name: String) :
-        BasicXmlAttributeDescriptor() {
-        // override fun getIcon() = Alpine.ICON
-
-        // override fun getTypeName(): String? = "Alpine.js"
-
-        override fun init(psiElement: PsiElement) {
-        }
-
+    private class AttributeDescriptor(private val name: String) : BasicXmlAttributeDescriptor(),
+        PsiPresentableMetaData {
+        override fun getIcon() = Alpine.ICON
+        override fun getTypeName() = "Alpine.js"
+        override fun init(psiElement: PsiElement) {}
         override fun isRequired(): Boolean = false
-        override fun hasIdType(): Boolean = false
+        override fun hasIdType(): Boolean {
+            return name == "id"
+        }
         override fun hasIdRefType(): Boolean = false
         override fun isEnumerated(): Boolean = false
         override fun getDeclaration(): PsiElement? = null
