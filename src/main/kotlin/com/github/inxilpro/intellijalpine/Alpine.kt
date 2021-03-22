@@ -1,12 +1,11 @@
 package com.github.inxilpro.intellijalpine
 
-import com.intellij.openapi.util.IconLoader
-import java.lang.StringBuilder
+// import com.intellij.openapi.util.IconLoader
 
 object Alpine {
-    val ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", Alpine::class.java)
+    // val ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", Alpine::class.java)
 
-    val DIRECTIVES = arrayOf(
+    private val DIRECTIVES = arrayOf(
         "x-data",
         "x-init",
         "x-show",
@@ -26,66 +25,34 @@ object Alpine {
         "x-on:"
     )
 
-    val COMMON_EVENTS = arrayOf(
-        "error",
-        "load",
-        "beforeunload",
-        "unload",
-        "focus",
-        "blur",
-        "focusin",
-        "focusout",
-        "reset",
-        "submit",
-        "resize",
-        "scroll",
-        "keydown",
-        "keypress",
-        "keyup",
-        "click",
-        "mousedown",
-        "mouseenter",
-        "mouseleave",
-        "mousemove",
-        "mouseout",
-        "mouseup",
-        "select",
-        "input",
-        "readystatechange",
+    private val BIND_PREFIXES = arrayOf(
+        ":",
+        "x-bind:"
     )
 
-    val MAGIC_PROPERTIES = arrayOf(
-        "el",
-        "refs",
-        "event",
-        "dispatch",
-        "nextTick",
-        "watch",
-    )
-
-    fun allDirectives(): Array<String> {
+    fun allDirectives(name: String): Array<String> {
         val descriptors = mutableListOf<String>()
 
         for (directive in DIRECTIVES) {
             descriptors.add(directive)
         }
 
-        for (prefix in EVENT_PREFIXES) {
-            for (event in COMMON_EVENTS) {
-                descriptors.add(prefix + event)
+        if (BindingsMap.containsKey(name)) {
+            for (prefix in BIND_PREFIXES) {
+                for (directive in BindingsMap[name]!!) {
+                    descriptors.add(prefix + directive)
+                }
+            }
+        }
+
+        if (EventsMap.containsKey(name)) {
+            for (prefix in EVENT_PREFIXES) {
+                for (event in EventsMap[name]!!) {
+                    descriptors.add(prefix + event)
+                }
             }
         }
 
         return descriptors.toTypedArray()
-    }
-
-    fun propertiesAsVars(): String {
-        val fragment = StringBuilder()
-
-        for (property in MAGIC_PROPERTIES) {
-            fragment.append("var $$property; ")
-        }
-
-        return fragment.toString()
     }
 }

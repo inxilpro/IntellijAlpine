@@ -11,7 +11,7 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
         val descriptors = mutableListOf<AttributeDescriptor>()
 
-        for (directive in Alpine.allDirectives()) {
+        for (directive in Alpine.allDirectives(xmlTag.name)) {
             descriptors.add(AttributeDescriptor(directive))
         }
 
