@@ -10,13 +10,7 @@ import com.intellij.xml.impl.BasicXmlAttributeDescriptor
 
 class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
-        val descriptors = mutableListOf<AttributeDescriptor>()
-
-        for (directive in AttributeUtil.getValidAttributes(xmlTag)) {
-            descriptors.add(AttributeDescriptor(directive))
-        }
-
-        return descriptors.toTypedArray()
+        return emptyArray()
     }
 
     @Suppress("ReturnCount")

@@ -35,6 +35,10 @@ object AttributeUtil {
         val descriptors = mutableListOf<String>()
 
         for (directive in DIRECTIVES) {
+            if (xmlTag.name != "template" && (directive == "x-if" || directive == "x-for")) {
+                continue
+            }
+
             descriptors.add(directive)
         }
 

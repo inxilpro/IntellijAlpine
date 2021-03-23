@@ -19,10 +19,8 @@
         <xml.attributeDescriptorsProvider implementation="com.github.inxilpro.intellijalpine.AttributesProvider"/>
         <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.XmlExtension"/>
         <typedHandler implementation="com.github.inxilpro.intellijalpine.AutoPopupHandler"/>
-        <!--
         <completion.contributor language="any"
-                                implementationClass="com.github.inxilpro.intellijalpine.CompletionContributor"
-                                id="CompletionContributor"/>
-        -->
+                                implementationClass="com.github.inxilpro.intellijalpine.AlpineCompletionContributor"
+                                id="AlpineCompletionContributor"/>
     </extensions>
 </idea-plugin>
