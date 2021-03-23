@@ -8,6 +8,10 @@ import com.intellij.psi.xml.XmlTokenType
 
 class AlpineCompletionContributor : CompletionContributor() {
     init {
-        extend(CompletionType.BASIC, psiElement(XmlTokenType.XML_NAME).withParent(xmlAttribute()), AlpineAttributeCompletionProvider())
+        extend(
+            CompletionType.BASIC,
+            psiElement(XmlTokenType.XML_NAME).withParent(xmlAttribute()),
+            AlpineAttributeCompletionProvider()
+        )
     }
 }

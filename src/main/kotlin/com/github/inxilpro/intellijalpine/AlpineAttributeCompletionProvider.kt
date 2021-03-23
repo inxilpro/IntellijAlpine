@@ -11,7 +11,7 @@ import com.intellij.util.ProcessingContext
 class AlpineAttributeCompletionProvider(vararg items: String) :
     CompletionProvider<CompletionParameters?>() {
 
-    private val DIRECTIVE_TYPE_TEXTS = hashMapOf<String, String>(
+    private val typeTexts = hashMapOf<String, String>(
         "x-data" to "New Alpine.js component scope",
         "x-init" to "Run on initialization",
         "x-show" to "Toggles 'display: none'",
@@ -53,18 +53,18 @@ class AlpineAttributeCompletionProvider(vararg items: String) :
         }
     }
 
-    private fun getTypeText(attribute: String): String?
-    {
+    @Suppress("ReturnCount")
+    private fun getTypeText(attribute: String): String? {
         if (AttributeUtil.isEvent(attribute)) {
             val eventName = AttributeUtil.stripPrefix(attribute)
-            return "'${eventName}' listener"
+            return "'$eventName' listener"
         }
 
         if (AttributeUtil.isBound(attribute)) {
             val sourceAttributeName = AttributeUtil.stripPrefix(attribute)
-            return "Bind '${sourceAttributeName}' attribute"
+            return "Bind '$sourceAttributeName' attribute"
         }
 
-        return DIRECTIVE_TYPE_TEXTS.get(attribute)
+        return typeTexts.get(attribute)
     }
 }
