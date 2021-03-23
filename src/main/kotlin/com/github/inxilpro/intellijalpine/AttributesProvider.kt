@@ -12,23 +12,18 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
     @Suppress("ReturnCount")
     override fun getAttributeDescriptor(name: String, xmlTag: XmlTag): XmlAttributeDescriptor? {
         val descriptor = xmlTag.descriptor ?: return null
+        val info = AttributeInfo(name)
 
-        if (AttributeUtil.isDirective(name)) {
-            val attrName = "data-$name"
-            val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-            return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
+        if (info.isDirective()) {
+            return AlpineAttributeDescriptor(name, xmlTag)
         }
 
-        if (AttributeUtil.isEvent(name)) {
-            val attrName = AttributeUtil.stripPrefix(name)
-            val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-            return attributeDescriptor ?: descriptor.getAttributeDescriptor("on$attrName", xmlTag)
+        if (info.isEvent()) {
+            return descriptor.getAttributeDescriptor("on${info.name}", xmlTag)
         }
 
-        if (AttributeUtil.isBound(name)) {
-            val attrName = AttributeUtil.stripPrefix(name)
-            val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-            return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
+        if (info.isBound()) {
+            return descriptor.getAttributeDescriptor(info.name, xmlTag)
         }
 
         return null

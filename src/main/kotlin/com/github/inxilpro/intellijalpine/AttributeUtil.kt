@@ -6,7 +6,7 @@ import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.XmlAttributeDescriptor
 
 object AttributeUtil {
-    private val DIRECTIVES = arrayOf(
+    val directives = arrayOf(
         "x-data",
         "x-init",
         "x-show",
@@ -21,12 +21,12 @@ object AttributeUtil {
         "x-cloak",
     )
 
-    private val EVENT_PREFIXES = arrayOf(
+    val eventPrefixes = arrayOf(
         "@",
         "x-on:"
     )
 
-    private val BIND_PREFIXES = arrayOf(
+    val bindPrefixes = arrayOf(
         ":",
         "x-bind:"
     )
@@ -34,7 +34,7 @@ object AttributeUtil {
     fun getValidAttributes(xmlTag: XmlTag): Array<String> {
         val descriptors = mutableListOf<String>()
 
-        for (directive in DIRECTIVES) {
+        for (directive in directives) {
             if (xmlTag.name != "template" && (directive == "x-if" || directive == "x-for")) {
                 continue
             }
@@ -45,11 +45,11 @@ object AttributeUtil {
         for (descriptor in getDefaultHtmlAttributes(xmlTag)) {
             if (descriptor.name.startsWith("on")) {
                 val event = descriptor.name.substring(2)
-                for (prefix in EVENT_PREFIXES) {
+                for (prefix in eventPrefixes) {
                     descriptors.add(prefix + event)
                 }
             } else {
-                for (prefix in BIND_PREFIXES) {
+                for (prefix in bindPrefixes) {
                     descriptors.add(prefix + descriptor.name)
                 }
             }
@@ -58,45 +58,20 @@ object AttributeUtil {
         return descriptors.toTypedArray()
     }
 
-    fun isDirective(attribute: String): Boolean {
-        return DIRECTIVES.contains(attribute)
+    fun getValidAttributesWithInfo(xmlTag: XmlTag): Array<AttributeInfo> {
+        return getValidAttributes(xmlTag)
+            .map { AttributeInfo(it) }
+            .toTypedArray()
     }
 
     fun isEvent(attribute: String): Boolean {
-        for (prefix in EVENT_PREFIXES) {
+        for (prefix in eventPrefixes) {
             if (attribute.startsWith(prefix)) {
                 return true
             }
         }
 
         return false
-    }
-
-    fun isBound(attribute: String): Boolean {
-        for (prefix in BIND_PREFIXES) {
-            if (attribute.startsWith(prefix)) {
-                return true
-            }
-        }
-
-        return false
-    }
-
-    @Suppress("ReturnCount")
-    fun stripPrefix(attribute: String): String {
-        for (prefix in EVENT_PREFIXES) {
-            if (attribute.startsWith(prefix)) {
-                return attribute.substring(prefix.length)
-            }
-        }
-
-        for (prefix in BIND_PREFIXES) {
-            if (attribute.startsWith(prefix)) {
-                return attribute.substring(prefix.length)
-            }
-        }
-
-        return attribute
     }
 
     private fun getDefaultHtmlAttributes(xmlTag: XmlTag): Array<out XmlAttributeDescriptor> {

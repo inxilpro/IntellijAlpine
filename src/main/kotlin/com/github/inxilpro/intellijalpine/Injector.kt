@@ -18,8 +18,8 @@ class Injector : MultiHostInjector {
         val range = ElementManipulators.getValueTextRange(host)
 
         if (host is XmlAttributeValue) {
-            val parent = host.getParent()
-            if (parent is XmlAttribute && isAlpineAttribute(parent)) {
+            val parent = host.getParent() as? XmlAttribute ?: return
+            if (isAlpineAttribute(parent)) {
                 registrar.startInjecting(JavascriptLanguage.INSTANCE)
                     .addPlace(getPrefix(parent.name), ";", host as PsiLanguageInjectionHost, range)
                     .doneInjecting()
