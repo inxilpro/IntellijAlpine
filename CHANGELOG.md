@@ -6,7 +6,14 @@
 
 ### Added
 
+- Improved type support
+- Better auto-complete for bound attributes
+- Added attribute descriptions
+- Handling of `x-cloak` which has no value
+
 ### Changed
+
+- Refactored a lot of underlying code
 
 ### Deprecated
 
