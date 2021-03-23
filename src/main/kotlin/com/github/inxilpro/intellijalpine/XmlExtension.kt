@@ -17,9 +17,7 @@ class XmlExtension : HtmlXmlExtension() {
     }
 
     override fun getPrefixDeclaration(context: XmlTag, namespacePrefix: String?): SchemaPrefix? {
-        if (
-            namespacePrefix != null && (namespacePrefix.startsWith(":") || namespacePrefix.startsWith("@"))
-        ) {
+        if (null != namespacePrefix && hasAlpinePrefix(namespacePrefix)) {
             findAttributeSchema(context, namespacePrefix)
                 ?.let { return it }
         }
@@ -27,9 +25,14 @@ class XmlExtension : HtmlXmlExtension() {
         return super.getPrefixDeclaration(context, namespacePrefix)
     }
 
+    private fun hasAlpinePrefix(namespacePrefix: String): Boolean
+    {
+        return namespacePrefix.startsWith(":") || namespacePrefix.startsWith("@")
+    }
+
     private fun findAttributeSchema(context: XmlTag, namespacePrefix: String): SchemaPrefix? {
         return context.attributes
-            .find { it.name.startsWith("$namespacePrefix:") }
+            .find { it.name.startsWith(namespacePrefix) }
             ?.let { SchemaPrefix(it, TextRange.create(0, namespacePrefix.length), namespacePrefix) }
     }
 }

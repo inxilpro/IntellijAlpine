@@ -14,23 +14,16 @@ import com.intellij.psi.xml.XmlTag
 import java.util.Arrays
 
 class Injector : MultiHostInjector {
+
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
         val range = ElementManipulators.getValueTextRange(host)
 
         if (host is XmlAttributeValue) {
             val parent = host.getParent()
-            if (parent is XmlAttribute && parent.parent is XmlTag) {
-                for (directive in Alpine.allDirectives(parent.parent.name)) {
-                    if (directive == parent.name) {
-                        val directivePrefix = getPrefix(directive)
-
-                        registrar.startInjecting(JavascriptLanguage.INSTANCE)
-                            .addPlace(directivePrefix, ";", host as PsiLanguageInjectionHost, range)
-                            .doneInjecting()
-
-                        return
-                    }
-                }
+            if (parent is XmlAttribute && isDirective(parent)) {
+                registrar.startInjecting(JavascriptLanguage.INSTANCE)
+                    .addPlace(getPrefix(parent.name), ";", host as PsiLanguageInjectionHost, range)
+                    .doneInjecting()
             }
         }
     }
@@ -39,7 +32,20 @@ class Injector : MultiHostInjector {
         return Arrays.asList(XmlTextImpl::class.java, XmlAttributeValueImpl::class.java)
     }
 
-    fun getPrefix(directive: String): String {
+    private fun isDirective(attribute: XmlAttribute): Boolean
+    {
+        if (attribute.parent is XmlTag) {
+            for (directive in Alpine.DIRECTIVES) {
+                if (directive == attribute.name) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    private fun getPrefix(directive: String): String {
         var prefix = ""
 
         val generalPrefix =

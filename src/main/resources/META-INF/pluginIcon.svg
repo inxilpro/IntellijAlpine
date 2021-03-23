@@ -1,17 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
     <g>
         <path
             fill="#2e3440"
-            d="M0 0L40 0L40 40L0 40L0 0Z"
+            d="M0 0L16 0L16 16L0 16L0 0Z"
         />
         <g>
             <path
                 fill="#d8dee9"
-                d="M12.24 27.76L27.76 27.76L35.52 20L27.76 12.24L12.24 27.76Z"
+                d="M4.9 11.1L11.1 11.1L14.21 8L11.1 4.9L4.9 11.1Z"
             />
             <path
                 fill="#8ac0cf"
-                d="M12.24 27.76L27.76 27.76L20.33 20.33L12.24 12.24L4.48 20L12.24 27.76Z"
+                d="M4.9 11.1L11.1 11.1L8.13 8.13L4.9 4.9L1.79 8L4.9 11.1Z"
             />
         </g>
     </g>
