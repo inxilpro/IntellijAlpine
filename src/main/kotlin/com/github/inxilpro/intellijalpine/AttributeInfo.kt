@@ -65,11 +65,11 @@ class AttributeInfo(val attribute: String) {
     @Suppress("ReturnCount")
     private fun buildTypeText(): String {
         if (isEvent()) {
-            return "'${name}' listener"
+            return "'$name' listener"
         }
 
         if (isBound()) {
-            return "Bind '${name}' attribute"
+            return "Bind '$name' attribute"
         }
 
         return typeTexts.getOrDefault(name, "Alpine.js")
