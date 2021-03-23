@@ -79,6 +79,7 @@ tasks {
     listOf("compileKotlin", "compileTestKotlin").forEach {
         getByName<KotlinCompile>(it) {
             kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.useIR = true
         }
     }
 
