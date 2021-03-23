@@ -81,6 +81,10 @@ class Injector : MultiHostInjector {
             prefix = generalPrefix
         }
 
+        if (":class" == directive || "x-bind:class" == directive) {
+            prefix += " let __class = "
+        }
+
         if (AttributeUtil.isEvent(directive)) {
             prefix +=
                 """
