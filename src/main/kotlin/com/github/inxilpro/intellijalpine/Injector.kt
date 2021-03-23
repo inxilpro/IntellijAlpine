@@ -20,7 +20,7 @@ class Injector : MultiHostInjector {
 
         if (host is XmlAttributeValue) {
             val parent = host.getParent()
-            if (parent is XmlAttribute && isDirective(parent)) {
+            if (parent is XmlAttribute && isAlpineAttribute(parent)) {
                 registrar.startInjecting(JavascriptLanguage.INSTANCE)
                     .addPlace(getPrefix(parent.name), ";", host as PsiLanguageInjectionHost, range)
                     .doneInjecting()
@@ -32,10 +32,10 @@ class Injector : MultiHostInjector {
         return Arrays.asList(XmlTextImpl::class.java, XmlAttributeValueImpl::class.java)
     }
 
-    private fun isDirective(attribute: XmlAttribute): Boolean
+    private fun isAlpineAttribute(attribute: XmlAttribute): Boolean
     {
         if (attribute.parent is XmlTag) {
-            for (directive in Alpine.DIRECTIVES) {
+            for (directive in AttributeUtil.getValidAttributes(attribute.parent)) {
                 if (directive == attribute.name) {
                     return true
                 }
@@ -57,7 +57,7 @@ class Injector : MultiHostInjector {
                 let ${'$'}refs;
 
                 /**
-                 * @param {Event|string} event
+                 * @param {string} event
                  * @param {Object} detail
                  * @return boolean
                  */
@@ -77,20 +77,18 @@ class Injector : MultiHostInjector {
                 function ${'$'}watch(property, callback) {}
             """.trimIndent()
 
-        val eventDeclaration =
-            """
-                /** @type Event */
-                let ${'$'}event;
-            """.trimIndent()
-
         if ("x-data" == directive) {
             prefix = "let __data = "
         } else {
             prefix = generalPrefix
         }
 
-        if (directive.startsWith('@') || directive.startsWith("x-on:")) {
-            prefix += eventDeclaration
+        if (AttributeUtil.isEvent(directive)) {
+            prefix +=
+                """
+                    /** @type Event */
+                    let ${'$'}event;
+                """.trimIndent()
         }
 
         return prefix

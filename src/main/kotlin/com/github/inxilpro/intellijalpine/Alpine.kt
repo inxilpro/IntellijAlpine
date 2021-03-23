@@ -29,32 +29,4 @@ object Alpine {
         ":",
         "x-bind:"
     )
-
-    fun allDirectives(name: String): Array<String> {
-        val descriptors = mutableListOf<String>()
-
-        for (directive in DIRECTIVES) {
-            descriptors.add(directive)
-        }
-
-        /*
-        if (BindingsMap.containsKey(name)) {
-            for (prefix in BIND_PREFIXES) {
-                for (directive in BindingsMap[name]!!) {
-                    descriptors.add(prefix + directive)
-                }
-            }
-        }
-
-        if (EventsMap.containsKey(name)) {
-            for (prefix in EVENT_PREFIXES) {
-                for (event in EventsMap[name]!!) {
-                    descriptors.add(prefix + event)
-                }
-            }
-        }
-        */
-
-        return descriptors.toTypedArray()
-    }
 }

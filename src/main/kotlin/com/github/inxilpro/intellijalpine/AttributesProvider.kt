@@ -14,21 +14,8 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptors(xmlTag: XmlTag): Array<XmlAttributeDescriptor> {
         val descriptors = mutableListOf<AttributeDescriptor>()
 
-        for (directive in Alpine.DIRECTIVES) {
+        for (directive in AttributeUtil.getValidAttributes(xmlTag)) {
             descriptors.add(AttributeDescriptor(directive))
-        }
-
-        for (descriptor in getDefaultHtmlAttributes(xmlTag)) {
-            if (descriptor.name.startsWith("on")) {
-                val event = descriptor.name.substring(2)
-                for (prefix in Alpine.EVENT_PREFIXES) {
-                    descriptors.add(AttributeDescriptor(prefix + event))
-                }
-            } else {
-                for (prefix in Alpine.BIND_PREFIXES) {
-                    descriptors.add(AttributeDescriptor(prefix + descriptor.name))
-                }
-            }
         }
 
         return descriptors.toTypedArray()
@@ -38,35 +25,25 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
     override fun getAttributeDescriptor(name: String, xmlTag: XmlTag): XmlAttributeDescriptor? {
         val descriptor = xmlTag.descriptor ?: return null
 
-        if (Alpine.DIRECTIVES.contains(name)) {
+        if (AttributeUtil.isDirective(name)) {
             val attrName = "data-$name"
             val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
             return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
         }
 
-        for (prefix in Alpine.EVENT_PREFIXES) {
-            if (name.startsWith(prefix)) {
-                val attrName = name.substring(prefix.length)
-                val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-                return attributeDescriptor ?: descriptor.getAttributeDescriptor("on$attrName", xmlTag)
-            }
+        if (AttributeUtil.isEvent(name)) {
+            val attrName = AttributeUtil.stripPrefix(name)
+            val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
+            return attributeDescriptor ?: descriptor.getAttributeDescriptor("on$attrName", xmlTag)
         }
 
-        for (prefix in Alpine.BIND_PREFIXES) {
-            if (name.startsWith(prefix)) {
-                val attrName = name.substring(prefix.length)
-                val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
-                return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
-            }
+        if (AttributeUtil.isBound(name)) {
+            val attrName = AttributeUtil.stripPrefix(name)
+            val attributeDescriptor = descriptor.getAttributeDescriptor(attrName, xmlTag)
+            return attributeDescriptor ?: descriptor.getAttributeDescriptor(attrName, xmlTag)
         }
 
         return null
-    }
-
-    private fun getDefaultHtmlAttributes(xmlTag: XmlTag): Array<out XmlAttributeDescriptor> {
-        return (xmlTag.descriptor as? HtmlElementDescriptorImpl
-            ?: HtmlNSDescriptorImpl.guessTagForCommonAttributes(xmlTag) as? HtmlElementDescriptorImpl)
-            ?.getDefaultAttributeDescriptors(xmlTag) ?: emptyArray()
     }
 
     private class AttributeDescriptor(private val name: String) : BasicXmlAttributeDescriptor(),

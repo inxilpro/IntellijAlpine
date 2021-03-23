@@ -27,12 +27,12 @@ class XmlExtension : HtmlXmlExtension() {
 
     private fun hasAlpinePrefix(namespacePrefix: String): Boolean
     {
-        return namespacePrefix.startsWith(":") || namespacePrefix.startsWith("@")
+        return namespacePrefix == "x-on" || namespacePrefix == "x-bind"
     }
 
     private fun findAttributeSchema(context: XmlTag, namespacePrefix: String): SchemaPrefix? {
         return context.attributes
             .find { it.name.startsWith(namespacePrefix) }
-            ?.let { SchemaPrefix(it, TextRange.create(0, namespacePrefix.length), namespacePrefix) }
+            ?.let { SchemaPrefix(it, TextRange.create(0, namespacePrefix.length), "Alpine.js") }
     }
 }
