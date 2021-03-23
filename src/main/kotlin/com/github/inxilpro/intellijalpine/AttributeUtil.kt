@@ -96,8 +96,9 @@ object AttributeUtil {
     }
 
     private fun getDefaultHtmlAttributes(xmlTag: XmlTag): Array<out XmlAttributeDescriptor> {
-        return (xmlTag.descriptor as? HtmlElementDescriptorImpl
-            ?: HtmlNSDescriptorImpl.guessTagForCommonAttributes(xmlTag) as? HtmlElementDescriptorImpl)
-            ?.getDefaultAttributeDescriptors(xmlTag) ?: emptyArray()
+        val tagDescriptor = xmlTag.descriptor as? HtmlElementDescriptorImpl
+        val descriptor = tagDescriptor ?: HtmlNSDescriptorImpl.guessTagForCommonAttributes(xmlTag)
+
+        return (descriptor as? HtmlElementDescriptorImpl)?.getDefaultAttributeDescriptors(xmlTag) ?: emptyArray()
     }
 }
