@@ -31,8 +31,7 @@ object AttributeUtil {
         "x-bind:"
     )
 
-    fun getValidAttributes(xmlTag: XmlTag): Array<String>
-    {
+    fun getValidAttributes(xmlTag: XmlTag): Array<String> {
         val descriptors = mutableListOf<String>()
 
         for (directive in DIRECTIVES) {
@@ -55,13 +54,11 @@ object AttributeUtil {
         return descriptors.toTypedArray()
     }
 
-    fun isDirective(attribute: String): Boolean
-    {
+    fun isDirective(attribute: String): Boolean {
         return DIRECTIVES.contains(attribute)
     }
 
-    fun isEvent(attribute: String): Boolean
-    {
+    fun isEvent(attribute: String): Boolean {
         for (prefix in EVENT_PREFIXES) {
             if (attribute.startsWith(prefix)) {
                 return true
@@ -71,8 +68,7 @@ object AttributeUtil {
         return false
     }
 
-    fun isBound(attribute: String): Boolean
-    {
+    fun isBound(attribute: String): Boolean {
         for (prefix in BIND_PREFIXES) {
             if (attribute.startsWith(prefix)) {
                 return true
@@ -83,8 +79,7 @@ object AttributeUtil {
     }
 
     @Suppress("ReturnCount")
-    fun stripPrefix(attribute: String): String
-    {
+    fun stripPrefix(attribute: String): String {
         for (prefix in EVENT_PREFIXES) {
             if (attribute.startsWith(prefix)) {
                 return attribute.substring(prefix.length)

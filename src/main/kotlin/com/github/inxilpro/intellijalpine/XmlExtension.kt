@@ -25,8 +25,7 @@ class XmlExtension : HtmlXmlExtension() {
         return super.getPrefixDeclaration(context, namespacePrefix)
     }
 
-    private fun hasAlpinePrefix(namespacePrefix: String): Boolean
-    {
+    private fun hasAlpinePrefix(namespacePrefix: String): Boolean {
         return namespacePrefix == "x-on" || namespacePrefix == "x-bind"
     }
 

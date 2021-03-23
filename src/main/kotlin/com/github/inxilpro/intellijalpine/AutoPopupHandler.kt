@@ -9,6 +9,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.html.HtmlTag
 
 class AutoPopupHandler : TypedHandlerDelegate() {
+    @Suppress("ReturnCount")
     override fun checkAutoPopup(charTyped: Char, project: Project, editor: Editor, file: PsiFile): Result {
         if (LookupManager.getActiveLookup(editor) != null) {
             return Result.CONTINUE

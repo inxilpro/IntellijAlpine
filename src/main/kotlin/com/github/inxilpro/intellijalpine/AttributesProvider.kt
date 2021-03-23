@@ -1,8 +1,6 @@
 package com.github.inxilpro.intellijalpine
 
 import com.intellij.psi.PsiElement
-import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
-import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
 import com.intellij.psi.meta.PsiPresentableMetaData
 import com.intellij.psi.xml.XmlTag
 import com.intellij.util.ArrayUtil
@@ -55,6 +53,7 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
         override fun hasIdType(): Boolean {
             return name == "id"
         }
+
         override fun hasIdRefType(): Boolean = false
         override fun isEnumerated(): Boolean = false
         override fun getDeclaration(): PsiElement? = null

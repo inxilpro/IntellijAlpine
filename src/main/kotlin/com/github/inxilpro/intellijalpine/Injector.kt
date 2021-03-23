@@ -11,7 +11,6 @@ import com.intellij.psi.impl.source.xml.XmlTextImpl
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
-import java.util.Arrays
 
 class Injector : MultiHostInjector {
 
@@ -29,11 +28,10 @@ class Injector : MultiHostInjector {
     }
 
     override fun elementsToInjectIn(): List<Class<out PsiElement>> {
-        return Arrays.asList(XmlTextImpl::class.java, XmlAttributeValueImpl::class.java)
+        return listOf(XmlTextImpl::class.java, XmlAttributeValueImpl::class.java)
     }
 
-    private fun isAlpineAttribute(attribute: XmlAttribute): Boolean
-    {
+    private fun isAlpineAttribute(attribute: XmlAttribute): Boolean {
         if (attribute.parent is XmlTag) {
             for (directive in AttributeUtil.getValidAttributes(attribute.parent)) {
                 if (directive == attribute.name) {
