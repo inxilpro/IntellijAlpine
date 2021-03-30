@@ -14,7 +14,7 @@ class AttributeInfo(val attribute: String) {
         "x-for" to "Map array to DOM nodes",
         "x-transition" to "Apply transition classes",
         "x-spread" to "Bind reusable directives",
-        "x-cloak" to "Hide while Alpine is initializing",
+        "x-cloak" to "Hide while Alpine is initializing"
     )
 
     val name: String

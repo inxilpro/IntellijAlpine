@@ -18,7 +18,7 @@ object AttributeUtil {
         "x-for",
         "x-transition",
         "x-spread",
-        "x-cloak",
+        "x-cloak"
     )
 
     val eventPrefixes = arrayOf(
