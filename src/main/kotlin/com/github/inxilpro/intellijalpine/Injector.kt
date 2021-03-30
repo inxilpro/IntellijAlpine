@@ -32,7 +32,7 @@ class Injector : MultiHostInjector {
     }
 
     private fun isPossibleAlpineTag(tag: XmlTag): Boolean {
-        return !tag.name.startsWith("x-");
+        return !tag.name.startsWith("x-")
     }
 
     private fun isAlpineAttribute(attribute: XmlAttribute): Boolean {

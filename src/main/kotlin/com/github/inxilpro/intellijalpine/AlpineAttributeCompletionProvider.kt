@@ -12,6 +12,7 @@ import com.intellij.util.ProcessingContext
 class AlpineAttributeCompletionProvider(vararg items: String) :
     CompletionProvider<CompletionParameters?>() {
 
+    @Suppress("ReturnCount")
     public override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
