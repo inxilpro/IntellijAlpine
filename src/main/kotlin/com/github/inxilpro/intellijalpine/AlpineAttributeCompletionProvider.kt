@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.XmlAttributeInsertHandler
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.util.ProcessingContext
 
@@ -18,6 +19,10 @@ class AlpineAttributeCompletionProvider(vararg items: String) :
     ) {
         val attribute = parameters.position.parent as? XmlAttribute ?: return
         val xmlTag = attribute.parent ?: return
+
+        if (xmlTag.descriptor !is HtmlElementDescriptorImpl) {
+            return
+        }
 
         for (info in AttributeUtil.getValidAttributesWithInfo(xmlTag)) {
             var elementBuilder = LookupElementBuilder
