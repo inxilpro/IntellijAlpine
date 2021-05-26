@@ -13,6 +13,18 @@
 
 ### Fixed
 
+### Security
+## [0.2.1]
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
 - Prevented autocompletion on Laravel blade components
 - Prevented language injection and autocompletion when outside of HTML scope
 
