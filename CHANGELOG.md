@@ -5,6 +5,8 @@
 ## [Unreleased]
 ### Added
 
+- Added improved support for transition attributes
+
 ### Changed
 
 ### Deprecated
@@ -14,7 +16,9 @@
 ### Fixed
 
 ### Security
+
 ## [0.2.1]
+
 ### Added
 
 ### Changed
@@ -29,6 +33,7 @@
 - Prevented language injection and autocompletion when outside of HTML scope
 
 ### Security
+
 ## [0.2.0]
 
 ### Added
