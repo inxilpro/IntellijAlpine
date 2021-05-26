@@ -19,7 +19,7 @@ class Injector : MultiHostInjector {
 
         if (host is XmlAttributeValue) {
             val parent = host.getParent() as? XmlAttribute ?: return
-            if (isAlpineAttribute(parent) && isPossibleAlpineTag(parent.parent)) {
+            if (isJavaScriptAlpineAttribute(parent) && isPossibleAlpineTag(parent.parent)) {
                 registrar.startInjecting(JavascriptLanguage.INSTANCE)
                     .addPlace(getPrefix(parent.name), ";", host as PsiLanguageInjectionHost, range)
                     .doneInjecting()
@@ -33,6 +33,10 @@ class Injector : MultiHostInjector {
 
     private fun isPossibleAlpineTag(tag: XmlTag): Boolean {
         return !tag.name.startsWith("x-")
+    }
+
+    private fun isJavaScriptAlpineAttribute(attribute: XmlAttribute): Boolean {
+        return isAlpineAttribute(attribute) && !attribute.name.startsWith("x-transition:")
     }
 
     private fun isAlpineAttribute(attribute: XmlAttribute): Boolean {

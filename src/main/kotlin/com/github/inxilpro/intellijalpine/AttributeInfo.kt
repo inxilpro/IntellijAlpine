@@ -42,6 +42,10 @@ class AttributeInfo(val attribute: String) {
         return ":" == prefix || "x-bind:" == prefix
     }
 
+    fun isTransition(): Boolean {
+        return "x-transition:" == prefix
+    }
+
     fun isDirective(): Boolean {
         return AttributeUtil.directives.contains(name)
     }
@@ -64,6 +68,10 @@ class AttributeInfo(val attribute: String) {
             }
         }
 
+        if (attribute.startsWith("x-transition:")) {
+            return "x-transition:"
+        }
+
         return ""
     }
 
@@ -75,6 +83,10 @@ class AttributeInfo(val attribute: String) {
 
         if (isBound()) {
             return "Bind '$name' attribute"
+        }
+
+        if (isTransition()) {
+            return "CSS classes for '$name' transition phase"
         }
 
         return typeTexts.getOrDefault(name, "Alpine.js")

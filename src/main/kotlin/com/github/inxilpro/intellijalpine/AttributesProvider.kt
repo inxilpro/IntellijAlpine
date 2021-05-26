@@ -27,6 +27,10 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
             return descriptor.getAttributeDescriptor(info.name, xmlTag)
         }
 
+        if (info.isTransition()) {
+            return descriptor.getAttributeDescriptor("class", xmlTag)
+        }
+
         return null
     }
 }
