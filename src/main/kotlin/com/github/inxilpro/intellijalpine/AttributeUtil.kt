@@ -16,7 +16,12 @@ object AttributeUtil {
         "x-ref",
         "x-if",
         "x-for",
-        "x-transition",
+        "x-transition:enter",
+        "x-transition:enter-start",
+        "x-transition:enter-end",
+        "x-transition:leave",
+        "x-transition:leave-start",
+        "x-transition:leave-end",
         "x-spread",
         "x-cloak"
     )

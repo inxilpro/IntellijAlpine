@@ -12,7 +12,12 @@ class AttributeInfo(val attribute: String) {
         "x-ref" to "Create a reference for later use",
         "x-if" to "Conditionally render template",
         "x-for" to "Map array to DOM nodes",
-        "x-transition" to "Apply transition classes",
+        "x-transition:enter" to "Transition classes used during the entire entering phase",
+        "x-transition:enter-start" to "Transition classes for start of entering phase",
+        "x-transition:enter-end" to "Transition classes end of entering phase",
+        "x-transition:leave" to "Transition classes used during the entire leaving phase",
+        "x-transition:leave-start" to "Transition classes for start of leaving phase",
+        "x-transition:leave-end" to "Transition classes for end of leaving phase",
         "x-spread" to "Bind reusable directives",
         "x-cloak" to "Hide while Alpine is initializing"
     )
