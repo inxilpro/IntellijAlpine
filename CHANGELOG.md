@@ -17,6 +17,18 @@
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+## [0.2.2]
+### Added
+
 - Added improved support for transition attributes
 
 ### Changed
