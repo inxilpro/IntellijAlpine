@@ -18,46 +18,14 @@
 
 ### Added
 
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-## [0.2.2]
-### Added
-
 - Added improved support for transition attributes
 
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-
 ## [0.2.1]
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
 
 ### Fixed
 
 - Prevented autocompletion on Laravel blade components
 - Prevented language injection and autocompletion when outside of HTML scope
-
-### Security
 
 ## [0.2.0]
 
@@ -72,29 +40,11 @@
 
 - Refactored a lot of underlying code
 
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-
 ## [0.1.1]
 
 ### Added
 
 - Support for object style `:class=` binding
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.1.0]
 
@@ -108,16 +58,11 @@
 - Internals refactor
 
 ## [0.0.3]
+
 ### Added
 
 - Better JS language injection inside `x-` directives
 - Auto-complete for magic properties like `$el` and `$dispatch`
-
-### Changed
-
-### Deprecated
-
-### Removed
 
 ### Fixed
 
