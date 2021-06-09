@@ -8,55 +8,72 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
-import com.intellij.psi.impl.source.xml.XmlAttributeValueImpl
-import com.intellij.psi.impl.source.xml.XmlTextImpl
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
-import com.intellij.psi.xml.XmlTag
 
 class Injector : MultiHostInjector {
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
+        if (host !is XmlAttributeValue) {
+            return
+        }
+
+        // Make sure that we have an XML attribute as a parent
+        val attribute = host.parent as? XmlAttribute ?: return
+
+        // Make sure we have an HTML tag (and not a Blade <x- tag)
+        val tag = attribute.parent as? HtmlTag ?: return
+        if (!isValidHtmlTag(tag)) {
+            return
+        }
+
+        // Make sure we have an attribute that looks like it's Alpine
+        val attributeName = attribute.name
+        if (!isAlpineAttributeName(attributeName)) {
+            return
+        }
+
+        // Make sure it's a valid Attribute to operate on
+        if (!isValidAttribute(attribute)) {
+            return
+        }
+
+        // Make sure it's an attribute that is parsed as JavaScript
+        if (!shouldInjectJavaScript(attributeName)) {
+            return
+        }
+
+        // Alright. Now that we have an Alpine attribute that needs
+        // language injection, let's set it up
+
+        val prefix = getPrefix(attributeName, host)
+        val suffix = getSuffix(attributeName)
         val range = ElementManipulators.getValueTextRange(host)
 
-        if (host is XmlAttributeValue) {
-            val parent = host.getParent() as? XmlAttribute ?: return
-            if (parent.descriptor is HtmlAttributeDescriptorImpl || parent.descriptor is AlpineAttributeDescriptor) {
-                if (isJavaScriptAlpineAttribute(parent) && isPossibleAlpineTag(parent.parent)) {
-                    val prefix = getPrefix(parent.name, host)
-                    val suffix = getSuffix(parent.name)
-
-                    registrar.startInjecting(JavascriptLanguage.INSTANCE)
-                        .addPlace(prefix, suffix, host as PsiLanguageInjectionHost, range)
-                        .doneInjecting()
-                }
-            }
-        }
+        registrar.startInjecting(JavascriptLanguage.INSTANCE)
+            .addPlace(prefix, suffix, host as PsiLanguageInjectionHost, range)
+            .doneInjecting()
     }
 
     override fun elementsToInjectIn(): List<Class<out PsiElement>> {
-        return listOf(XmlTextImpl::class.java, XmlAttributeValueImpl::class.java)
+        return listOf(XmlAttributeValue::class.java)
     }
 
-    private fun isPossibleAlpineTag(tag: XmlTag): Boolean {
+    private fun isValidAttribute(attribute: XmlAttribute): Boolean {
+        return attribute.descriptor is HtmlAttributeDescriptorImpl || attribute.descriptor is AlpineAttributeDescriptor
+    }
+
+    private fun isValidHtmlTag(tag: HtmlTag): Boolean {
         return !tag.name.startsWith("x-")
     }
 
-    private fun isJavaScriptAlpineAttribute(attribute: XmlAttribute): Boolean {
-        return isAlpineAttribute(attribute) && !attribute.name.startsWith("x-transition:")
+    private fun isAlpineAttributeName(name: String): Boolean {
+        return name.startsWith("x-") || name.startsWith("@") || name.startsWith(':')
     }
 
-    private fun isAlpineAttribute(attribute: XmlAttribute): Boolean {
-        if (attribute.parent is HtmlTag) {
-            for (directive in AttributeUtil.getValidAttributes(attribute.parent as HtmlTag)) {
-                if (directive == attribute.name) {
-                    return true
-                }
-            }
-        }
-
-        return false
+    private fun shouldInjectJavaScript(name: String): Boolean {
+        return !name.startsWith("x-transition:")
     }
 
     private fun getPrefix(directive: String, host: PsiElement): String {
@@ -117,7 +134,7 @@ class Injector : MultiHostInjector {
         } else if ("x-for" == directive) {
             prefix += "for (let "
         } else {
-            prefix += " return "
+            prefix += " window.__last_alpine_directive_result = "
         }
 
         return prefix
