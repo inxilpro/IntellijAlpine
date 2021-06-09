@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.HtmlCompletionContributor
 import com.intellij.codeInsight.completion.XmlAttributeInsertHandler
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.lang.html.HTMLLanguage
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.util.ProcessingContext
@@ -21,6 +22,10 @@ class AlpineAttributeCompletionProvider(vararg items: String) :
     ) {
         val position = parameters.position
         if (!HtmlCompletionContributor.hasHtmlAttributesCompletion(position)) {
+            return
+        }
+
+        if (HTMLLanguage.INSTANCE !in position.containingFile.viewProvider.languages) {
             return
         }
 

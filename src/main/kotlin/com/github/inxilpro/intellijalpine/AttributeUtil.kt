@@ -7,6 +7,8 @@ import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.XmlAttributeDescriptor
 
 object AttributeUtil {
+    private val validAttributes = mutableMapOf<String, Array<String>>()
+
     val directives = arrayOf(
         "x-data",
         "x-init",
@@ -38,30 +40,7 @@ object AttributeUtil {
     )
 
     fun getValidAttributes(xmlTag: HtmlTag): Array<String> {
-        val descriptors = mutableListOf<String>()
-
-        for (directive in directives) {
-            if (xmlTag.name != "template" && (directive == "x-if" || directive == "x-for")) {
-                continue
-            }
-
-            descriptors.add(directive)
-        }
-
-        for (descriptor in getDefaultHtmlAttributes(xmlTag)) {
-            if (descriptor.name.startsWith("on")) {
-                val event = descriptor.name.substring(2)
-                for (prefix in eventPrefixes) {
-                    descriptors.add(prefix + event)
-                }
-            } else {
-                for (prefix in bindPrefixes) {
-                    descriptors.add(prefix + descriptor.name)
-                }
-            }
-        }
-
-        return descriptors.toTypedArray()
+        return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
     }
 
     fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
@@ -78,6 +57,33 @@ object AttributeUtil {
         }
 
         return false
+    }
+
+    private fun buildValidAttributes(htmlTag: HtmlTag): Array<String> {
+        val descriptors = mutableListOf<String>()
+
+        for (directive in directives) {
+            if (htmlTag.name != "template" && (directive == "x-if" || directive == "x-for")) {
+                continue
+            }
+
+            descriptors.add(directive)
+        }
+
+        for (descriptor in getDefaultHtmlAttributes(htmlTag)) {
+            if (descriptor.name.startsWith("on")) {
+                val event = descriptor.name.substring(2)
+                for (prefix in eventPrefixes) {
+                    descriptors.add(prefix + event)
+                }
+            } else {
+                for (prefix in bindPrefixes) {
+                    descriptors.add(prefix + descriptor.name)
+                }
+            }
+        }
+
+        return descriptors.toTypedArray()
     }
 
     private fun getDefaultHtmlAttributes(xmlTag: XmlTag): Array<out XmlAttributeDescriptor> {
