@@ -1,5 +1,6 @@
 package com.github.inxilpro.intellijalpine
 
+import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
 import com.intellij.psi.xml.XmlTag
@@ -36,7 +37,7 @@ object AttributeUtil {
         "x-bind:"
     )
 
-    fun getValidAttributes(xmlTag: XmlTag): Array<String> {
+    fun getValidAttributes(xmlTag: HtmlTag): Array<String> {
         val descriptors = mutableListOf<String>()
 
         for (directive in directives) {
@@ -63,7 +64,7 @@ object AttributeUtil {
         return descriptors.toTypedArray()
     }
 
-    fun getValidAttributesWithInfo(xmlTag: XmlTag): Array<AttributeInfo> {
+    fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
         return getValidAttributes(xmlTag)
             .map { AttributeInfo(it) }
             .toTypedArray()

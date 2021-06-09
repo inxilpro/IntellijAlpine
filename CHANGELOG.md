@@ -3,6 +3,18 @@
 # Alpine.js Support
 
 ## [Unreleased]
+
+### Added
+
+- Added auto-complete support for simple x-data expressions
+- Added better support for `x-for` and `x-spread`
+
+### Fixed
+
+- Stopped the plugin from activating on XML files, which should fix crashes related to PHPUnit/etc
+
+## [0.2.2]
+
 ### Added
 
 - Added improved support for transition attributes

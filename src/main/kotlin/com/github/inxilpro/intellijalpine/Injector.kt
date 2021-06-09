@@ -6,8 +6,11 @@ import com.intellij.lang.javascript.JavascriptLanguage
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
+import com.intellij.psi.html.HtmlTag
+import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
 import com.intellij.psi.impl.source.xml.XmlAttributeValueImpl
 import com.intellij.psi.impl.source.xml.XmlTextImpl
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
@@ -19,10 +22,15 @@ class Injector : MultiHostInjector {
 
         if (host is XmlAttributeValue) {
             val parent = host.getParent() as? XmlAttribute ?: return
-            if (isJavaScriptAlpineAttribute(parent) && isPossibleAlpineTag(parent.parent)) {
-                registrar.startInjecting(JavascriptLanguage.INSTANCE)
-                    .addPlace(getPrefix(parent.name), ";", host as PsiLanguageInjectionHost, range)
-                    .doneInjecting()
+            if (
+                parent.descriptor is HtmlAttributeDescriptorImpl
+                || parent.descriptor is AlpineAttributeDescriptor
+            ) {
+                if (isJavaScriptAlpineAttribute(parent) && isPossibleAlpineTag(parent.parent)) {
+                    registrar.startInjecting(JavascriptLanguage.INSTANCE)
+                        .addPlace(getPrefix(parent.name, host), getSuffix(parent.name), host as PsiLanguageInjectionHost, range)
+                        .doneInjecting()
+                }
             }
         }
     }
@@ -40,8 +48,8 @@ class Injector : MultiHostInjector {
     }
 
     private fun isAlpineAttribute(attribute: XmlAttribute): Boolean {
-        if (attribute.parent is XmlTag) {
-            for (directive in AttributeUtil.getValidAttributes(attribute.parent)) {
+        if (attribute.parent is HtmlTag) {
+            for (directive in AttributeUtil.getValidAttributes(attribute.parent as HtmlTag)) {
                 if (directive == attribute.name) {
                     return true
                 }
@@ -51,11 +59,24 @@ class Injector : MultiHostInjector {
         return false
     }
 
-    private fun getPrefix(directive: String): String {
+    private fun getPrefix(directive: String, host: PsiElement): String {
         var prefix = ""
 
-        val generalPrefix =
-            """
+        // First we'll add the Alpine x-data context if we can
+        val dataParent = PsiTreeUtil.findFirstParent(host) { it is HtmlTag && it.getAttribute("x-data") != null }
+        if (dataParent is HtmlTag) {
+            val xData = dataParent.getAttribute("x-data")?.value;
+            if (null != xData) {
+                prefix += "with (${xData}) { "
+            }
+        } else {
+            prefix += "with ({}) { "
+        }
+
+        // Next we'll set up the available Alpine magic properties/etc if we're
+        // inside of an existing Alpine context
+        if ("x-data" != directive) {
+            prefix += """
                 /** @type HTMLElement */
                 let ${'$'}el;
 
@@ -82,25 +103,35 @@ class Injector : MultiHostInjector {
                  */
                 function ${'$'}watch(property, callback) {}
             """.trimIndent()
-
-        if ("x-data" == directive) {
-            prefix = "let __data = "
-        } else {
-            prefix = generalPrefix
         }
 
-        if (":class" == directive || "x-bind:class" == directive) {
-            prefix += " let __class = "
-        }
-
+        // Handle a few different edge-cases in terms of how the attribute
+        // should be parsed (i.e. are we returning something, or executing
+        // code for an event callback, or in a loop, etc).
         if (AttributeUtil.isEvent(directive)) {
             prefix +=
                 """
                     /** @type Event */
                     let ${'$'}event;
                 """.trimIndent()
+        } else if ("x-for" == directive) {
+            prefix += "for (let "
+        } else {
+            prefix += " return "
         }
 
         return prefix
+    }
+
+    private fun getSuffix(directive: String): String {
+        if ("x-for" == directive) {
+            return ") {}; }"
+        }
+
+        if ("x-spread" == directive) {
+            return "() }"
+        }
+
+        return " }"
     }
 }

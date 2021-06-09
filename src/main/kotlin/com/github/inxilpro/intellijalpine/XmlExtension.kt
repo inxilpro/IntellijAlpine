@@ -3,6 +3,7 @@ package com.github.inxilpro.intellijalpine
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
+import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.xml.SchemaPrefix
 import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.HtmlXmlExtension
@@ -17,7 +18,7 @@ class XmlExtension : HtmlXmlExtension() {
     }
 
     override fun getPrefixDeclaration(context: XmlTag, namespacePrefix: String?): SchemaPrefix? {
-        if (null != namespacePrefix && hasAlpinePrefix(namespacePrefix)) {
+        if (null != namespacePrefix && context is HtmlTag && hasAlpinePrefix(namespacePrefix)) {
             findAttributeSchema(context, namespacePrefix)
                 ?.let { return it }
         }

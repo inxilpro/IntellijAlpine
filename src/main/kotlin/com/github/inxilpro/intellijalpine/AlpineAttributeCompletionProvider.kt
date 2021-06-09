@@ -1,11 +1,8 @@
 package com.github.inxilpro.intellijalpine
 
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProvider
-import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.completion.XmlAttributeInsertHandler
+import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
+import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.util.ProcessingContext
 
@@ -18,12 +15,13 @@ class AlpineAttributeCompletionProvider(vararg items: String) :
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        val attribute = parameters.position.parent as? XmlAttribute ?: return
-        val xmlTag = attribute.parent ?: return
-
-        if (xmlTag.descriptor !is HtmlElementDescriptorImpl) {
+        val position = parameters.position
+        if (!HtmlCompletionContributor.hasHtmlAttributesCompletion(position)) {
             return
         }
+
+        val attribute = position.parent as? XmlAttribute ?: return
+        val xmlTag = attribute.parent as? HtmlTag ?: return
 
         for (info in AttributeUtil.getValidAttributesWithInfo(xmlTag)) {
             var elementBuilder = LookupElementBuilder

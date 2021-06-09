@@ -5,14 +5,14 @@
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/15251-alpine-js-support.svg)](https://plugins.jetbrains.com/plugin/15251-alpine-js-support)
 ![Release](https://github.com/inxilpro/IntellijAlpine/workflows/Release/badge.svg)
 
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [x] Verify the [pluginGroup](/gradle.properties), [plugin ID](/src/main/resources/META-INF/plugin.xml) and [sources package](/src/main/kotlin).
-- [x] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html).
-- [x] [Publish a plugin manually](https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/publishing_plugin.html) for the first time.
-- [x] Set the Plugin ID in the above README badges.
-- [x] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html).
-- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
+## Release Workflow
+
+1. Update `gradle.properties` with the **new plugin version**
+2. Update `CHANGELOG.md` to reflect the new changes in the **Unreleased** section
+3. Push `main` branch and allow all GitHub Actions to run
+4. Go to [releases page](https://github.com/inxilpro/IntellijAlpine/releases) and edit/publish draft release
+
+## Plugin Description
 
 <!-- Plugin description -->
 ![intellij-alpine](https://user-images.githubusercontent.com/21592/97035246-0b7a9e00-1534-11eb-9722-2492f380eca3.gif)
