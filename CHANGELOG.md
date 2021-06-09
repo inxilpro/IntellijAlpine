@@ -3,39 +3,16 @@
 # Alpine.js Support
 
 ## [Unreleased]
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-## [0.3.0-beta.2]
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-## [0.3.0-beta.1]
 
 ### Added
 
 - Added auto-complete support for simple x-data expressions
 - Added better support for `x-for` and `x-spread`
+- Added better language injection support for all Alpine directives
 
 ### Fixed
 
-- Stopped the plugin from activating on XML files, which should fix crashes related to PHPUnit/etc
+- Fixed an issue where the plugin would cause the IDE freeze when editing XML files
 
 ## [0.2.2]
 
