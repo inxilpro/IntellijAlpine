@@ -22,13 +22,13 @@ class Injector : MultiHostInjector {
 
         if (host is XmlAttributeValue) {
             val parent = host.getParent() as? XmlAttribute ?: return
-            if (
-                parent.descriptor is HtmlAttributeDescriptorImpl
-                || parent.descriptor is AlpineAttributeDescriptor
-            ) {
+            if (parent.descriptor is HtmlAttributeDescriptorImpl || parent.descriptor is AlpineAttributeDescriptor) {
                 if (isJavaScriptAlpineAttribute(parent) && isPossibleAlpineTag(parent.parent)) {
+                    val prefix = getPrefix(parent.name, host)
+                    val suffix = getSuffix(parent.name)
+
                     registrar.startInjecting(JavascriptLanguage.INSTANCE)
-                        .addPlace(getPrefix(parent.name, host), getSuffix(parent.name), host as PsiLanguageInjectionHost, range)
+                        .addPlace(prefix, suffix, host as PsiLanguageInjectionHost, range)
                         .doneInjecting()
                 }
             }
@@ -65,9 +65,9 @@ class Injector : MultiHostInjector {
         // First we'll add the Alpine x-data context if we can
         val dataParent = PsiTreeUtil.findFirstParent(host) { it is HtmlTag && it.getAttribute("x-data") != null }
         if (dataParent is HtmlTag) {
-            val xData = dataParent.getAttribute("x-data")?.value;
+            val xData = dataParent.getAttribute("x-data")?.value
             if (null != xData) {
-                prefix += "with (${xData}) { "
+                prefix += "with ($xData) { "
             }
         } else {
             prefix += "with ({}) { "

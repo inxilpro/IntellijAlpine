@@ -6,6 +6,12 @@ formatting:
     continuationIndentSize: 4
   ParameterListWrapping:
     indentSize: 4
+  NoSemicolons:
+    active: false
+  ChainWrapping:
+    active: false
+  NoTrailingSpaces:
+    active: false
 
 complexity:
   NestedBlockDepth:
@@ -16,3 +22,7 @@ complexity:
 empty-blocks:
   EmptyFunctionBlock:
     ignoreOverridden: true
+
+style:
+  ReturnCount:
+    active: false
