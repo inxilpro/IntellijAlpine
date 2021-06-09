@@ -14,6 +14,18 @@
 ### Fixed
 
 ### Security
+## [0.3.0-beta.3]
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
 ## [0.3.0-beta.2]
 ### Added
 
