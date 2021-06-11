@@ -34,6 +34,11 @@ class AttributeInfo(val attribute: String) {
         typeText = buildTypeText()
     }
 
+    @Suppress("ComplexCondition")
+    fun isAlpine(): Boolean {
+        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective()
+    }
+
     fun isEvent(): Boolean {
         return "@" == prefix || "x-on:" == prefix
     }
