@@ -3,7 +3,11 @@
 # Alpine.js Support
 
 ## [Unreleased]
+
 ### Added
+
+- Added support for PHP and Blade fragments inside of Alpine directives
+- Added Alpine gutter icon for easier identification of lines that have Alpine directives
 
 ### Changed
 
@@ -14,6 +18,7 @@
 ### Fixed
 
 ### Security
+
 ## [0.3.0]
 
 ### Added

@@ -15,10 +15,11 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
         val descriptor = xmlTag.descriptor as? HtmlElementDescriptorImpl ?: return null
         val info = AttributeInfo(name)
 
-        if (info.isDirective()) {
+        if (info.isDirective() || info.isEvent() || info.isBound() || info.isTransition()) {
             return AlpineAttributeDescriptor(name, xmlTag)
         }
 
+        /*
         if (info.isEvent()) {
             return descriptor.getAttributeDescriptor("on${info.name}", xmlTag)
         }
@@ -30,6 +31,7 @@ class AttributesProvider : XmlAttributeDescriptorsProvider {
         if (info.isTransition()) {
             return descriptor.getAttributeDescriptor("class", xmlTag)
         }
+        */
 
         return null
     }

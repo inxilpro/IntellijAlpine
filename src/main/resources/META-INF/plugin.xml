@@ -15,12 +15,15 @@
     <depends>JavaScript</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- com.jetbrains.php.blade.psi.BladePsiLanguageInjectionHost -->
         <multiHostInjector implementation="com.github.inxilpro.intellijalpine.Injector"/>
         <xml.attributeDescriptorsProvider implementation="com.github.inxilpro.intellijalpine.AttributesProvider"/>
         <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.XmlExtension"/>
         <typedHandler implementation="com.github.inxilpro.intellijalpine.AutoPopupHandler"/>
-        <completion.contributor language="any"
+        <completion.contributor language="HTML"
                                 implementationClass="com.github.inxilpro.intellijalpine.AlpineCompletionContributor"
                                 id="AlpineCompletionContributor"/>
+        <codeInsight.lineMarkerProvider language="HTML"
+                implementationClass="com.github.inxilpro.intellijalpine.AlpineLineMarkerProvider" />
     </extensions>
 </idea-plugin>

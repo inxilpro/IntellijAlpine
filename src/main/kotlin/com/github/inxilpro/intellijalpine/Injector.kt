@@ -3,6 +3,7 @@ package com.github.inxilpro.intellijalpine
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
 import com.intellij.lang.javascript.JavascriptLanguage
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
@@ -47,17 +48,51 @@ class Injector : MultiHostInjector {
         // Alright. Now that we have an Alpine attribute that needs
         // language injection, let's set it up
 
-        val prefix = getPrefix(attributeName, host)
-        val suffix = getSuffix(attributeName)
-        val range = ElementManipulators.getValueTextRange(host)
+        var prefix = getPrefix(attributeName, host)
+        var suffix = ""
 
-        registrar.startInjecting(JavascriptLanguage.INSTANCE)
-            .addPlace(prefix, suffix, host as PsiLanguageInjectionHost, range)
-            .doneInjecting()
+        val content = host.text
+        val ranges = getJavaScriptRange(host, content)
+
+        ranges.forEachIndexed { index, range ->
+            if (index == ranges.lastIndex) {
+                suffix = getSuffix(attributeName)
+            }
+
+            registrar.startInjecting(JavascriptLanguage.INSTANCE)
+                .addPlace(prefix, suffix, host as PsiLanguageInjectionHost, range)
+                .doneInjecting()
+
+            if (ranges.lastIndex != index) {
+                prefix += range.substring(content)
+                prefix += "__PHP_CALL()"
+            }
+        }
     }
 
     override fun elementsToInjectIn(): List<Class<out PsiElement>> {
         return listOf(XmlAttributeValue::class.java)
+    }
+
+    private fun getJavaScriptRange(host: PsiElement, content: String): List<TextRange> {
+        val valueRange = ElementManipulators.getValueTextRange(host)
+
+        if (host.containingFile.viewProvider.languages.filter { "PHP" == it.id || "Blade" == it.id }.isEmpty()) {
+            return listOf(valueRange)
+        }
+
+        val phpMatcher = Regex("(?:(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>)")
+        val ranges = mutableListOf<TextRange>()
+
+        var offset = valueRange.startOffset
+        phpMatcher.findAll(content).forEach {
+            ranges.add(TextRange(offset, it.range.first))
+            offset = it.range.last + 1
+        }
+
+        ranges.add(TextRange(offset, valueRange.endOffset))
+
+        return ranges.toList()
     }
 
     private fun isValidAttribute(attribute: XmlAttribute): Boolean {
@@ -84,10 +119,10 @@ class Injector : MultiHostInjector {
         if (dataParent is HtmlTag) {
             val xData = dataParent.getAttribute("x-data")?.value
             if (null != xData) {
-                prefix += "with ($xData) { "
+                prefix += "with ($xData) { \n"
             }
         } else {
-            prefix += "with ({}) { "
+            prefix += "with ({}) { \n"
         }
 
         // Next we'll set up the available Alpine magic properties/etc if we're
@@ -122,6 +157,8 @@ class Injector : MultiHostInjector {
             """.trimIndent()
         }
 
+        prefix += "\n"
+
         // Handle a few different edge-cases in terms of how the attribute
         // should be parsed (i.e. are we returning something, or executing
         // code for an event callback, or in a loop, etc).
@@ -134,7 +171,7 @@ class Injector : MultiHostInjector {
         } else if ("x-for" == directive) {
             prefix += "for (let "
         } else {
-            prefix += " window.__last_alpine_directive_result = "
+            prefix += " __ALPINE_DIRECTIVE("
         }
 
         return prefix
@@ -146,9 +183,9 @@ class Injector : MultiHostInjector {
         }
 
         if ("x-spread" == directive) {
-            return "() }"
+            return "()) }"
         }
 
-        return " }"
+        return ") }"
     }
 }
