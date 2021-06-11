@@ -9,6 +9,12 @@ import com.intellij.xml.XmlAttributeDescriptor
 object AttributeUtil {
     private val validAttributes = mutableMapOf<String, Array<String>>()
 
+    val xmlPrefixes = arrayOf(
+        "x-on",
+        "x-bind",
+        "x-transition"
+    )
+
     val directives = arrayOf(
         "x-data",
         "x-init",
@@ -38,6 +44,10 @@ object AttributeUtil {
         ":",
         "x-bind:"
     )
+
+    fun isXmlPrefix(prefix: String): Boolean {
+        return xmlPrefixes.contains(prefix)
+    }
 
     fun getValidAttributes(xmlTag: HtmlTag): Array<String> {
         return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })

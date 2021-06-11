@@ -11,6 +11,8 @@
 
 ### Changed
 
+- Updated auto-complete to only trigger after `x-bind:` or `x-on:`
+
 ### Deprecated
 
 ### Removed

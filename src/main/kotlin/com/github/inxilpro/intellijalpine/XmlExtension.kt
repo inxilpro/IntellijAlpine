@@ -27,7 +27,7 @@ class XmlExtension : HtmlXmlExtension() {
     }
 
     private fun hasAlpinePrefix(namespacePrefix: String): Boolean {
-        return namespacePrefix == "x-on" || namespacePrefix == "x-bind" || namespacePrefix == "x-transition"
+        return AttributeUtil.isXmlPrefix(namespacePrefix)
     }
 
     private fun findAttributeSchema(context: XmlTag, namespacePrefix: String): SchemaPrefix? {
