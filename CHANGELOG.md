@@ -8,6 +8,7 @@
 
 - Added support for PHP and Blade fragments inside of Alpine directives
 - Added Alpine gutter icon for easier identification of lines that have Alpine directives
+- Added initial support for Alpine v3 directives and magics
 
 ### Changed
 
