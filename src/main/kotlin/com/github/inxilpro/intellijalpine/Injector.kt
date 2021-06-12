@@ -17,13 +17,13 @@ import org.apache.commons.lang3.tuple.MutablePair
 class Injector : MultiHostInjector {
     private companion object {
         val coreMagics = """
-                /** @type HTMLElement */
+                /** @type {HTMLElement} */
                 let ${'$'}el;
 
-                /** @type Object */
+                /** @type {Object} */
                 let ${'$'}refs;
                 
-                /** @type Object */
+                /** @type {Object} */
                 let ${'$'}store;
 
                 /**
@@ -63,7 +63,7 @@ class Injector : MultiHostInjector {
                 
             """.trimIndent()
 
-        val eventMagics = "/** @type Event */\nlet ${'$'}event;\n\n"
+        val eventMagics = "/** @type {Event} */\nlet ${'$'}event;\n\n"
     }
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {

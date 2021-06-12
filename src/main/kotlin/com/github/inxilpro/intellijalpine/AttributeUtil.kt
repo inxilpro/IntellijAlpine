@@ -7,7 +7,7 @@ import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.XmlAttributeDescriptor
 
 object AttributeUtil {
-    private val validAttributes = mutableMapOf<String, Array<String>>()
+    private val validAttributes = mutableMapOf<String, Array<AttributeInfo>>()
 
     val xmlPrefixes = arrayOf(
         "x-on",
@@ -40,23 +40,55 @@ object AttributeUtil {
         "x-on:"
     )
 
+    val eventModifiers = arrayOf(
+        "prevent",
+        "stop",
+        "outside",
+        "window",
+        "document",
+        "once",
+        "debounce",
+        "throttle",
+        "self",
+        "camel",
+        "passive"
+    )
+
     val bindPrefixes = arrayOf(
         ":",
         "x-bind:"
     )
 
+    val modelModifiers = arrayOf(
+        "lazy",
+        "number",
+        "debounce",
+        "throttle"
+    )
+
+    val timeUnitModifiers = arrayOf(
+        "debounce",
+        "throttle",
+        "duration",
+        "delay",
+    )
+
+    val transitionModifiers = arrayOf(
+        "duration",
+        "delay",
+        "opacity",
+        "scale",
+        "origin",
+    )
+
+    // FIXME: scale.10 and origin.top.right
+
     fun isXmlPrefix(prefix: String): Boolean {
         return xmlPrefixes.contains(prefix)
     }
 
-    fun getValidAttributes(xmlTag: HtmlTag): Array<String> {
-        return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
-    }
-
     fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
-        return getValidAttributes(xmlTag)
-            .map { AttributeInfo(it) }
-            .toTypedArray()
+        return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
     }
 
     fun isEvent(attribute: String): Boolean {
@@ -69,26 +101,36 @@ object AttributeUtil {
         return false
     }
 
-    private fun buildValidAttributes(htmlTag: HtmlTag): Array<String> {
-        val descriptors = mutableListOf<String>()
+    fun isBound(attribute: String): Boolean {
+        for (prefix in bindPrefixes) {
+            if (attribute.startsWith(prefix)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private fun buildValidAttributes(htmlTag: HtmlTag): Array<AttributeInfo> {
+        val descriptors = mutableListOf<AttributeInfo>()
 
         for (directive in directives) {
             if (htmlTag.name != "template" && (directive == "x-if" || directive == "x-for")) {
                 continue
             }
 
-            descriptors.add(directive)
+            descriptors.add(AttributeInfo(directive))
         }
 
         for (descriptor in getDefaultHtmlAttributes(htmlTag)) {
             if (descriptor.name.startsWith("on")) {
                 val event = descriptor.name.substring(2)
                 for (prefix in eventPrefixes) {
-                    descriptors.add(prefix + event)
+                    descriptors.add(AttributeInfo(prefix + event))
                 }
             } else {
                 for (prefix in bindPrefixes) {
-                    descriptors.add(prefix + descriptor.name)
+                    descriptors.add(AttributeInfo(prefix + descriptor.name))
                 }
             }
         }

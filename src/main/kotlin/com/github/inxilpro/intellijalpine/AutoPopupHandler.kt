@@ -20,7 +20,7 @@ class AutoPopupHandler : TypedHandlerDelegate() {
             return Result.CONTINUE
         }
 
-        if (charTyped == '@' || charTyped == ':') {
+        if (charTyped == '@' || charTyped == ':' || charTyped == '.') {
             AutoPopupController.getInstance(project).scheduleAutoPopup(editor)
             return Result.STOP
         }

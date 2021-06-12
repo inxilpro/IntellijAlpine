@@ -33,7 +33,7 @@ class AttributeInfo(val attribute: String) {
 
     init {
         prefix = extractPrefix()
-        name = attribute.substring(prefix.length)
+        name = attribute.substring(prefix.length).substringBefore('.')
         typeText = buildTypeText()
     }
 
