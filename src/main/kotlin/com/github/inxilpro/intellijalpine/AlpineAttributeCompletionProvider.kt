@@ -4,7 +4,6 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionUtilCore
-import com.intellij.codeInsight.completion.HtmlCompletionContributor
 import com.intellij.codeInsight.completion.XmlAttributeInsertHandler
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.html.HTMLLanguage
@@ -13,8 +12,7 @@ import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.util.ProcessingContext
 
-class AlpineAttributeCompletionProvider(vararg items: String) :
-    CompletionProvider<CompletionParameters?>() {
+class AlpineAttributeCompletionProvider(vararg items: String) : CompletionProvider<CompletionParameters?>() {
 
     @Suppress("ReturnCount")
     public override fun addCompletions(
@@ -23,9 +21,6 @@ class AlpineAttributeCompletionProvider(vararg items: String) :
         result: CompletionResultSet
     ) {
         val position = parameters.position
-        if (!HtmlCompletionContributor.hasHtmlAttributesCompletion(position)) {
-            return
-        }
 
         if (HTMLLanguage.INSTANCE !in position.containingFile.viewProvider.languages) {
             return
@@ -34,49 +29,34 @@ class AlpineAttributeCompletionProvider(vararg items: String) :
         val attribute = position.parent as? XmlAttribute ?: return
         val xmlTag = attribute.parent as? HtmlTag ?: return
 
-        // CompletionUtilCore.DUMMY_IDENTIFIER
-        val attributeName = StringUtil.trimEnd(attribute.name, CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED)
+        val partialAttribute = StringUtil.trimEnd(attribute.name, CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED)
 
-        for (prefix in AttributeUtil.xmlPrefixes) {
-            if (prefix.startsWith(attributeName) && attributeName.length < prefix.length) {
-                val info = AttributeInfo(prefix)
-                val elementBuilder = LookupElementBuilder
-                    .create(prefix)
-                    .withCaseSensitivity(false)
-                    .withIcon(Alpine.ICON)
-                    .withTypeText(info.typeText)
-
-                result.addElement(elementBuilder)
-            }
+        if (partialAttribute.isEmpty()) {
+            return
         }
 
-        for (info in AttributeUtil.getValidAttributesWithInfo(xmlTag)) {
-            if (!prefixMatchesAttribute(attributeName, info.attribute)) {
-                continue
+        val suggestions = AutoCompleteSuggestions(xmlTag, partialAttribute)
+
+        suggestions.descriptors.forEach {
+            var text = it.attribute
+
+            // If you go back and add a modifier, it ignores the prefix, so we'll
+            // just kinda code around that for now
+            if (text.contains(':') && text.contains('.')) {
+                text = text.substringAfter(':')
             }
+
             var elementBuilder = LookupElementBuilder
-                .create(info.attribute)
+                .create(text)
                 .withCaseSensitivity(false)
                 .withIcon(Alpine.ICON)
-                .withTypeText(info.typeText)
+                .withTypeText(it.typeText)
 
-            if (info.hasValue()) {
+            if (it.hasValue() && !it.canBePrefix()) {
                 elementBuilder = elementBuilder.withInsertHandler(XmlAttributeInsertHandler.INSTANCE)
             }
 
             result.addElement(elementBuilder)
         }
-    }
-
-    private fun prefixMatchesAttribute(prefix: String, attribute: String): Boolean {
-        if (!attribute.contains(':')) {
-            return true
-        }
-
-        if (!prefix.contains(':')) {
-            return false
-        }
-
-        return attribute.startsWith(prefix, true)
     }
 }

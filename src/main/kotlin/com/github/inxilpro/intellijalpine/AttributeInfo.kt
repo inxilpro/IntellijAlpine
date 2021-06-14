@@ -33,7 +33,7 @@ class AttributeInfo(val attribute: String) {
 
     init {
         prefix = extractPrefix()
-        name = attribute.substring(prefix.length)
+        name = attribute.substring(prefix.length).substringBefore('.')
         typeText = buildTypeText()
     }
 
@@ -59,7 +59,11 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun hasValue(): Boolean {
-        return "x-cloak" != name
+        return "x-cloak" != name && "x-ignore" != name
+    }
+
+    fun canBePrefix(): Boolean {
+        return "x-bind" == name || "x-transition" == name || "x-on" == name
     }
 
     @Suppress("ReturnCount")

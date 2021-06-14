@@ -8,10 +8,12 @@
 
 - Added support for PHP and Blade fragments inside of Alpine directives
 - Added Alpine gutter icon for easier identification of lines that have Alpine directives
+- Added support for Alpine v3 directives and magics
+- Added better support for modifiers like `@click.prevent`
 
 ### Changed
 
-- Updated auto-complete to only trigger after `x-bind:` or `x-on:`
+- Improved auto-complete logic
 
 ### Deprecated
 
