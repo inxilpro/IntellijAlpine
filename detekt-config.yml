@@ -12,6 +12,8 @@ formatting:
     active: false
   NoTrailingSpaces:
     active: false
+  StringTemplate:
+    active: false
 
 complexity:
   NestedBlockDepth:

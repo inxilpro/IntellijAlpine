@@ -16,7 +16,8 @@ import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private companion object {
-        val coreMagics = """
+        val coreMagics =
+            """
                 /** @type {HTMLElement} */
                 let ${'$'}el;
 
@@ -59,8 +60,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                  * @template ValueForQueryString
                  */
                 function ${'$'}queryString(value) {}
-                
-                
+                                
+                                
             """.trimIndent()
 
         val eventMagics = "/** @type {Event} */\nlet ${'$'}event;\n\n"
@@ -79,7 +80,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
         var (prefix, suffix) = getPrefixAndSuffix(attributeName, host)
 
-        registrar.startInjecting(JavascriptLanguage.INSTANCE);
+        registrar.startInjecting(JavascriptLanguage.INSTANCE)
 
         ranges.forEachIndexed { index, range ->
             if (index == ranges.lastIndex) {
@@ -168,7 +169,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun shouldInjectJavaScript(name: String): Boolean {
-        return !name.startsWith("x-transition:")
+        return !name.startsWith("x-transition:") && "x-ref" != name
     }
 
     private fun getPrefixAndSuffix(directive: String, host: PsiElement): Pair<String, String> {
@@ -204,12 +205,12 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         if (dataParent is HtmlTag) {
             val data = dataParent.getAttribute("x-data")?.value
             if (null != data) {
-                val (prefix, suffix) = context;
-                context.left = "with ($data) {\n${prefix}"
+                val (prefix, suffix) = context
+                context.left = "with ($data) {\n$prefix"
                 context.right = "$suffix\n}"
             }
         }
 
-        return context;
+        return context
     }
 }

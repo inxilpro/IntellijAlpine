@@ -28,7 +28,9 @@ object AttributeUtil {
         "x-bind",
         "x-transition",
         "x-spread",
-        "x-cloak"
+        "x-cloak",
+        "x-effect",
+        "x-ignore"
     )
 
     val eventPrefixes = arrayOf(
@@ -81,7 +83,22 @@ object AttributeUtil {
         "origin",
     )
 
-    // FIXME: scale.10 and origin.top.right
+    val keypressModifiers = arrayOf(
+        "shift",
+        "enter",
+        "space",
+        "ctrl",
+        "cmd",
+        "meta",
+        "alt",
+        "up",
+        "down",
+        "left",
+        "right",
+        "esc",
+        "tab",
+        "caps-lock",
+    )
 
     fun isXmlPrefix(prefix: String): Boolean {
         return xmlPrefixes.contains(prefix)

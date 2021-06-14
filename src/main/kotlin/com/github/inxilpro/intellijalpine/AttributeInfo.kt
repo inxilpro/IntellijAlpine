@@ -59,7 +59,7 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun hasValue(): Boolean {
-        return "x-cloak" != name
+        return "x-cloak" != name && "x-ignore" != name
     }
 
     fun canBePrefix(): Boolean {

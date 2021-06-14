@@ -15,7 +15,7 @@
 ## Plugin Description
 
 <!-- Plugin description -->
-![intellij-alpine](https://user-images.githubusercontent.com/21592/97035246-0b7a9e00-1534-11eb-9722-2492f380eca3.gif)
+![intellij-alpine](https://user-images.githubusercontent.com/21592/121929093-d7e0c400-cd0e-11eb-8ff3-d52db5831a55.gif)
 
 This plugin adds support for the following [Alpine.js](https://github.com/alpinejs/alpine) features:
 
