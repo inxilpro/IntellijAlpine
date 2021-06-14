@@ -38,13 +38,21 @@ class AlpineAttributeCompletionProvider(vararg items: String) : CompletionProvid
         val suggestions = AutoCompleteSuggestions(xmlTag, partialAttribute)
 
         suggestions.descriptors.forEach {
+            var text = it.attribute
+
+            // If you go back and add a modifier, it ignores the prefix, so we'll
+            // just kinda code around that for now
+            if (text.contains(':') && text.contains('.')) {
+                text = text.substringAfter(':')
+            }
+
             var elementBuilder = LookupElementBuilder
-                .create(it.attribute)
+                .create(text)
                 .withCaseSensitivity(false)
                 .withIcon(Alpine.ICON)
                 .withTypeText(it.typeText)
 
-            if (it.hasValue()) {
+            if (it.hasValue() && !it.canBePrefix()) {
                 elementBuilder = elementBuilder.withInsertHandler(XmlAttributeInsertHandler.INSTANCE)
             }
 

@@ -14,7 +14,7 @@ import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import org.apache.commons.lang3.tuple.MutablePair
 
-class Injector : MultiHostInjector {
+class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private companion object {
         val coreMagics = """
                 /** @type {HTMLElement} */

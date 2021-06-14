@@ -25,12 +25,8 @@ object AttributeUtil {
         "x-ref",
         "x-if",
         "x-for",
-        "x-transition:enter",
-        "x-transition:enter-start",
-        "x-transition:enter-end",
-        "x-transition:leave",
-        "x-transition:leave-start",
-        "x-transition:leave-end",
+        "x-bind",
+        "x-transition",
         "x-spread",
         "x-cloak"
     )
@@ -71,6 +67,10 @@ object AttributeUtil {
         "throttle",
         "duration",
         "delay",
+    )
+
+    val numericModifiers = arrayOf(
+        "scale",
     )
 
     val transitionModifiers = arrayOf(

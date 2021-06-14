@@ -16,6 +16,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         addDirectives()
         addPrefixes()
         addDerivedAttributes()
+        addTransitions()
     }
 
     private fun addDirectives() {
@@ -24,20 +25,16 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
                 continue
             }
 
-            if (!directive.contains(partialAttribute)) {
-                continue
-            }
-
             descriptors.add(AttributeInfo(directive))
+
+            if ("x-model" == directive) {
+                addModifiers(directive, AttributeUtil.modelModifiers)
+            }
         }
     }
 
     private fun addPrefixes() {
         for (prefix in AttributeUtil.xmlPrefixes) {
-            if (!prefix.contains(partialAttribute)) {
-                continue
-            }
-
             descriptors.add(AttributeInfo(prefix))
         }
     }
@@ -48,10 +45,6 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         }
 
         for (descriptor in getDefaultHtmlAttributes(htmlTag)) {
-            if (!partialMatches(descriptor.name)) {
-                continue
-            }
-
             if (descriptor.name.startsWith("on")) {
                 addEvent(descriptor)
             } else {
@@ -60,31 +53,86 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         }
     }
 
+    private fun addTransitions() {
+        val stages: Array<String> = arrayOf(
+            "enter",
+            "enter-start",
+            "enter-end",
+            "leave",
+            "leave-start",
+            "leave-end",
+        )
+
+        addModifiers("x-transition", AttributeUtil.transitionModifiers)
+
+        for (stage in stages) {
+            descriptors.add(AttributeInfo("x-transition:$stage"))
+            addModifiers("x-transition:$stage", AttributeUtil.transitionModifiers)
+        }
+    }
+
     private fun addEvent(descriptor: XmlAttributeDescriptor) {
         val event = descriptor.name.substring(2)
         for (prefix in AttributeUtil.eventPrefixes) {
-            if (!prefix.contains(partialAttribute) && !partialAttribute.contains(prefix)) {
-                continue
-            }
-
             descriptors.add(AttributeInfo(prefix + event))
 
-//            if (prefixMatchesAttributeSegment(prefix, '.')) {
-//                for (modifier in AttributeUtil.eventModifiers) {
-//                    println("$partialAttribute -> '$prefix$event.$modifier'")
-//                    descriptors.add(AttributeInfo("${prefix}${event}.${modifier}"))
-//                }
-//            }
+            addModifiers("$prefix$event", AttributeUtil.eventModifiers)
         }
     }
 
     private fun addBoundAttribute(descriptor: XmlAttributeDescriptor) {
         for (prefix in AttributeUtil.bindPrefixes) {
-            if (!prefix.contains(partialAttribute) && !partialAttribute.contains(prefix)) {
-                continue
-            }
-
             descriptors.add(AttributeInfo(prefix + descriptor.name))
+        }
+    }
+
+    private fun addModifiers(modifiableDirective: String, modifiers: Array<String>) {
+        if (!partialAttribute.startsWith(modifiableDirective)) {
+            return
+        }
+
+        var withExistingModifiers = partialAttribute
+
+        if (partialAttribute.contains('.')) {
+            withExistingModifiers = partialAttribute.substringBeforeLast('.')
+        }
+
+        for (modifier in modifiers) {
+            if (!partialAttribute.contains(".$modifier")) {
+                descriptors.add(AttributeInfo("$withExistingModifiers.$modifier"))
+            }
+        }
+
+        val timeLimits = arrayOf(
+            "75ms",
+            "100ms",
+            "150ms",
+            "200ms",
+            "300ms",
+            "500ms",
+            "700ms",
+            "1000ms",
+        )
+        for (timeUnitModifier in AttributeUtil.timeUnitModifiers) {
+            if (withExistingModifiers.endsWith(".$timeUnitModifier")) {
+                for (timeLimit in timeLimits) {
+                    descriptors.add(AttributeInfo("$withExistingModifiers.$timeLimit"))
+                }
+            }
+        }
+
+        val numbers = arrayOf("10", "20", "30", "40", "50", "60", "70", "80", "90")
+        if (withExistingModifiers.endsWith(".scale")) {
+            for (number in numbers) {
+                descriptors.add(AttributeInfo("$withExistingModifiers.$number"))
+            }
+        }
+
+        val origins = arrayOf("top", "bottom", "left", "right")
+        if (withExistingModifiers.endsWith(".origin")) {
+            for (origin in origins) {
+                descriptors.add(AttributeInfo("$withExistingModifiers.$origin"))
+            }
         }
     }
 
@@ -93,29 +141,5 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         val descriptor = tagDescriptor ?: HtmlNSDescriptorImpl.guessTagForCommonAttributes(htmlTag)
 
         return (descriptor as? HtmlElementDescriptorImpl)?.getDefaultAttributeDescriptors(htmlTag) ?: emptyArray()
-    }
-
-    private fun partialMatches(target: String): Boolean {
-        val withoutModifier = partialAttribute.substringBefore(".")
-        // val prefix = withoutModifier.substringBefore(":")
-        val afterPrefix = withoutModifier.substringAfter(":")
-
-        if (afterPrefix.isEmpty()) {
-            return false
-        }
-
-        return target.contains(afterPrefix) || afterPrefix.contains(target)
-    }
-
-    private fun prefixMatchesAttributeSegment(attribute: String, segmentSeparator: Char): Boolean {
-        if (!attribute.contains(segmentSeparator)) {
-            return true
-        }
-
-        if (!partialAttribute.contains(segmentSeparator)) {
-            return false
-        }
-
-        return attribute.startsWith(partialAttribute, true)
     }
 }

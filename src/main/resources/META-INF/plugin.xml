@@ -16,7 +16,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- com.jetbrains.php.blade.psi.BladePsiLanguageInjectionHost -->
-        <multiHostInjector implementation="com.github.inxilpro.intellijalpine.Injector"/>
+        <multiHostInjector implementation="com.github.inxilpro.intellijalpine.AlpineJavaScriptAttributeValueInjector"/>
         <xml.attributeDescriptorsProvider implementation="com.github.inxilpro.intellijalpine.AttributesProvider"/>
         <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.XmlExtension"/>
         <typedHandler implementation="com.github.inxilpro.intellijalpine.AutoPopupHandler"/>

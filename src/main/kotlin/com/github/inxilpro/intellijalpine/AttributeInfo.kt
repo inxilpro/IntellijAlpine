@@ -62,6 +62,10 @@ class AttributeInfo(val attribute: String) {
         return "x-cloak" != name
     }
 
+    fun canBePrefix(): Boolean {
+        return "x-bind" == name || "x-transition" == name || "x-on" == name
+    }
+
     @Suppress("ReturnCount")
     private fun extractPrefix(): String {
         for (eventPrefix in AttributeUtil.eventPrefixes) {
