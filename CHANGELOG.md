@@ -5,7 +5,12 @@
 ## [Unreleased]
 ### Added
 
+- Added support for `x-intersect`
+
 ### Changed
+
+- Improved `$persist()` behavior
+- Improved autocomplete in `x-data` and `x-init`
 
 ### Deprecated
 

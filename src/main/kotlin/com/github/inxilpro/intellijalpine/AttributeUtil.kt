@@ -30,7 +30,8 @@ object AttributeUtil {
         "x-spread",
         "x-cloak",
         "x-effect",
-        "x-ignore"
+        "x-ignore",
+        "x-intersect"
     )
 
     val eventPrefixes = arrayOf(
@@ -98,6 +99,10 @@ object AttributeUtil {
         "esc",
         "tab",
         "caps-lock",
+    )
+
+    val intersectModifiers = arrayOf(
+        "once"
     )
 
     fun isXmlPrefix(prefix: String): Boolean {

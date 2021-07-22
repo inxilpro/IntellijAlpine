@@ -16,6 +16,24 @@ import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private companion object {
+        val globalMagics =
+            """
+                /**
+                 * @param {*<ValueToPersist>} value
+                 * @return {ValueToPersist}
+                 * @template ValueToPersist
+                 */
+                function ${'$'}persist(value) {}
+                
+                /**
+                 * @param {*<ValueForQueryString>} value
+                 * @return {ValueForQueryString}
+                 * @template ValueForQueryString
+                 */
+                function ${'$'}queryString(value) {}
+                       
+            """.trimIndent()
+
         val coreMagics =
             """
                 /** @type {HTMLElement} */
@@ -46,28 +64,16 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                  * @return void
                  */
                 function ${'$'}watch(property, callback) {}
-                
-                /**
-                 * @param {*<ValueToPersist>} value
-                 * @return {ValueToPersist}
-                 * @template ValueToPersist
-                 */
-                function ${'$'}persist(value) {}
-                
-                /**
-                 * @param {*<ValueForQueryString>} value
-                 * @return {ValueForQueryString}
-                 * @template ValueForQueryString
-                 */
-                function ${'$'}queryString(value) {}
-                                
-                                
+                                                
             """.trimIndent()
 
         val eventMagics = "/** @type {Event} */\nlet ${'$'}event;\n\n"
     }
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
+        if (host !is XmlAttributeValue) {
+            return
+        }
         if (!isValidInjectionTarget(host)) {
             return
         }
@@ -102,7 +108,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         return listOf(XmlAttributeValue::class.java)
     }
 
-    private fun getJavaScriptRanges(host: PsiElement, content: String): List<TextRange> {
+    private fun getJavaScriptRanges(host: XmlAttributeValue, content: String): List<TextRange> {
         val valueRange = ElementManipulators.getValueTextRange(host)
 
         if (host.containingFile.viewProvider.languages.filter { "PHP" == it.id || "Blade" == it.id }.isEmpty()) {
@@ -123,11 +129,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         return ranges.toList()
     }
 
-    private fun isValidInjectionTarget(host: PsiElement): Boolean {
-        if (host !is XmlAttributeValue) {
-            return false
-        }
-
+    private fun isValidInjectionTarget(host: XmlAttributeValue): Boolean {
         // Make sure that we have an XML attribute as a parent
         val attribute = host.parent as? XmlAttribute ?: return false
 
@@ -172,8 +174,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         return !name.startsWith("x-transition:") && "x-ref" != name
     }
 
-    private fun getPrefixAndSuffix(directive: String, host: PsiElement): Pair<String, String> {
-        val context = MutablePair("", "")
+    private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
+        val context = MutablePair(globalMagics, "")
 
         if ("x-data" != directive) {
             context.left = coreMagics + context.left
@@ -188,19 +190,31 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         } else if ("x-for" == directive) {
             context.left += "for (let "
             context.right += ") {}\n"
+        } else if ("x-init" == directive) {
+            // We want x-init to skip the directive wrapping
         } else {
             context.left += "__ALPINE_DIRECTIVE("
             context.right += ")"
         }
 
-        addWithData(host, context)
+        addWithData(host, directive, context)
 
         return context.toPair()
     }
 
-    private fun addWithData(host: PsiElement, context: MutablePair<String, String>): MutablePair<String, String> {
-        // First we'll add the Alpine x-data context if we can
-        val dataParent = PsiTreeUtil.findFirstParent(host) { it is HtmlTag && it.getAttribute("x-data") != null }
+    private fun addWithData(host: XmlAttributeValue, directive: String, context: MutablePair<String, String>) {
+        var dataParent: HtmlTag?
+
+        if ("x-data" == directive) {
+            val parentTag = PsiTreeUtil.findFirstParent(host) { it is HtmlTag } ?: return
+            dataParent = PsiTreeUtil.findFirstParent(parentTag) {
+                it != parentTag && it is HtmlTag && it.getAttribute("x-data") != null
+            } as HtmlTag?
+        } else {
+            dataParent = PsiTreeUtil.findFirstParent(host) {
+                it is HtmlTag && it.getAttribute("x-data") != null
+            } as HtmlTag?
+        }
 
         if (dataParent is HtmlTag) {
             val data = dataParent.getAttribute("x-data")?.value
@@ -210,7 +224,5 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                 context.right = "$suffix\n}"
             }
         }
-
-        return context
     }
 }

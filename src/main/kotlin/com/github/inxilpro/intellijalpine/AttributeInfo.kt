@@ -22,7 +22,8 @@ class AttributeInfo(val attribute: String) {
         "x-spread" to "Bind reusable directives",
         "x-cloak" to "Hide while Alpine is initializing",
         "x-on" to "Add listener",
-        "x-bind" to "Bind an attribute"
+        "x-bind" to "Bind an attribute",
+        "x-intersect" to "Bind an intersection observer"
     )
 
     val name: String
