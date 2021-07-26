@@ -5,6 +5,18 @@
 ## [Unreleased]
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+## [0.4.1]
+### Added
+
 - Added support for `x-intersect`
 
 ### Changed
