@@ -5,7 +5,6 @@ import com.intellij.util.ui.FormBuilder
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-
 class AlpineSettingsComponent {
     val panel: JPanel
 
