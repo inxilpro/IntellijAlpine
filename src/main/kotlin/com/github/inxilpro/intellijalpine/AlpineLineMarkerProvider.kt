@@ -18,6 +18,8 @@ class AlpineLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>?>
     ) {
+        if (!AlpineSettingsState.instance.showGutterIcons) return
+
         if (element is XmlAttribute && element.descriptor is AlpineAttributeDescriptor) {
 
             val token = PsiTreeUtil.getChildOfType(element, XmlTokenImpl::class.java) ?: return

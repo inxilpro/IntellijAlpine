@@ -5,6 +5,9 @@
 ## [Unreleased]
 ### Added
 
+- Added support for Blade directives like `@entangle()` inside Alpine directives
+- Added option to disable gutter icons
+
 ### Changed
 
 ### Deprecated
@@ -12,6 +15,9 @@
 ### Removed
 
 ### Fixed
+
+- Addressed some issues where certain characters couldn't appear at the beginning or end of certain directives
+- Fixed issue where Markdown plugin was interfering with Alpine gutter icon
 
 ### Security
 ## [0.4.1]

@@ -25,5 +25,9 @@
                                 id="AlpineCompletionContributor"/>
         <codeInsight.lineMarkerProvider language="HTML"
                 implementationClass="com.github.inxilpro.intellijalpine.AlpineLineMarkerProvider" />
+        <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.AlpineSettingsState"/>
+        <applicationConfigurable parentId="Settings.JavaScript" instance="com.github.inxilpro.intellijalpine.AlpineSettingsConfigurable"
+                                 id="com.github.inxilpro.intellijalpine.AlpineSettingsConfigurable"
+                                 displayName="Alpine.js" />
     </extensions>
 </idea-plugin>

@@ -115,7 +115,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             return listOf(valueRange)
         }
 
-        val phpMatcher = Regex("(?:(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>)")
+        val phpMatcher = Regex("(?:(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?)")
         val ranges = mutableListOf<TextRange>()
 
         var offset = valueRange.startOffset
@@ -193,8 +193,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         } else if ("x-init" == directive) {
             // We want x-init to skip the directive wrapping
         } else {
-            context.left += "__ALPINE_DIRECTIVE("
-            context.right += ")"
+            context.left += "__ALPINE_DIRECTIVE(\n"
+            context.right += "\n)"
         }
 
         addWithData(host, directive, context)
