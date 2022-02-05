@@ -135,12 +135,13 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
         // Make sure we have an HTML tag (and not a Blade <x- tag)
         val tag = attribute.parent as? HtmlTag ?: return false
-        if (!isValidHtmlTag(tag)) {
+        val attributeName = attribute.name
+
+        if (isBladeComponentBindAttribute(tag, attributeName)) {
             return false
         }
 
         // Make sure we have an attribute that looks like it's Alpine
-        val attributeName = attribute.name
         if (!isAlpineAttributeName(attributeName)) {
             return false
         }
@@ -162,8 +163,10 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         return attribute.descriptor is HtmlAttributeDescriptorImpl || attribute.descriptor is AlpineAttributeDescriptor
     }
 
-    private fun isValidHtmlTag(tag: HtmlTag): Boolean {
-        return !tag.name.startsWith("x-")
+    private fun isBladeComponentBindAttribute(tag: HtmlTag, name: String): Boolean {
+        return AttributeUtil.isBladeComponentTag(tag)
+                && name.startsWith(":")
+                && !name.startsWith("::")
     }
 
     private fun isAlpineAttributeName(name: String): Boolean {

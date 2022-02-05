@@ -44,7 +44,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
     }
 
     private fun addDerivedAttributes() {
-        if (!AttributeUtil.isEvent(partialAttribute) && !AttributeUtil.isBound(partialAttribute)) {
+        if (!AttributeUtil.isEvent(partialAttribute) && !AttributeUtil.isBound(partialAttribute, htmlTag)) {
             return
         }
 
@@ -89,7 +89,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
     }
 
     private fun addBoundAttribute(descriptor: XmlAttributeDescriptor) {
-        for (prefix in AttributeUtil.bindPrefixes) {
+        for (prefix in AttributeUtil.getBindPrefixes(htmlTag)) {
             descriptors.add(AttributeInfo(prefix + descriptor.name))
         }
     }

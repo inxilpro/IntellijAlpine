@@ -109,8 +109,19 @@ object AttributeUtil {
         return xmlPrefixes.contains(prefix)
     }
 
+    fun isBladeComponentTag(htmlTag: HtmlTag): Boolean {
+        return htmlTag.name.startsWith("x-")
+    }
+
     fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
         return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
+    }
+
+    fun getBindPrefixes(htmlTag: HtmlTag): Array<String> {
+        if(isBladeComponentTag(htmlTag)) {
+            return arrayOf("::", "x-bind:");
+        }
+        return bindPrefixes;
     }
 
     fun isEvent(attribute: String): Boolean {
@@ -123,8 +134,8 @@ object AttributeUtil {
         return false
     }
 
-    fun isBound(attribute: String): Boolean {
-        for (prefix in bindPrefixes) {
+    fun isBound(attribute: String, htmlTag: HtmlTag): Boolean {
+        for (prefix in getBindPrefixes(htmlTag)) {
             if (attribute.startsWith(prefix)) {
                 return true
             }
@@ -151,7 +162,7 @@ object AttributeUtil {
                     descriptors.add(AttributeInfo(prefix + event))
                 }
             } else {
-                for (prefix in bindPrefixes) {
+                for (prefix in getBindPrefixes(htmlTag)) {
                     descriptors.add(AttributeInfo(prefix + descriptor.name))
                 }
             }
