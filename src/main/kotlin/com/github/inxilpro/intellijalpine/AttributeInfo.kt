@@ -7,10 +7,12 @@ class AttributeInfo(val attribute: String) {
         "x-init" to "Run on initialization",
         "x-show" to "Toggles 'display: none'",
         "x-model" to "Add two-way binding",
+        "x-modelable" to "Expose x-model target",
         "x-text" to "Bind to element's inner text",
         "x-html" to "Bind to element's inner HTML",
         "x-ref" to "Create a reference for later use",
         "x-if" to "Conditionally render template",
+        "x-id" to "Register \$id() scope",
         "x-for" to "Map array to DOM nodes",
         "x-transition" to "Add transition classes",
         "x-transition:enter" to "Transition classes used during the entire entering phase",
@@ -19,11 +21,17 @@ class AttributeInfo(val attribute: String) {
         "x-transition:leave" to "Transition classes used during the entire leaving phase",
         "x-transition:leave-start" to "Transition classes for start of leaving phase",
         "x-transition:leave-end" to "Transition classes for end of leaving phase",
+        "x-effect" to "Add reactive effect",
+        "x-ignore" to "Ignore DOM node in Alpine.js",
         "x-spread" to "Bind reusable directives",
         "x-cloak" to "Hide while Alpine is initializing",
+        "x-teleport" to "Teleport template to another DOM node",
         "x-on" to "Add listener",
         "x-bind" to "Bind an attribute",
-        "x-intersect" to "Bind an intersection observer"
+        "x-mask" to "Set input mask",
+        "x-intersect" to "Bind an intersection observer",
+        "x-trap" to "Add focus trap",
+        "x-collapse" to "Collapse element when hidden",
     )
 
     val name: String

@@ -21,7 +21,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
 
     private fun addDirectives() {
         for (directive in AttributeUtil.directives) {
-            if (tagName != "template" && (directive == "x-if" || directive == "x-for")) {
+            if (tagName != "template" && (directive == "x-if" || directive == "x-for" || directive == "x-teleport")) {
                 continue
             }
 

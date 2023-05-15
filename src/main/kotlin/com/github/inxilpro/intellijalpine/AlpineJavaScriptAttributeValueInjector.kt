@@ -16,6 +16,16 @@ import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private companion object {
+        val globalState =
+            """
+                /** @type {Object.<string, HTMLElement>} */
+                let ${'$'}refs;
+                
+                /** @type {Object.<string, *>} */
+                let ${'$'}store;
+                
+            """.trimIndent()
+
         val globalMagics =
             """
                 /**
@@ -31,19 +41,16 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                  * @template ValueForQueryString
                  */
                 function ${'$'}queryString(value) {}
-                       
+                
             """.trimIndent()
 
         val coreMagics =
             """
                 /** @type {HTMLElement} */
                 let ${'$'}el;
-
-                /** @type {Object} */
-                let ${'$'}refs;
                 
-                /** @type {Object} */
-                let ${'$'}store;
+                /** @type {HTMLElement} */
+                let ${'$'}root;
 
                 /**
                  * @param {string} event
@@ -64,7 +71,13 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                  * @return void
                  */
                 function ${'$'}watch(property, callback) {}
-                                                
+                
+                /**
+                 * @param {string} scope
+                 * @return string
+                 */
+                function ${'$'}id(scope) {}
+                
             """.trimIndent()
 
         val eventMagics = "/** @type {Event} */\nlet ${'$'}event;\n\n"
@@ -171,7 +184,9 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun shouldInjectJavaScript(name: String): Boolean {
-        return !name.startsWith("x-transition:") && "x-ref" != name
+        return !name.startsWith("x-transition:")
+            && "x-mask" != name
+            && "x-modelable" != name
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
@@ -189,7 +204,13 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             context.left += eventMagics
         } else if ("x-for" == directive) {
             context.left += "for (let "
-            context.right += ") {}\n"
+            context.right += ") {}"
+        } else if ("x-ref" == directive) {
+            context.left += "\$refs."
+            context.right += "= \$el"
+        } else if ("x-teleport" == directive) {
+            context.left += "{ /** @var {HTMLElement} teleport */let teleport = "
+            context.right += " }"
         } else if ("x-init" == directive) {
             // We want x-init to skip the directive wrapping
         } else {
@@ -220,8 +241,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             val data = dataParent.getAttribute("x-data")?.value
             if (null != data) {
                 val (prefix, suffix) = context
-                context.left = "with ($data) {\n$prefix"
-                context.right = "$suffix\n}"
+                context.left = "$globalState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
+                context.right = "$suffix\n\n}"
             }
         }
     }

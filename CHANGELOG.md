@@ -5,6 +5,15 @@
 ## [Unreleased]
 ### Added
 
+- Added better type support for `$refs`
+- Added support for `x-id` and `$id()` 
+- Added support for `x-mask`
+- Added support for `x-modelable`
+- Added support for `x-teleport`
+- Added support for `x-trap`
+- Added support for `x-collapse`
+- Added new help text for `x-` attributes
+
 ### Changed
 
 ### Deprecated

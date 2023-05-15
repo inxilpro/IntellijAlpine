@@ -19,19 +19,25 @@ object AttributeUtil {
         "x-data",
         "x-init",
         "x-show",
-        "x-model",
+        "x-bind",
         "x-text",
         "x-html",
-        "x-ref",
-        "x-if",
+        "x-model",
+        "x-modelable",
         "x-for",
-        "x-bind",
         "x-transition",
-        "x-spread",
-        "x-cloak",
         "x-effect",
         "x-ignore",
-        "x-intersect"
+        "x-ref",
+        "x-cloak",
+        "x-teleport",
+        "x-if",
+        "x-id",
+        "x-mask",
+        "x-intersect",
+        "x-trap",
+        "x-collapse",
+        "x-spread", // deprecated
     )
 
     val eventPrefixes = arrayOf(
@@ -137,7 +143,7 @@ object AttributeUtil {
         val descriptors = mutableListOf<AttributeInfo>()
 
         for (directive in directives) {
-            if (htmlTag.name != "template" && (directive == "x-if" || directive == "x-for")) {
+            if (htmlTag.name != "template" && (directive == "x-if" || directive == "x-for" || directive == "x-teleport")) {
                 continue
             }
 
