@@ -40,6 +40,12 @@ object AttributeUtil {
         "x-spread", // deprecated
     )
 
+    val templateDirectives = arrayOf(
+        "x-if",
+        "x-for",
+        "x-teleport",
+    )
+
     val eventPrefixes = arrayOf(
         "@",
         "x-on:"
@@ -115,6 +121,10 @@ object AttributeUtil {
         return xmlPrefixes.contains(prefix)
     }
 
+    fun isTemplateDirective(directive: String): Boolean {
+        return templateDirectives.contains(directive)
+    }
+
     fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
         return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
     }
@@ -143,7 +153,7 @@ object AttributeUtil {
         val descriptors = mutableListOf<AttributeInfo>()
 
         for (directive in directives) {
-            if (htmlTag.name != "template" && (directive == "x-if" || directive == "x-for" || directive == "x-teleport")) {
+            if (htmlTag.name != "template" && isTemplateDirective(directive)) {
                 continue
             }
 

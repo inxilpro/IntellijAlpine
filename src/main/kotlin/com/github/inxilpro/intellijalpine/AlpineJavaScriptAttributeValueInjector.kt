@@ -184,9 +184,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun shouldInjectJavaScript(name: String): Boolean {
-        return !name.startsWith("x-transition:")
-            && "x-mask" != name
-            && "x-modelable" != name
+        return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {

@@ -1,5 +1,6 @@
 package com.github.inxilpro.intellijalpine
 
+import com.github.inxilpro.intellijalpine.AttributeUtil.isTemplateDirective
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
@@ -21,7 +22,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
 
     private fun addDirectives() {
         for (directive in AttributeUtil.directives) {
-            if (tagName != "template" && (directive == "x-if" || directive == "x-for" || directive == "x-teleport")) {
+            if (tagName != "template" && isTemplateDirective(directive)) {
                 continue
             }
 
