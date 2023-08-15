@@ -32,6 +32,9 @@ class AttributeInfo(val attribute: String) {
         "x-intersect" to "Bind an intersection observer",
         "x-trap" to "Add focus trap",
         "x-collapse" to "Collapse element when hidden",
+        "x-wizard:step" to "Add wizard step",
+        "x-wizard:if" to "Add wizard condition",
+        "x-wizard:title" to "Add title to wizard step",
     )
 
     val name: String
@@ -48,7 +51,7 @@ class AttributeInfo(val attribute: String) {
 
     @Suppress("ComplexCondition")
     fun isAlpine(): Boolean {
-        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective()
+        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective() || this.isWizard()
     }
 
     fun isEvent(): Boolean {
@@ -67,12 +70,16 @@ class AttributeInfo(val attribute: String) {
         return AttributeUtil.directives.contains(name)
     }
 
+    fun isWizard(): Boolean {
+        return "x-wizard:" == prefix
+    }
+
     fun hasValue(): Boolean {
         return "x-cloak" != name && "x-ignore" != name
     }
 
     fun canBePrefix(): Boolean {
-        return "x-bind" == name || "x-transition" == name || "x-on" == name
+        return "x-bind" == name || "x-transition" == name || "x-on" == name || "x-wizard" == name
     }
 
     @Suppress("ReturnCount")
@@ -93,6 +100,10 @@ class AttributeInfo(val attribute: String) {
             return "x-transition:"
         }
 
+        if (attribute.startsWith("x-wizard:")) {
+            return "x-wizard:"
+        }
+
         return ""
     }
 
@@ -110,6 +121,6 @@ class AttributeInfo(val attribute: String) {
             return "CSS classes for '$name' transition phase"
         }
 
-        return typeTexts.getOrDefault(name, "Alpine.js")
+        return typeTexts.getOrDefault(attribute, "Alpine.js")
     }
 }

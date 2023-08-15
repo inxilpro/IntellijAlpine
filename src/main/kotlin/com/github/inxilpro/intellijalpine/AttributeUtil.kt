@@ -12,7 +12,8 @@ object AttributeUtil {
     val xmlPrefixes = arrayOf(
         "x-on",
         "x-bind",
-        "x-transition"
+        "x-transition",
+        "x-wizard", // glhd/alpine-wizard pacakge
     )
 
     val directives = arrayOf(

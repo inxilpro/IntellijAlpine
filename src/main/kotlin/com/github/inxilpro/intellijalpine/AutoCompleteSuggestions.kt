@@ -18,6 +18,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         addPrefixes()
         addDerivedAttributes()
         addTransitions()
+        addWizard()
     }
 
     private fun addDirectives() {
@@ -74,6 +75,14 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
             descriptors.add(AttributeInfo("x-transition:$stage"))
             addModifiers("x-transition:$stage", AttributeUtil.transitionModifiers)
         }
+    }
+
+    private fun addWizard() {
+        descriptors.add(AttributeInfo("x-wizard:step"))
+        addModifiers("x-wizard:step", arrayOf("rules"))
+
+        descriptors.add(AttributeInfo("x-wizard:if"))
+        descriptors.add(AttributeInfo("x-wizard:title"))
     }
 
     private fun addEvent(descriptor: XmlAttributeDescriptor) {
