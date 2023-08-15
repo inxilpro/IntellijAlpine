@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Added
+- Added support for IntelliJ platform version 2023.2
+
 ## [0.5.0] - 2023-05-31
 
 ### Added
