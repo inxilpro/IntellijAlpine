@@ -8,16 +8,19 @@ import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.html.HtmlTag
-import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
+import com.intellij.psi.xml.XmlTag
+import com.intellij.refactoring.suggested.startOffset
 import org.apache.commons.lang3.tuple.MutablePair
+import org.apache.html.dom.HTMLDocumentImpl
+import java.util.*
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private companion object {
         val globalState =
-            """
+                """
                 /** @type {Object.<string, HTMLElement>} */
                 let ${'$'}refs;
                 
@@ -27,7 +30,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val alpineWizardState =
-            """
+                """
                 class AlpineWizardStep {
                 	/** @type {HTMLElement} */ el;
                 	/** @type {string} */ title;
@@ -71,7 +74,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val globalMagics =
-            """
+                """
                 /**
                  * @param {*<ValueToPersist>} value
                  * @return {ValueToPersist}
@@ -89,11 +92,11 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val coreMagics =
-            """
-                /** @type {HTMLElement} */
+                """
+                /** @type {elType} */
                 let ${'$'}el;
                 
-                /** @type {HTMLElement} */
+                /** @type {rootType} */
                 let ${'$'}root;
 
                 /**
@@ -124,14 +127,14 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                 
             """.trimIndent()
 
-        val eventMagics = "/** @type {Event} */\nlet ${'$'}event;\n\n"
+        val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
     }
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
         if (host !is XmlAttributeValue) {
             return
         }
-        if (!isValidInjectionTarget(host)) {
+        if (!AttributeUtil.isValidInjectionTarget(host)) {
             return
         }
 
@@ -186,56 +189,11 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         return ranges.toList()
     }
 
-    private fun isValidInjectionTarget(host: XmlAttributeValue): Boolean {
-        // Make sure that we have an XML attribute as a parent
-        val attribute = host.parent as? XmlAttribute ?: return false
-
-        // Make sure we have an HTML tag (and not a Blade <x- tag)
-        val tag = attribute.parent as? HtmlTag ?: return false
-        if (!isValidHtmlTag(tag)) {
-            return false
-        }
-
-        // Make sure we have an attribute that looks like it's Alpine
-        val attributeName = attribute.name
-        if (!isAlpineAttributeName(attributeName)) {
-            return false
-        }
-
-        // Make sure it's a valid Attribute to operate on
-        if (!isValidAttribute(attribute)) {
-            return false
-        }
-
-        // Make sure it's an attribute that is parsed as JavaScript
-        if (!shouldInjectJavaScript(attributeName)) {
-            return false
-        }
-
-        return true
-    }
-
-    private fun isValidAttribute(attribute: XmlAttribute): Boolean {
-        return attribute.descriptor is HtmlAttributeDescriptorImpl || attribute.descriptor is AlpineAttributeDescriptor
-    }
-
-    private fun isValidHtmlTag(tag: HtmlTag): Boolean {
-        return !tag.name.startsWith("x-")
-    }
-
-    private fun isAlpineAttributeName(name: String): Boolean {
-        return name.startsWith("x-") || name.startsWith("@") || name.startsWith(':')
-    }
-
-    private fun shouldInjectJavaScript(name: String): Boolean {
-        return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name
-    }
-
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
         val context = MutablePair(globalMagics, "")
 
         if ("x-data" != directive) {
-            context.left = coreMagics + context.left
+            context.left = addTypingToCoreMagics(host) + context.left
         }
 
         if ("x-spread" == directive) {
@@ -243,7 +201,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         }
 
         if (AttributeUtil.isEvent(directive)) {
-            context.left += eventMagics
+            context.left += addTypingToEventMagics(directive, host)
         } else if ("x-for" == directive) {
             context.left += "for (let "
             context.right += ") {}"
@@ -260,32 +218,68 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             context.right += "\n)"
         }
 
-        addWithData(host, directive, context)
+        addWithData(host, context)
 
         return context.toPair()
     }
 
-    private fun addWithData(host: XmlAttributeValue, directive: String, context: MutablePair<String, String>) {
-        var dataParent: HtmlTag?
+    private fun addWithData(host: XmlAttributeValue, context: MutablePair<String, String>) {
+        val dataParents = LinkedList<XmlAttribute>()
+        val attribute = host.parent as XmlAttribute
 
-        if ("x-data" == directive) {
-            val parentTag = PsiTreeUtil.findFirstParent(host) { it is HtmlTag } ?: return
-            dataParent = PsiTreeUtil.findFirstParent(parentTag) {
-                it != parentTag && it is HtmlTag && it.getAttribute("x-data") != null
-            } as HtmlTag?
-        } else {
-            dataParent = PsiTreeUtil.findFirstParent(host) {
-                it is HtmlTag && it.getAttribute("x-data") != null
-            } as HtmlTag?
-        }
-
-        if (dataParent is HtmlTag) {
-            val data = dataParent.getAttribute("x-data")?.value
-            if (null != data) {
-                val (prefix, suffix) = context
-                context.left = "$globalState\n$alpineWizardState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
-                context.right = "$suffix\n\n}"
+        var parent = attribute.parent as HtmlTag?
+        do {
+            parent?.getAttribute("x-data")?.let {
+                if (it.value != null) dataParents.addFirst(it)
             }
+
+            parent = parent?.parentTag as HtmlTag?
+        } while (parent != null)
+
+        if (dataParents.isNotEmpty()) {
+            val data = dataParents.joinToString(", ") { data -> "...{${data.value?.removeSurrounding("{", "}")}}" }
+            val (prefix, suffix) = context
+            context.left = "$globalState\n$alpineWizardState\nlet ${'$'}data = {$data};\nwith (${'$'}data) {\n\n$prefix"
+            context.right = "$suffix\n\n}"
         }
+
+        val header = AlpineAttributeInjectionHeader.serialize(context.left.length + 1, dataParents)
+        context.left = "$header\n${context.left}"
+    }
+
+    private fun addTypingToCoreMagics(host: XmlAttributeValue): String {
+        var typedCoreMagics = coreMagics
+        val attribute = host.parent as XmlAttribute
+        val tag = attribute.parent
+
+        fun jsElementNameFromXmlTag(tag: XmlTag): String {
+            return HTMLDocumentImpl().createElement(tag.localName).javaClass.simpleName.removeSuffix("Impl")
+        }
+
+        // Determine type for $el
+        run {
+            val elType = jsElementNameFromXmlTag(tag)
+            typedCoreMagics = typedCoreMagics.replace("{elType}", elType)
+        }
+
+        // Determine type for $root
+        run {
+            val elType = if (tag.getAttribute("x-data") != null) {
+                jsElementNameFromXmlTag(tag)
+            } else {
+                PsiTreeUtil.findFirstParent(tag.parentTag)
+                { it is HtmlTag && it.getAttribute("x-data") != null }
+                        ?.let { jsElementNameFromXmlTag(it as XmlTag) }
+                        ?: "HTMLElement"
+            }
+            typedCoreMagics = typedCoreMagics.replace("{rootType}", elType)
+        }
+
+        return typedCoreMagics
+    }
+
+    private fun addTypingToEventMagics(directive: String, host: XmlAttributeValue): String {
+        val eventName = AttributeUtil.getEventNameFromDirective(directive)
+        return eventMagics.replace("eventType", eventName)
     }
 }
