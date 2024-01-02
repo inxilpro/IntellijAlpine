@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixed intellij platform version constraints
+
 ## [0.6.1] - 2024-01-02
 
 ### Added
