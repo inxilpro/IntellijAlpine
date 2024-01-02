@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-08-15
+
 ### Added
 - Added support for IntelliJ platform version 2023.2
 - Added support for [`glhd/alpine-wizard`](https://github.com/glhd/alpine-wizard)
@@ -108,7 +110,8 @@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/inxilpro/IntellijAlpine/compare/v0.4.0...v0.4.1
