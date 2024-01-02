@@ -1,5 +1,6 @@
 package com.github.inxilpro.intellijalpine
 
+import com.intellij.lang.javascript.DialectDetector
 import com.intellij.lang.javascript.psi.JSInheritedLanguagesHelper
 import com.intellij.lang.javascript.psi.JSObjectLiteralExpression
 import com.intellij.psi.util.elementType
@@ -32,10 +33,22 @@ object AlpineAttributeInjectionHeader {
 
     fun serialize(startOffset: Int, data: List<XmlAttribute>): String {
         val mappedData = data.flatMap { attribute ->
+            val attributeValue = attribute.value!!
+
+            // This sort-of accounts for Blade directives wrapping JS
+            if (attributeValue.startsWith("@")) {
+                return attributeValue;
+            }
+
             val expression = JSInheritedLanguagesHelper.createExpressionFromText(
-                attribute.value!!,
+                attributeValue,
                 attribute
-            ) as JSObjectLiteralExpression
+            ) as JSObjectLiteralExpression?
+
+            if (expression == null) {
+                return attributeValue
+            }
+
             expression.properties.map {
                 DataIndicesHeader(
                     attribute.textOffset,
@@ -44,6 +57,7 @@ object AlpineAttributeInjectionHeader {
                 )
             }
         }
+
         val json = Json.encodeToString(Header(Alpine.NAMESPACE, Int.MAX_VALUE.toString(), mappedData))
         return patchStartOffset(json, startOffset)
     }

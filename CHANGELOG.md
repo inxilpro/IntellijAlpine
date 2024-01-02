@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Improved 'go to' support in Blade
+
 ## [0.6.2] - 2024-01-02
 
 ### Fixed
