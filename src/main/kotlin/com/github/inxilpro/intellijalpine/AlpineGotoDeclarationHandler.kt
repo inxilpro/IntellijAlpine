@@ -17,7 +17,11 @@ import java.util.*
 
 class AlpineGotoDeclarationHandler : JSGotoDeclarationHandler() {
 
-    override fun getGotoDeclarationTargets(sourceElement: PsiElement?, offset: Int, editor: Editor?): Array<PsiElement>? {
+    override fun getGotoDeclarationTargets(
+        sourceElement: PsiElement?,
+        offset: Int,
+        editor: Editor?
+    ): Array<PsiElement>? {
         if (sourceElement == null) return null
         if (editor == null) return null
 
@@ -38,12 +42,12 @@ class AlpineGotoDeclarationHandler : JSGotoDeclarationHandler() {
         // Retrieve the currently opened PSI Document.
         val textEditor = editor.project?.let { FileEditorManager.getInstance(it).selectedTextEditor } ?: return null
         val document = editor.project?.let { PsiDocumentManager.getInstance(it).getCachedPsiFile(textEditor.document) }
-                ?: return null
+            ?: return null
 
         // Finally, search for the tag referenced by our dataOffset and return it.
         return searchForTag(document, dataOffset)
-                ?.let { arrayOf(it.getAttribute("x-data")?.valueElement as PsiElement) }
-                ?: return targets
+            ?.let { arrayOf(it.getAttribute("x-data")?.valueElement as PsiElement) }
+            ?: return targets
     }
 
     private fun tryParseHeader(header: String): AlpineAttributeInjectionHeader.Header? {
@@ -54,7 +58,10 @@ class AlpineGotoDeclarationHandler : JSGotoDeclarationHandler() {
         }
     }
 
-    private fun searchForTag(document: PsiFile, dataOffset: AlpineAttributeInjectionHeader.DataIndicesHeader): HtmlTag? {
+    private fun searchForTag(
+        document: PsiFile,
+        dataOffset: AlpineAttributeInjectionHeader.DataIndicesHeader
+    ): HtmlTag? {
         var children = document.children.asList()
         do {
             val newChildren = Vector<PsiElement>()

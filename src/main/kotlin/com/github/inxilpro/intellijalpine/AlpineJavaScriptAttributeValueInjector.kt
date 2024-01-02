@@ -20,7 +20,7 @@ import java.util.*
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private companion object {
         val globalState =
-                """
+            """
                 /** @type {Object.<string, HTMLElement>} */
                 let ${'$'}refs;
                 
@@ -30,7 +30,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val alpineWizardState =
-                """
+            """
                 class AlpineWizardStep {
                 	/** @type {HTMLElement} */ el;
                 	/** @type {string} */ title;
@@ -74,7 +74,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val globalMagics =
-                """
+            """
                 /**
                  * @param {*<ValueToPersist>} value
                  * @return {ValueToPersist}
@@ -92,7 +92,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val coreMagics =
-                """
+            """
                 /** @type {elType} */
                 let ${'$'}el;
                 
@@ -269,8 +269,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             } else {
                 PsiTreeUtil.findFirstParent(tag.parentTag)
                 { it is HtmlTag && it.getAttribute("x-data") != null }
-                        ?.let { jsElementNameFromXmlTag(it as XmlTag) }
-                        ?: "HTMLElement"
+                    ?.let { jsElementNameFromXmlTag(it as XmlTag) }
+                    ?: "HTMLElement"
             }
             typedCoreMagics = typedCoreMagics.replace("{rootType}", elType)
         }
