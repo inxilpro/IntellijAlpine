@@ -5,34 +5,22 @@
 ## [Unreleased]
 
 ## [0.6.2] - 2024-01-02
-Because of incorrect version constraints, this is the first release that works on modern IntelliJ platforms since `0.4.2` (even though there have been several releases since then). This is a combined summary of versions `0.5.0` through `0.6.2`:
 
 ### Fixed
 - Fixed intellij platform version constraints
 
+## [0.6.1] - 2024-01-02
+
 ### Added
-- Added support for IntelliJ platform version 2023.2
-- Added support for [`glhd/alpine-wizard`](https://github.com/glhd/alpine-wizard)
 - Added typing support for `$el` and `$root`
 - Improved intellisense for `x-data` derived properties
 - Added initial support for Go To Declaration for `x-data` derived properties
-- Added better type support for `$refs`
-- Added support for `x-id` and `$id()`
-- Added support for `x-mask`
-- Added support for `x-modelable`
-- Added support for `x-teleport`
-- Added support for `x-trap`
-- Added support for `x-collapse`
-- Added new help text for `x-` attributes
 
 ## [0.6.0] - 2023-08-15
 
 ### Added
 - Added support for IntelliJ platform version 2023.2
 - Added support for [`glhd/alpine-wizard`](https://github.com/glhd/alpine-wizard)
-- Added typing support for `$el` and `$root`
-- Improved intellisense for `x-data` derived properties
-- Added initial support for Go To Declaration for `x-data` derived properties
 
 ## [0.5.0] - 2023-05-31
 
@@ -133,6 +121,7 @@ Because of incorrect version constraints, this is the first release that works o
 
 [Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.2...HEAD
 [0.6.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...v0.6.2
+[0.6.1]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.4.1...v0.4.2
