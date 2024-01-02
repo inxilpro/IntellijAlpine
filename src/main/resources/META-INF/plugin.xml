@@ -33,5 +33,9 @@
                                  displayName="Alpine.js"/>
         <gotoDeclarationHandler implementation="com.github.inxilpro.intellijalpine.AlpineGotoDeclarationHandler"
                                 order="first"/>
+        <localInspection language="XML" shortName="RequiredAttributes" enabledByDefault="true" level="WARNING"
+                         bundle="messages.XmlBundle" key="xml.inspections.required.attributes.display.name"
+                         groupBundle="messages.XmlBundle" groupKey="html.inspections.group.name"
+                         implementationClass="com.github.inxilpro.intellijalpine.AlpineRequiredAttributesInspection"/>
     </extensions>
 </idea-plugin>
