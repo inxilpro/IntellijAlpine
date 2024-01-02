@@ -1,10 +1,15 @@
 package com.github.inxilpro.intellijalpine
 
 import com.intellij.psi.html.HtmlTag
+import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
+import com.intellij.psi.xml.XmlAttribute
+import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.XmlAttributeDescriptor
+import java.util.Arrays
+import java.util.Collections
 
 object AttributeUtil {
     private val validAttributes = mutableMapOf<String, Array<AttributeInfo>>()
@@ -118,6 +123,79 @@ object AttributeUtil {
         "once"
     )
 
+    // Taken from https://developer.mozilla.org/en-US/docs
+    val nameToInterfaceEventMap: Map<String, String> = mapOf(
+        Pair("afterscriptexecute", "Event"),
+        Pair("animationcancel", "AnimationEvent"),
+        Pair("animationend", "AnimationEvent"),
+        Pair("animationiteration", "AnimationEvent"),
+        Pair("animationstart", "AnimationEvent"),
+        Pair("auxclick", "PointerEvent"),
+        Pair("beforematch", "Event"),
+        Pair("beforescriptexecute", "Event"),
+        Pair("beforexrselect", "XRSessionEvent"),
+        Pair("blur", "FocusEvent"),
+        Pair("click", "PointerEvent"),
+        Pair("compositionend", "CompositionEvent"),
+        Pair("compositionstart", "CompositionEvent"),
+        Pair("compositionupdate", "CompositionEvent"),
+        Pair("contentvisibilityautostatechange", "ContentVisibilityAutoStateChangeEvent"),
+        Pair("contextmenu", "PointerEvent"),
+        Pair("copy", "ClipboardEvent"),
+        Pair("cut", "ClipboardEvent"),
+        Pair("dblclick", "MouseEvent"),
+        Pair("DOMActivate", "MouseEvent"),
+        Pair("DOMMouseScroll", "WheelEvent"),
+        Pair("focus", "FocusEvent"),
+        Pair("focusin", "FocusEvent"),
+        Pair("focusout", "FocusEvent"),
+        Pair("fullscreenchange", "Event"),
+        Pair("fullscreenerror", "Event"),
+        Pair("gesturechange", "GestureEvent"),
+        Pair("gestureend", "GestureEvent"),
+        Pair("gesturestart", "GestureEvent"),
+        Pair("gotpointercapture", "PointerEvent"),
+        Pair("keydown", "KeyboardEvent"),
+        Pair("keypress", "KeyboardEvent"),
+        Pair("keyup", "KeyboardEvent"),
+        Pair("lostpointercapture", "PointerEvent"),
+        Pair("mousedown", "MouseEvent"),
+        Pair("mouseenter", "MouseEvent"),
+        Pair("mouseleave", "MouseEvent"),
+        Pair("mousemove", "MouseEvent"),
+        Pair("mouseout", "MouseEvent"),
+        Pair("mouseover", "MouseEvent"),
+        Pair("mouseup", "MouseEvent"),
+        Pair("mousewheel", "WheelEvent"),
+        Pair("MozMousePixelScroll", "WheelEvent"),
+        Pair("paste", "ClipboardEvent"),
+        Pair("pointercancel", "PointerEvent"),
+        Pair("pointerdown", "PointerEvent"),
+        Pair("pointerenter", "PointerEvent"),
+        Pair("pointerleave", "PointerEvent"),
+        Pair("pointermove", "PointerEvent"),
+        Pair("pointerout", "PointerEvent"),
+        Pair("pointerover", "PointerEvent"),
+        Pair("pointerrawupdate", "PointerEvent"),
+        Pair("pointerup", "PointerEvent"),
+        Pair("scroll", "Event"),
+        Pair("scrollend", "Event"),
+        Pair("securitypolicyviolation", "SecurityPolicyViolationEvent"),
+        Pair("touchcancel", "TouchEvent"),
+        Pair("touchend", "TouchEvent"),
+        Pair("touchmove", "TouchEvent"),
+        Pair("touchstart", "TouchEvent"),
+        Pair("transitioncancel", "TransitionEvent"),
+        Pair("transitionend", "TransitionEvent"),
+        Pair("transitionrun", "TransitionEvent"),
+        Pair("transitionstart", "TransitionEvent"),
+        Pair("webkitmouseforcechanged", "MouseEvent"),
+        Pair("webkitmouseforcedown", "MouseEvent"),
+        Pair("webkitmouseforceup", "MouseEvent"),
+        Pair("webkitmouseforcewillbegin", "MouseEvent"),
+        Pair("wheel", "WheelEvent"),
+    )
+
     fun isXmlPrefix(prefix: String): Boolean {
         return xmlPrefixes.contains(prefix)
     }
@@ -148,6 +226,57 @@ object AttributeUtil {
         }
 
         return false
+    }
+
+    fun isValidInjectionTarget(host: XmlAttributeValue): Boolean {
+        // Make sure that we have an XML attribute as a parent
+        val attribute = host.parent as? XmlAttribute ?: return false
+
+        // Make sure we have an HTML tag (and not a Blade <x- tag)
+        val tag = attribute.parent as? HtmlTag ?: return false
+        if (!isValidHtmlTag(tag)) {
+            return false
+        }
+
+        // Make sure we have an attribute that looks like it's Alpine
+        val attributeName = attribute.name
+        if (!isAlpineAttributeName(attributeName)) {
+            return false
+        }
+
+        // Make sure it's a valid Attribute to operate on
+        if (!isValidAttribute(attribute)) {
+            return false
+        }
+
+        // Make sure it's an attribute that is parsed as JavaScript
+        if (!shouldInjectJavaScript(attributeName)) {
+            return false
+        }
+
+        return true
+    }
+
+    fun getEventNameFromDirective(directive: String): String {
+        return nameToInterfaceEventMap[eventPrefixes.fold(directive) { acc, s -> acc.removePrefix(s) }.split(".")
+            .first()]
+            ?: "Event"
+    }
+
+    private fun isValidAttribute(attribute: XmlAttribute): Boolean {
+        return attribute.descriptor is HtmlAttributeDescriptorImpl || attribute.descriptor is AlpineAttributeDescriptor
+    }
+
+    private fun isValidHtmlTag(tag: HtmlTag): Boolean {
+        return !tag.name.startsWith("x-")
+    }
+
+    private fun isAlpineAttributeName(name: String): Boolean {
+        return name.startsWith("x-") || name.startsWith("@") || name.startsWith(':')
+    }
+
+    private fun shouldInjectJavaScript(name: String): Boolean {
+        return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name
     }
 
     private fun buildValidAttributes(htmlTag: HtmlTag): Array<AttributeInfo> {

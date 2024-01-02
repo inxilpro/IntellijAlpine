@@ -7,6 +7,9 @@
 ### Added
 - Added support for IntelliJ platform version 2023.2
 - Added support for [`glhd/alpine-wizard`](https://github.com/glhd/alpine-wizard)
+- Added typing support for `$el` and `$root`
+- Improved intellisense for `x-data` derived properties
+- Added initial support for Go To Declaration for `x-data` derived properties
 
 ## [0.5.0] - 2023-05-31
 
