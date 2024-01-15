@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+## [0.6.3] - 2024-01-02
+A bug was introduced that impacted Alpine when you did something like `x-data="@js([...])"`. This may not be a perfect fix, but it should help address it somewhat until I can find a better fix.
+
 ### Fixed
 - Improved 'go to' support in Blade
 
@@ -122,7 +125,8 @@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...v0.6.2
 [0.6.1]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.5.0...v0.6.0
