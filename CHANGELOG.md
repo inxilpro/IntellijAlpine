@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Reverted 'go to' changes added in `0.6.1` — it introduced too many bugs when using templating languages like Blade
+
 ## [0.6.3] - 2024-01-02
 A bug was introduced that impacted Alpine when you did something like `x-data="@js([...])"`. This may not be a perfect fix, but it should help address it somewhat until I can find a better fix.
 
