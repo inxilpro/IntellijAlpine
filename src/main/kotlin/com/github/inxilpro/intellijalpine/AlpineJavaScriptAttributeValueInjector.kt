@@ -218,33 +218,33 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             context.right += "\n)"
         }
 
-        addWithData(host, context)
+        addWithData(host, directive, context)
 
         return context.toPair()
     }
 
-    private fun addWithData(host: XmlAttributeValue, context: MutablePair<String, String>) {
-        val dataParents = LinkedList<XmlAttribute>()
-        val attribute = host.parent as XmlAttribute
+    private fun addWithData(host: XmlAttributeValue, directive: String, context: MutablePair<String, String>) {
+        val dataParent: HtmlTag?
 
-        var parent = attribute.parent as HtmlTag?
-        do {
-            parent?.getAttribute("x-data")?.let {
-                if (it.value != null) dataParents.addFirst(it)
-            }
-
-            parent = parent?.parentTag as HtmlTag?
-        } while (parent != null)
-
-        if (dataParents.isNotEmpty()) {
-            val data = dataParents.joinToString(", ") { data -> "...{${data.value?.removeSurrounding("{", "}")}}" }
-            val (prefix, suffix) = context
-            context.left = "$globalState\n$alpineWizardState\nlet ${'$'}data = {$data};\nwith (${'$'}data) {\n\n$prefix"
-            context.right = "$suffix\n\n}"
+        if ("x-data" == directive) {
+            val parentTag = PsiTreeUtil.findFirstParent(host) { it is HtmlTag } ?: return
+            dataParent = PsiTreeUtil.findFirstParent(parentTag) {
+                it != parentTag && it is HtmlTag && it.getAttribute("x-data") != null
+            } as HtmlTag?
+        } else {
+            dataParent = PsiTreeUtil.findFirstParent(host) {
+                it is HtmlTag && it.getAttribute("x-data") != null
+            } as HtmlTag?
         }
 
-        val header = AlpineAttributeInjectionHeader.serialize(context.left.length + 1, dataParents)
-        context.left = "$header\n${context.left}"
+        if (dataParent is HtmlTag) {
+            val data = dataParent.getAttribute("x-data")?.value
+            if (null != data) {
+                val (prefix, suffix) = context
+                context.left = "$globalState\n$alpineWizardState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
+                context.right = "$suffix\n\n}"
+            }
+        }
     }
 
     private fun addTypingToCoreMagics(host: XmlAttributeValue): String {
