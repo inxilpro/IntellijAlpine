@@ -6,5 +6,5 @@ object Alpine {
     @JvmField
     val ICON = IconLoader.getIcon("/alpineicon.svg", javaClass)
 
-    val NAMESPACE = "IntelliJAlpine Plugin"
+    val NAMESPACE = "Alpine.js Plugin"
 }
