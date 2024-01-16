@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.6.4] - 2024-01-16
+
 ### Fixed
 - Reverted 'go to' changes added in `0.6.1` — it introduced too many bugs when using templating languages like Blade
 
@@ -128,7 +130,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.4...HEAD
+[0.6.4]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...v0.6.2
 [0.6.1]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...v0.6.1
