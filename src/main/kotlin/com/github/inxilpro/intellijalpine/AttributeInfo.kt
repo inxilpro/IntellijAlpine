@@ -29,6 +29,7 @@ class AttributeInfo(val attribute: String) {
         "x-on" to "Add listener",
         "x-bind" to "Bind an attribute",
         "x-mask" to "Set input mask",
+        "x-mask:dynamic" to "Set dynamic input mask",
         "x-intersect" to "Bind an intersection observer",
         "x-trap" to "Add focus trap",
         "x-collapse" to "Collapse element when hidden",
