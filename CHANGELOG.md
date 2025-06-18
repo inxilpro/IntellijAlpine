@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixed [PsiInvalidElementAccessException bug](https://github.com/inxilpro/IntellijAlpine/issues/79)
+
 ## [0.6.4] - 2024-01-16
 
 ### Fixed
