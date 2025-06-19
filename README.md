@@ -37,6 +37,69 @@ This plugin adds support for the following [Alpine.js](https://github.com/alpine
   Download the [latest release](https://github.com/inxilpro/IntellijAlpine/releases/latest) and install it manually using
   <kbd>Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
+## Future Improvements
+
+The Alpine.js Support plugin provides solid foundational features, but there are many opportunities to enhance the 
+developer experience. Here are potential improvements organized by priority:
+
+### High Priority Enhancements
+
+- **Go to Declaration & Find Usages**: Navigate between x-data property definitions and their usage across components. 
+  This would allow developers to quickly jump between related code sections.
+
+- **Refactoring Support**: Enable renaming of Alpine properties/methods with automatic updates across all references. 
+  This is essential for maintaining large Alpine.js applications.
+
+- **Code Inspections**: Add intelligent inspections to catch common mistakes:
+
+  - Undefined property usage in Alpine expressions
+  - Deprecated Alpine v2 syntax when using v3
+  - Missing required modifiers (e.g., `.prevent` on form submissions)
+  - Performance anti-patterns
+
+- **Test Coverage**: Implement comprehensive unit and integration tests to ensure plugin stability and make future development safer.
+
+### Medium Priority Features
+
+- **Live Templates**: Provide code snippets for common Alpine patterns:
+
+  - Component boilerplate with x-data
+  - Common directive combinations (x-show with x-transition)
+  - Alpine store definitions
+  - Event handler patterns
+
+- **Quick Documentation**: Show inline documentation for Alpine directives and modifiers on hover or with F1/Ctrl+Q.
+
+- **Structure View**: Display Alpine component hierarchy in the IDE's structure panel, showing x-data scopes and their properties.
+
+- **Enhanced Type Support**: Improve JavaScript/TypeScript type inference within Alpine expressions for better auto-completion and error detection.
+
+### Advanced Features
+
+- **Debugging Support**: Special debugging features for Alpine components, such as inspecting reactive data state.
+
+- **Code Generation**: Actions to quickly generate:
+  - Alpine components from templates
+  - Store definitions
+  - Common patterns (modals, dropdowns, etc.)
+
+- **Performance Analysis**: Tools to analyze component complexity and suggest optimizations.
+
+- **Plugin Ecosystem Support**: Add support for popular Alpine plugins like Alpine Morph, Persist, Focus, and Intersect.
+
+### Technical Improvements
+
+- **Better Error Handling**: Provide clearer error messages and recovery options when things go wrong.
+
+- **Performance Optimizations**: Profile and optimize completion providers and inspections for better IDE performance.
+
+- **Configuration Options**: Allow users to customize plugin behavior, such as:
+
+  - Preferred Alpine version for syntax checking
+  - Custom directive definitions for third-party plugins
+  - Code style preferences
+
+- **Project-wide Analysis**: Analyze entire projects to find unused Alpine components or properties.
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
