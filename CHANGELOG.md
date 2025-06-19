@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Added
+- Added support for newer IntelliJ platforms
+- Added better local PhpStorm testing
+- Added better handling of non-HTML file types
+
 ## [0.6.6] - 2025-06-19
 
 ### Fixed
