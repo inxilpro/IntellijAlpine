@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.6.6] - 2025-06-19
+
 ### Fixed
 - Fixed [PsiInvalidElementAccessException bug](https://github.com/inxilpro/IntellijAlpine/issues/79)
 
@@ -133,7 +135,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.4...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...HEAD
+[0.6.6]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.4...v0.6.6
 [0.6.4]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.0...v0.6.2
