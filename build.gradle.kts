@@ -100,6 +100,12 @@ tasks {
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
     runIdeForUiTests {
+        // Use local PhpStorm instance if available, fallback to default IDE
+        val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
+        if (localPhpStorm.exists()) {
+            ideDir = localPhpStorm
+        }
+        
         systemProperty("robot-server.port", "8082")
         systemProperty("ide.mac.message.dialogs.as.sheets", "false")
         systemProperty("jb.privacy.policy.text", "<!--999.999-->")
