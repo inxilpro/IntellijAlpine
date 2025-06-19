@@ -92,7 +92,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
 
             addModifiers("$prefix$event", AttributeUtil.eventModifiers)
 
-            if (event.toLowerCase() == "keydown" || event.toLowerCase() == "keyup") {
+            if (event.lowercase() == "keydown" || event.lowercase() == "keyup") {
                 addModifiers("$prefix$event", AttributeUtil.keypressModifiers)
             }
         }
