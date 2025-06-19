@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+## [0.6.6] - 2025-06-19
+
+### Fixed
+- Fixed [PsiInvalidElementAccessException bug](https://github.com/inxilpro/IntellijAlpine/issues/79)
+
 ## [0.6.5] - 2024-05-13
 This is just a version bump to add support for new IntelliJ platforms.
 
@@ -133,7 +138,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.5...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...HEAD
+[0.6.6]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.2...v0.6.3

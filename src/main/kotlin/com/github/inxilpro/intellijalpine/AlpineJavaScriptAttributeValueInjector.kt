@@ -253,7 +253,11 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         val tag = attribute.parent
 
         fun jsElementNameFromXmlTag(tag: XmlTag): String {
-            return HTMLDocumentImpl().createElement(tag.localName).javaClass.simpleName.removeSuffix("Impl")
+            return try {
+                HTMLDocumentImpl().createElement(tag.localName).javaClass.simpleName.removeSuffix("Impl")
+            } catch (e: Exception) {
+                "HTMLElement"
+            }
         }
 
         // Determine type for $el
