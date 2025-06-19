@@ -229,6 +229,10 @@ object AttributeUtil {
     }
 
     fun isValidInjectionTarget(host: XmlAttributeValue): Boolean {
+        if (!LanguageUtil.supportsAlpineJs(host.containingFile)) {
+            return false
+        }
+        
         // Make sure that we have an XML attribute as a parent
         val attribute = host.parent as? XmlAttribute ?: return false
 
