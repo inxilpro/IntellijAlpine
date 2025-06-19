@@ -19,6 +19,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         addDerivedAttributes()
         addTransitions()
         addWizard()
+        addAjax()
     }
 
     private fun addDirectives() {
@@ -35,16 +36,6 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
 
             if ("x-intersect" == directive) {
                 addModifiers(directive, AttributeUtil.intersectModifiers)
-            }
-            
-            if ("x-target" == directive) {
-                addModifiers(directive, AttributeUtil.targetModifiers)
-                // Add x-target:dynamic as a special case
-                descriptors.add(AttributeInfo("x-target:dynamic"))
-            }
-            
-            if ("x-autofocus" == directive) {
-                addModifiers(directive, AttributeUtil.autofocusModifiers)
             }
         }
     }
@@ -93,6 +84,12 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
 
         descriptors.add(AttributeInfo("x-wizard:if"))
         descriptors.add(AttributeInfo("x-wizard:title"))
+    }
+
+    private fun addAjax() {
+        descriptors.add(AttributeInfo("x-target:dynamic"))
+        addModifiers("x-target", AttributeUtil.targetModifiers)
+        addModifiers("x-target:dynamic", AttributeUtil.targetModifiers)
     }
 
     private fun addEvent(descriptor: XmlAttributeDescriptor) {

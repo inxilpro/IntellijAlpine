@@ -19,7 +19,7 @@ object AttributeUtil {
         "x-bind",
         "x-transition",
         "x-wizard", // glhd/alpine-wizard pacakge
-        "x-merge",
+        "x-target", // alpine-ajax
     )
 
     val directives = arrayOf(
@@ -45,6 +45,7 @@ object AttributeUtil {
         "x-trap",
         "x-collapse",
         "x-spread", // deprecated
+
         // Alpine AJAX directives
         "x-target",
         "x-headers",
@@ -131,16 +132,28 @@ object AttributeUtil {
     )
     
     val targetModifiers = arrayOf(
+        "200",
+        "301",
+        "302",
+        "303",
+        "400",
+        "401",
+        "403",
+        "404",
         "422",
+        "500",
+        "502",
+        "503",
+        "2xx",
+        "3xx",
         "4xx",
+        "5xx",
         "back",
         "away",
         "replace",
-        "push"
-    )
-    
-    val autofocusModifiers = arrayOf(
-        "nofocus"
+        "push",
+        "error",
+        "nofocus",
     )
 
     // Taken from https://developer.mozilla.org/en-US/docs
