@@ -189,6 +189,5 @@ intellijPlatformTesting {
                 robotServerPlugin()
             }
         }
-
     }
 }
