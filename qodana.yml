@@ -14,3 +14,4 @@ exclude:
       - .gradle
       - .git
       - src/test
+      - build.gradle.kts
