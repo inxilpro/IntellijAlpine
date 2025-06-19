@@ -38,48 +38,45 @@ dependencies {
     intellijPlatform {
         // Auto-detect local PhpStorm installation, fallback to IntelliJ Ultimate
         val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
-        val usePhpStorm = project.hasProperty("usePhpStorm") || localPhpStorm.exists()
-        
-        if (usePhpStorm) {
-            if (localPhpStorm.exists()) {
-                // Try to detect PhpStorm version from Info.plist
-                val infoPlist = file("${localPhpStorm}/Info.plist")
-                var phpstormVersion = "2025.1" // fallback version
-                
-                if (infoPlist.exists()) {
-                    try {
-                        val plistContent = infoPlist.readText()
-                        val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
-                        if (versionMatch != null) {
-                            val detectedVersion = versionMatch.groupValues[1]
-                            // Convert version like "2025.1.3" to "2025.1"
-                            val majorMinor = detectedVersion.split(".").take(2).joinToString(".")
-                            phpstormVersion = majorMinor
-                            println("🔍 Detected PhpStorm ${detectedVersion} - UI tests will use PhpStorm ${majorMinor}")
-                        } else {
-                            println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection failed)")
-                        }
-                    } catch (e: Exception) {
-                        println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection error: ${e.message})")
+        if (localPhpStorm.exists()) {
+            var phpstormVersion = providers.gradleProperty("platformVersion").toString()
+
+            // Try to detect locally-installed PhpStorm version from Info.plist
+            val infoPlist = file("${localPhpStorm}/Info.plist")
+            if (infoPlist.exists()) {
+                try {
+                    val plistContent = infoPlist.readText()
+                    val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
+                    if (versionMatch != null) {
+                        val detectedVersion = versionMatch.groupValues[1]
+                        // Convert version like "2025.1.3" to "2025.1"
+                        val majorMinor = detectedVersion.split(".").take(2).joinToString(".")
+                        phpstormVersion = majorMinor
+                        println("🔍 Detected PhpStorm ${detectedVersion} - UI tests will use PhpStorm ${majorMinor}")
+                    } else {
+                        println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection failed)")
                     }
-                } else {
-                    println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (no Info.plist found)")
+                } catch (e: Exception) {
+                    println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection error: ${e.message})")
                 }
-                create("PS", phpstormVersion)
             } else {
-                println("🔧 Using PhpStorm via -PusePhpStorm flag")
-                create("PS", "2025.1")
+                println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (no Info.plist found)")
             }
+            create("PS", phpstormVersion)
         } else {
             println("📦 Using IntelliJ Ultimate for UI tests (no local PhpStorm detected)")
             create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
         }
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
+        bundledPlugins(
+            providers.gradleProperty("platformBundledPlugins")
+                .map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
-        plugins(providers.gradleProperty("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
+        plugins(
+            providers.gradleProperty("platformPlugins")
+                .map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
 
         testFramework(TestFrameworkType.Platform)
     }
@@ -134,7 +131,8 @@ intellijPlatform {
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = providers.gradleProperty("pluginVersion")
+            .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
     pluginVerification {
