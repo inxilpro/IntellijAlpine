@@ -33,6 +33,10 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
                 addModifiers(directive, AttributeUtil.modelModifiers)
             }
 
+            if ("x-mask" == directive) {
+                addModifiers(directive, AttributeUtil.maskModifiers)
+            }
+
             if ("x-intersect" == directive) {
                 addModifiers(directive, AttributeUtil.intersectModifiers)
             }

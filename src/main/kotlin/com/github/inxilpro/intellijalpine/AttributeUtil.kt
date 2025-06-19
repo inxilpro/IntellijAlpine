@@ -119,6 +119,10 @@ object AttributeUtil {
         "caps-lock",
     )
 
+    val maskModifiers = arrayOf(
+        "dynamic"
+    )
+
     val intersectModifiers = arrayOf(
         "once"
     )
