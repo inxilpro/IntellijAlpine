@@ -171,7 +171,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private fun getJavaScriptRanges(host: XmlAttributeValue, content: String): List<TextRange> {
         val valueRange = ElementManipulators.getValueTextRange(host)
 
-        if (host.containingFile.viewProvider.languages.filter { "PHP" == it.id || "Blade" == it.id }.isEmpty()) {
+        if (!LanguageUtil.hasPhpLanguage(host.containingFile)) {
             return listOf(valueRange)
         }
 

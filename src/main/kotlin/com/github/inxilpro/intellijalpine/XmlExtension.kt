@@ -11,8 +11,7 @@ import com.intellij.xml.HtmlXmlExtension
 class XmlExtension : HtmlXmlExtension() {
         override fun isAvailable(file: PsiFile?): Boolean {
         if (file == null) return false
-        val languages = file.viewProvider.languages.map { it.id }
-        return "HTML" in languages || "Blade" in languages || "PHP" in languages
+        return LanguageUtil.supportsAlpineJs(file)
     }
 
     override fun getPrefixDeclaration(context: XmlTag, namespacePrefix: String?): SchemaPrefix? {
