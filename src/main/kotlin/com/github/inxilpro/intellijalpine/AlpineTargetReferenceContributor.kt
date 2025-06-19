@@ -4,7 +4,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.util.TextRange
 import com.intellij.patterns.XmlPatterns
 import com.intellij.psi.*
-import com.intellij.psi.xml.XmlAttribute
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlFile
 import com.intellij.psi.xml.XmlTag
@@ -51,7 +51,7 @@ class AlpineTargetReferenceProvider : PsiReferenceProvider() {
 
 class AlpineIdReference(
     element: PsiElement,
-    private val rangeInElement: TextRange,
+    rangeInElement: TextRange,
     private val idValue: String
 ) : PsiReferenceBase<PsiElement>(element, rangeInElement) {
 
@@ -77,41 +77,18 @@ class AlpineIdReference(
     override fun isSoft(): Boolean = false // Hard reference - should show error if unresolved
 
     private fun findElementWithId(xmlFile: XmlFile, id: String): PsiElement? {
-        val rootTag = xmlFile.rootTag ?: return null
-        return findIdInTag(rootTag, id)
-    }
+        val allTags = PsiTreeUtil.findChildrenOfType(xmlFile, XmlTag::class.java)
 
-    private fun findIdInTag(tag: XmlTag, id: String): PsiElement? {
-        val idAttribute = tag.getAttribute("id")
-        if (idAttribute?.value == id) {
-            // Return the value element for better navigation
-            return idAttribute.valueElement ?: idAttribute
-        }
-
-        for (subTag in tag.subTags) {
-            findIdInTag(subTag, id)?.let { return it }
-        }
-
-        return null
+        return allTags.firstOrNull { tag ->
+            tag.getAttribute("id")?.value == id
+        }?.getAttribute("id")?.valueElement
     }
 
     private fun collectElementIds(xmlFile: XmlFile): Set<String> {
-        val ids = mutableSetOf<String>()
-        val rootTag = xmlFile.rootTag ?: return ids
-
-        fun collectIds(tag: XmlTag) {
-            tag.getAttribute("id")?.value?.let { id ->
-                if (id.isNotBlank()) {
-                    ids.add(id)
-                }
-            }
-
-            for (subTag in tag.subTags) {
-                collectIds(subTag)
-            }
-        }
-
-        collectIds(rootTag)
-        return ids
+        val allTags = PsiTreeUtil.findChildrenOfType(xmlFile, XmlTag::class.java)
+        
+        return allTags.mapNotNull { tag ->
+            tag.getAttribute("id")?.value?.takeIf { it.isNotBlank() }
+        }.toSet()
     }
 }
