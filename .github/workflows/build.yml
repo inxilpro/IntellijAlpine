@@ -41,15 +41,15 @@ jobs:
 
       # Free GitHub Actions Environment Disk Space
       - name: Maximize Build Space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          docker system prune -af || true
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-          df -h
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
 
       # Check out current repository
       - name: Fetch Sources
@@ -71,6 +71,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-home-cache-cleanup: true
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       # Set environment variables
       - name: Export Properties
@@ -129,12 +130,23 @@ jobs:
           name: pluginVerifier-result
           path: ${{ github.workspace }}/build/reports/pluginVerifier
 
+      # Clean up before Qodana to free disk space
+      - name: Clean up disk space before Qodana
+        run: |
+          rm -rf ${{ steps.properties.outputs.pluginVerifierHomeDir }}/ides || true
+          ./gradlew clean || true
+          df -h
+
       # Run Qodana inspections
       - name: Qodana - Code Inspection
         uses: JetBrains/qodana-action@v2025.1
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_2024625915 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
+        with:
+          cache-default-branch-only: true
+          upload-result: true
+          use-caches: true
 
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
