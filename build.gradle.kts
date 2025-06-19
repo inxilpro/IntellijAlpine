@@ -36,10 +36,42 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        // Use PhpStorm if requested via command line property
-        if (project.hasProperty("usePhpStorm")) {
-            create(providers.gradleProperty("phpstormType"), providers.gradleProperty("phpstormVersion"))
+        // Auto-detect local PhpStorm installation, fallback to IntelliJ Ultimate
+        val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
+        val usePhpStorm = project.hasProperty("usePhpStorm") || localPhpStorm.exists()
+        
+        if (usePhpStorm) {
+            if (localPhpStorm.exists()) {
+                // Try to detect PhpStorm version from Info.plist
+                val infoPlist = file("${localPhpStorm}/Info.plist")
+                var phpstormVersion = "2025.1" // fallback version
+                
+                if (infoPlist.exists()) {
+                    try {
+                        val plistContent = infoPlist.readText()
+                        val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
+                        if (versionMatch != null) {
+                            val detectedVersion = versionMatch.groupValues[1]
+                            // Convert version like "2025.1.3" to "2025.1"
+                            val majorMinor = detectedVersion.split(".").take(2).joinToString(".")
+                            phpstormVersion = majorMinor
+                            println("🔍 Detected PhpStorm ${detectedVersion} - UI tests will use PhpStorm ${majorMinor}")
+                        } else {
+                            println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection failed)")
+                        }
+                    } catch (e: Exception) {
+                        println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection error: ${e.message})")
+                    }
+                } else {
+                    println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (no Info.plist found)")
+                }
+                create("PS", phpstormVersion)
+            } else {
+                println("🔧 Using PhpStorm via -PusePhpStorm flag")
+                create("PS", "2025.1")
+            }
         } else {
+            println("📦 Using IntelliJ Ultimate for UI tests (no local PhpStorm detected)")
             create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
         }
 
@@ -136,41 +168,6 @@ tasks {
 
     publishPlugin {
         dependsOn(patchChangelog)
-    }
-
-    register("installPluginInPhpStorm") {
-        description = "Build and copy plugin to PhpStorm plugins directory for manual testing"
-        group = "intellij"
-        dependsOn("buildPlugin")
-        
-        doLast {
-            val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app")
-            val pluginZip = file("build/distributions").listFiles()?.find { it.name.endsWith(".zip") }
-            val phpstormPluginsDir = file("${System.getProperty("user.home")}/Library/Application Support/JetBrains/PhpStorm2025.1/plugins")
-            
-            if (localPhpStorm.exists() && pluginZip != null) {
-                // Create plugins directory if it doesn't exist
-                phpstormPluginsDir.mkdirs()
-                
-                // Extract plugin to PhpStorm plugins directory
-                copy {
-                    from(zipTree(pluginZip))
-                    into(phpstormPluginsDir)
-                }
-                
-                println("✅ Plugin installed to PhpStorm plugins directory")
-                println("📁 Location: ${phpstormPluginsDir}/IntellijAlpine")
-                println("🔄 Restart PhpStorm to load the plugin")
-                println("🧪 Open a project with HTML/Alpine.js files to test")
-            } else {
-                if (!localPhpStorm.exists()) {
-                    println("❌ PhpStorm not found at: ${localPhpStorm.absolutePath}")
-                }
-                if (pluginZip == null) {
-                    println("❌ Plugin ZIP not found in build/distributions")
-                }
-            }
-        }
     }
 }
 
