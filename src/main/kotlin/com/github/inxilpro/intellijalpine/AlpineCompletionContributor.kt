@@ -15,13 +15,5 @@ class AlpineCompletionContributor : CompletionContributor() {
             psiElement(XmlTokenType.XML_NAME).withParent(xmlAttribute()),
             AlpineAttributeCompletionProvider()
         )
-        
-        // Attribute value completion for x-target
-        extend(
-            CompletionType.BASIC,
-            psiElement(XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)
-                .inside(xmlAttributeValue().withParent(xmlAttribute().withName("x-target"))),
-            AlpineTargetAttributeValueCompletionProvider()
-        )
     }
 }

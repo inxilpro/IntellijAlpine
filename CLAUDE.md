@@ -34,11 +34,13 @@ This is an IntelliJ IDEA plugin that adds Alpine.js support. The plugin provides
 
 1. **AttributesProvider** - Central class that provides Alpine attribute descriptors to the IDE's HTML/XML support system. It defines which Alpine attributes are available and their properties.
 
-2. **AlpineJavaScriptAttributeValueInjector** - Injects JavaScript language into Alpine attribute values, enabling proper syntax highlighting and code completion within attributes like `x-data` and `x-show`.
+2. **AlpineJavaScriptAttributeValueInjector** - Injects JavaScript language into Alpine attribute values, enabling proper syntax highlighting and code completion within attributes like `x-data` and `x-show`. Includes comprehensive type definitions for `$ajax` magic property.
 
 3. **AlpineCompletionContributor** - Handles auto-completion logic for Alpine directives, providing context-aware suggestions based on cursor position.
 
-4. **AttributeInfo** - Contains all Alpine directive definitions and metadata, including documentation and allowed contexts for each directive.
+4. **AlpineTargetReferenceContributor** - Provides native IntelliJ reference support for `x-target` attributes, enabling go-to-definition, find usages, refactoring, and error highlighting for ID references.
+
+5. **AttributeInfo** - Contains all Alpine directive definitions and metadata, including documentation and allowed contexts for each directive. Now includes Alpine AJAX directives (`x-target`, `x-headers`, `x-merge`, `x-autofocus`, `x-sync`).
 
 ### Plugin Configuration
 
