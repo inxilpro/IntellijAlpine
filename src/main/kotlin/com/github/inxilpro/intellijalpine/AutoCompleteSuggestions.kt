@@ -99,7 +99,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
 
             addModifiers("$prefix$event", AttributeUtil.eventModifiers)
 
-            if (event.toLowerCase() == "keydown" || event.toLowerCase() == "keyup") {
+            if (event.lowercase() == "keydown" || event.lowercase() == "keyup") {
                 addModifiers("$prefix$event", AttributeUtil.keypressModifiers)
             }
         }
@@ -157,14 +157,6 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         if (withExistingModifiers.endsWith(".origin")) {
             for (origin in origins) {
                 descriptors.add(AttributeInfo("$withExistingModifiers.$origin"))
-            }
-        }
-        
-        // Add merge strategy values for x-merge
-        if (partialAttribute.startsWith("x-merge")) {
-            val mergeStrategies = arrayOf("before", "replace", "update", "prepend", "append", "after", "morph")
-            for (strategy in mergeStrategies) {
-                descriptors.add(AttributeInfo("x-merge:$strategy"))
             }
         }
     }

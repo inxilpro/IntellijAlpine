@@ -19,7 +19,6 @@ object AttributeUtil {
         "x-bind",
         "x-transition",
         "x-wizard", // glhd/alpine-wizard pacakge
-        "x-target", // alpine-ajax
     )
 
     val directives = arrayOf(
@@ -309,10 +308,10 @@ object AttributeUtil {
     }
 
     private fun shouldInjectJavaScript(name: String): Boolean {
-        // x-target:dynamic should still inject JavaScript, but plain x-target should not
+        // `x-target:dynamic` should still inject JavaScript, but plain x-target should not
         if (name == "x-target") return false
         
-        return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name && "x-autofocus" != name && "x-sync" != name
+        return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name && "x-autofocus" != name && "x-sync" != name && "x-merge" != name
     }
 
     private fun buildValidAttributes(htmlTag: HtmlTag): Array<AttributeInfo> {

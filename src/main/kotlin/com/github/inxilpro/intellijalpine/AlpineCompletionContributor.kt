@@ -15,5 +15,13 @@ class AlpineCompletionContributor : CompletionContributor() {
             psiElement(XmlTokenType.XML_NAME).withParent(xmlAttribute()),
             AlpineAttributeCompletionProvider()
         )
+        
+        // Attribute value completion for x-merge
+        extend(
+            CompletionType.BASIC,
+            psiElement(XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)
+                .inside(xmlAttributeValue().withParent(xmlAttribute().withName("x-merge"))),
+            AlpineMergeValueCompletionProvider()
+        )
     }
 }
