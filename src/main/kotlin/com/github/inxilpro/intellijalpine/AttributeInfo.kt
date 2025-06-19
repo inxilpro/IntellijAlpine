@@ -35,6 +35,20 @@ class AttributeInfo(val attribute: String) {
         "x-wizard:step" to "Add wizard step",
         "x-wizard:if" to "Add wizard condition",
         "x-wizard:title" to "Add title to wizard step",
+        // Alpine AJAX directives
+        "x-target" to "Enable AJAX for forms/links",
+        "x-headers" to "Add custom request headers",
+        "x-merge" to "Control HTML merge strategy",
+        "x-autofocus" to "Restore keyboard focus",
+        "x-sync" to "Update non-targeted elements",
+        // Alpine AJAX merge strategies
+        "x-merge:before" to "Insert content before target",
+        "x-merge:replace" to "Replace target element",
+        "x-merge:update" to "Update target's innerHTML",
+        "x-merge:prepend" to "Prepend content to target",
+        "x-merge:append" to "Append content to target",
+        "x-merge:after" to "Insert content after target",
+        "x-merge:morph" to "Morph content preserving state",
     )
 
     val name: String
@@ -51,7 +65,7 @@ class AttributeInfo(val attribute: String) {
 
     @Suppress("ComplexCondition")
     fun isAlpine(): Boolean {
-        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective() || this.isWizard()
+        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective() || this.isWizard() || this.isMerge()
     }
 
     fun isEvent(): Boolean {
@@ -73,13 +87,17 @@ class AttributeInfo(val attribute: String) {
     fun isWizard(): Boolean {
         return "x-wizard:" == prefix
     }
+    
+    fun isMerge(): Boolean {
+        return "x-merge:" == prefix
+    }
 
     fun hasValue(): Boolean {
-        return "x-cloak" != name && "x-ignore" != name
+        return "x-cloak" != name && "x-ignore" != name && "x-sync" != name
     }
 
     fun canBePrefix(): Boolean {
-        return "x-bind" == name || "x-transition" == name || "x-on" == name || "x-wizard" == name
+        return "x-bind" == name || "x-transition" == name || "x-on" == name || "x-wizard" == name || "x-merge" == name
     }
 
     @Suppress("ReturnCount")
@@ -103,6 +121,10 @@ class AttributeInfo(val attribute: String) {
         if (attribute.startsWith("x-wizard:")) {
             return "x-wizard:"
         }
+        
+        if (attribute.startsWith("x-merge:")) {
+            return "x-merge:"
+        }
 
         return ""
     }
@@ -119,6 +141,10 @@ class AttributeInfo(val attribute: String) {
 
         if (isTransition()) {
             return "CSS classes for '$name' transition phase"
+        }
+        
+        if (isMerge()) {
+            return "HTML merge strategy: '$name'"
         }
 
         return typeTexts.getOrDefault(attribute, "Alpine.js")

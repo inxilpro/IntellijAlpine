@@ -89,6 +89,57 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                  */
                 function ${'$'}queryString(value) {}
                 
+                class AlpineAjaxMagic {
+                    /**
+                     * @param {string} url
+                     * @param {Object} options
+                     * @return {Promise<Response>}
+                     */
+                    get(url, options = {}) {}
+                    
+                    /**
+                     * @param {string} url
+                     * @param {Object} data
+                     * @param {Object} options
+                     * @return {Promise<Response>}
+                     */
+                    post(url, data = {}, options = {}) {}
+                    
+                    /**
+                     * @param {string} url
+                     * @param {Object} data
+                     * @param {Object} options
+                     * @return {Promise<Response>}
+                     */
+                    put(url, data = {}, options = {}) {}
+                    
+                    /**
+                     * @param {string} url
+                     * @param {Object} data
+                     * @param {Object} options
+                     * @return {Promise<Response>}
+                     */
+                    patch(url, data = {}, options = {}) {}
+                    
+                    /**
+                     * @param {string} url
+                     * @param {Object} options
+                     * @return {Promise<Response>}
+                     */
+                    delete(url, options = {}) {}
+                    
+                    /**
+                     * @param {string} url
+                     * @param {FormData} formData
+                     * @param {Object} options
+                     * @return {Promise<Response>}
+                     */
+                    submit(url, formData, options = {}) {}
+                }
+                
+                /** @type {AlpineAjaxMagic} */
+                let ${'$'}ajax;
+                
             """.trimIndent()
 
         val coreMagics =

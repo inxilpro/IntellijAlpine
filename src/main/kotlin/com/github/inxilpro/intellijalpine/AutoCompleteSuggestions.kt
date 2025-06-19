@@ -36,6 +36,16 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
             if ("x-intersect" == directive) {
                 addModifiers(directive, AttributeUtil.intersectModifiers)
             }
+            
+            if ("x-target" == directive) {
+                addModifiers(directive, AttributeUtil.targetModifiers)
+                // Add x-target:dynamic as a special case
+                descriptors.add(AttributeInfo("x-target:dynamic"))
+            }
+            
+            if ("x-autofocus" == directive) {
+                addModifiers(directive, AttributeUtil.autofocusModifiers)
+            }
         }
     }
 
@@ -150,6 +160,14 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         if (withExistingModifiers.endsWith(".origin")) {
             for (origin in origins) {
                 descriptors.add(AttributeInfo("$withExistingModifiers.$origin"))
+            }
+        }
+        
+        // Add merge strategy values for x-merge
+        if (partialAttribute.startsWith("x-merge")) {
+            val mergeStrategies = arrayOf("before", "replace", "update", "prepend", "append", "after", "morph")
+            for (strategy in mergeStrategies) {
+                descriptors.add(AttributeInfo("x-merge:$strategy"))
             }
         }
     }
