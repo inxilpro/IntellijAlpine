@@ -15,15 +15,15 @@ interface AlpinePlugin {
 
     fun getPackageNamesForDetection(): List<String>
 
-    fun getTypeText(info: AttributeInfo): String?
+    fun getTypeText(info: AttributeInfo): String? = null
 
-    fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String>
+    fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> = context
 
-    fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions)
+    fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {}
 
-    fun getDirectives(): List<String>
+    fun getDirectives(): List<String> = emptyList()
 
-    fun getPrefixes(): List<String>
+    fun getPrefixes(): List<String> = emptyList()
 
     fun isEnabled(project: Project): Boolean
 
@@ -31,5 +31,5 @@ interface AlpinePlugin {
 
     fun disable(project: Project)
 
-    fun performDetection(project: Project): Boolean
+    fun performDetection(project: Project): Boolean = false
 }
