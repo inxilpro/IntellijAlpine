@@ -13,8 +13,6 @@ import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.XmlAttributeDescriptor
 
 object AttributeUtil {
-    private val validAttributes = mutableMapOf<String, Array<AttributeInfo>>()
-
     private val corePrefixes = listOf(
         "x-on",
         "x-bind",
@@ -224,11 +222,6 @@ object AttributeUtil {
         return templateDirectives.contains(directive)
     }
 
-    // FIXME: Remove this or implement it
-    fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
-        return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
-    }
-
     fun isEvent(attribute: String): Boolean {
         for (prefix in eventPrefixes) {
             if (attribute.startsWith(prefix)) {
@@ -311,49 +304,14 @@ object AttributeUtil {
         for (plugin in enabledPlugins) {
             val pluginDirectives = plugin.getDirectives()
             val pluginPrefixes = plugin.getPrefixes()
-            
+
             // If this attribute belongs to this plugin, let the plugin decide
             if (pluginDirectives.contains(name) || pluginPrefixes.any { name.startsWith("$it:") }) {
                 return plugin.directiveSupportJavaScript(name)
             }
         }
-        
+
         // For core attributes and unknown attributes, default to true (inject JS)
         return true
-    }
-
-    private fun buildValidAttributes(htmlTag: HtmlTag): Array<AttributeInfo> {
-        val descriptors = mutableListOf<AttributeInfo>()
-        val projectDirectives = getDirectivesForProject(htmlTag.project)
-
-        for (directive in projectDirectives) {
-            if (htmlTag.name != "template" && isTemplateDirective(directive)) {
-                continue
-            }
-
-            descriptors.add(AttributeInfo(directive))
-        }
-
-        for (descriptor in getDefaultHtmlAttributes(htmlTag)) {
-            if (descriptor.name.startsWith("on")) {
-                val event = descriptor.name.substring(2)
-                for (prefix in eventPrefixes) {
-                    descriptors.add(AttributeInfo(prefix + event))
-                }
-            } else {
-                for (prefix in bindPrefixes) {
-                    descriptors.add(AttributeInfo(prefix + descriptor.name))
-                }
-            }
-        }
-
-        return descriptors.toTypedArray()
-    }
-
-    private fun getDefaultHtmlAttributes(xmlTag: XmlTag): Array<out XmlAttributeDescriptor> {
-        val tagDescriptor = xmlTag.descriptor as? HtmlElementDescriptorImpl
-        val descriptor = tagDescriptor ?: HtmlNSDescriptorImpl.guessTagForCommonAttributes(xmlTag)
-
-        return (descriptor as? HtmlElementDescriptorImpl)?.getDefaultAttributeDescriptors(xmlTag) ?: emptyArray()
     }
 }
