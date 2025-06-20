@@ -149,12 +149,7 @@ class AlpineAjaxPlugin : AlpinePlugin {
     }
     
     private fun isAlpineAjaxScriptSrc(src: String): Boolean {
-        return src.contains("alpine-ajax", ignoreCase = true) ||
-               src.contains("imacrayon/alpine-ajax", ignoreCase = true) ||
-               src.contains("unpkg.com/@imacrayon/alpine-ajax", ignoreCase = true) ||
-               src.contains("jsdelivr.net/npm/@imacrayon/alpine-ajax", ignoreCase = true) ||
-               src.contains("unpkg.com/alpine-ajax", ignoreCase = true) ||
-               src.contains("jsdelivr.net/npm/alpine-ajax", ignoreCase = true)
+        return src.contains("alpine-ajax", ignoreCase = true)
     }
     
     private fun hasAlpineAjaxScriptTagsInContent(content: String): Boolean {
