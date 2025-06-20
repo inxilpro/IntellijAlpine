@@ -58,11 +58,8 @@ object AttributeUtil {
         get() = coreDirectives + ajaxDirectives
 
     fun getDirectivesForProject(project: com.intellij.openapi.project.Project, contextFile: com.intellij.psi.PsiFile?): Array<String> {
-        return if (AlpineProjectSettingsState.getInstance(project).enableAlpineAjax) {
-            coreDirectives + ajaxDirectives
-        } else {
-            coreDirectives
-        }
+        val pluginDirectives = AlpinePluginRegistry.getInstance().getAllDirectives(project)
+        return (coreDirectives.toList() + pluginDirectives).toTypedArray()
     }
 
     val templateDirectives = arrayOf(

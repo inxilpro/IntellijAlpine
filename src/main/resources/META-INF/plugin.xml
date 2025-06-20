@@ -15,6 +15,10 @@
     <depends>com.intellij.modules.xml</depends>
     <depends>JavaScript</depends>
 
+    <extensionPoints>
+        <extensionPoint name="alpinePlugin" interface="com.github.inxilpro.intellijalpine.AlpinePlugin"/>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="com.intellij">
         <!-- com.jetbrains.php.blade.psi.BladePsiLanguageInjectionHost -->
         <multiHostInjector implementation="com.github.inxilpro.intellijalpine.AlpineJavaScriptAttributeValueInjector"/>
@@ -29,11 +33,16 @@
         <codeInsight.lineMarkerProvider language="HTML"
                 implementationClass="com.github.inxilpro.intellijalpine.AlpineLineMarkerProvider" />
         <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.AlpineSettingsState"/>
+        <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.AlpinePluginRegistry"/>
         <projectService serviceImplementation="com.github.inxilpro.intellijalpine.AlpineProjectSettingsState"/>
         <projectConfigurable parentId="Settings.JavaScript" instance="com.github.inxilpro.intellijalpine.AlpineSettingsConfigurable"
                              id="com.github.inxilpro.intellijalpine.AlpineSettingsConfigurable"
                              displayName="Alpine.js" />
         <postStartupActivity implementation="com.github.inxilpro.intellijalpine.AlpineProjectActivity"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.github.inxilpro.intellijalpine">
+        <alpinePlugin implementation="com.github.inxilpro.intellijalpine.AlpineAjaxPlugin"/>
     </extensions>
 
     <projectListeners>

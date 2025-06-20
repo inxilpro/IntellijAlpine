@@ -12,7 +12,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
-import com.intellij.refactoring.suggested.startOffset
 import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
 import java.util.*
@@ -192,14 +191,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
-        var magics = globalMagics
-        
-        // Conditionally add alpine-ajax magics if enabled in project settings
-        if (AlpineProjectSettingsState.getInstance(host.project).enableAlpineAjax) {
-            magics += AlpineAjaxDetector.getAlpineAjaxMagics()
-        }
-        
-        val context = MutablePair(magics, "")
+        val globalContext = MutablePair(globalMagics, "");
+        val context = AlpinePluginRegistry.getInstance().injectAllJsContext(host.project, globalContext)
 
         if ("x-data" != directive) {
             context.left = addTypingToCoreMagics(host) + context.left

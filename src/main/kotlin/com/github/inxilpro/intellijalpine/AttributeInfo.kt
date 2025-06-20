@@ -35,12 +35,6 @@ class AttributeInfo(val attribute: String) {
         "x-wizard:step" to "Add wizard step",
         "x-wizard:if" to "Add wizard condition",
         "x-wizard:title" to "Add title to wizard step",
-        // Alpine AJAX directives
-        "x-target" to "Enable AJAX for forms/links",
-        "x-headers" to "Add custom request headers",
-        "x-merge" to "Control HTML merge strategy",
-        "x-autofocus" to "Restore keyboard focus",
-        "x-sync" to "Update non-targeted elements",
     )
 
     val name: String
@@ -81,7 +75,7 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun isTarget(): Boolean {
-        return "x-target:" == prefix
+        return "x-target:" == prefix // TODO: Move to plugin system (and in canBePrefix)
     }
 
     fun hasValue(): Boolean {
@@ -135,10 +129,12 @@ class AttributeInfo(val attribute: String) {
             return "CSS classes for '$name' transition phase"
         }
 
-        if (isTarget()) {
-            return "Alpine AJAX target"
+        // First check plugin registry for type text
+        val pluginTypeText = AlpinePluginRegistry.getInstance().getTypeText(this)
+        if (pluginTypeText != null) {
+            return pluginTypeText
         }
-
+        
         return typeTexts.getOrDefault(attribute, "Alpine.js")
     }
 }
