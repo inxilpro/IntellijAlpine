@@ -36,11 +36,11 @@ object LanguageUtil {
     }
 
     private fun isHtmlBasedLanguage(language: Language): Boolean {
-        if (language.isKindOf(HTMLLanguage.Companion.INSTANCE)) {
+        if (language.isKindOf(HTMLLanguage.INSTANCE)) {
             return true
         }
 
-        if (language.isKindOf(XMLLanguage.Companion.INSTANCE)) {
+        if (language.isKindOf(XMLLanguage.INSTANCE)) {
             return TEMPLATE_LANGUAGE_IDS.contains(language.id)
         }
 
