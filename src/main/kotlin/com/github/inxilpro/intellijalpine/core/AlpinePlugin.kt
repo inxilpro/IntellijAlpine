@@ -11,6 +11,8 @@ interface AlpinePlugin {
         val EP_NAME = ExtensionPointName.Companion.create<AlpinePlugin>("com.github.inxilpro.intellijalpine.alpinePlugin")
     }
 
+    fun getPluginName(): String
+
     fun getPackageDisplayName(): String
 
     fun getPackageNamesForDetection(): List<String>
@@ -24,12 +26,6 @@ interface AlpinePlugin {
     fun getDirectives(): List<String> = emptyList()
 
     fun getPrefixes(): List<String> = emptyList()
-
-    fun isEnabled(project: Project): Boolean
-
-    fun enable(project: Project)
-
-    fun disable(project: Project)
 
     fun performDetection(project: Project): Boolean = false
 }

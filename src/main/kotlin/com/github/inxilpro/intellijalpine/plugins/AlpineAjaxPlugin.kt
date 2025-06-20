@@ -44,6 +44,8 @@ class AlpineAjaxPlugin : AlpinePlugin {
         "nofocus",
     )
 
+    override fun getPluginName(): String = "alpine-ajax"
+
     override fun getPackageDisplayName(): String = "alpine-ajax"
 
     override fun getPackageNamesForDetection(): List<String> = listOf(
@@ -98,18 +100,6 @@ class AlpineAjaxPlugin : AlpinePlugin {
     override fun getPrefixes(): List<String> = listOf(
         "x-target"
     )
-
-    override fun isEnabled(project: Project): Boolean {
-        return AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineAjax
-    }
-
-    override fun enable(project: Project) {
-        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineAjax = true
-    }
-
-    override fun disable(project: Project) {
-        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineAjax = false
-    }
 
     override fun performDetection(project: Project): Boolean {
         return hasAlpineAjaxInPackageJson(project) ||

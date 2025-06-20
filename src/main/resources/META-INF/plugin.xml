@@ -33,7 +33,6 @@
         <codeInsight.lineMarkerProvider language="HTML"
                 implementationClass="com.github.inxilpro.intellijalpine.core.AlpineLineMarkerProvider" />
         <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.settings.AlpineSettingsState"/>
-        <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry"/>
         <projectService serviceImplementation="com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState"/>
         <projectConfigurable parentId="Settings.JavaScript" instance="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"
                              id="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"

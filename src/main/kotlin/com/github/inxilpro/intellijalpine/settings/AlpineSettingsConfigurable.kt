@@ -1,5 +1,6 @@
 package com.github.inxilpro.intellijalpine.settings
 
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 import com.github.inxilpro.intellijalpine.settings.AlpineSettingsComponent
 import com.github.inxilpro.intellijalpine.settings.AlpineSettingsState
 import com.intellij.openapi.options.Configurable
@@ -28,10 +29,15 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
 
         // Check project settings if we have a project
         if (project != null) {
-            val projectSettings = AlpineProjectSettingsState.getInstance(project)
-            isModified = isModified ||
-                         mySettingsComponent?.enableAlpineAjaxStatus != projectSettings.enableAlpineAjax ||
-                         mySettingsComponent?.enableAlpineWizardStatus != projectSettings.enableAlpineWizard
+            val registry = AlpinePluginRegistry.getInstance()
+            registry.getRegisteredPlugins().forEach { plugin ->
+                val pluginName = plugin.getPluginName()
+                val currentStatus = mySettingsComponent?.getPluginStatus(pluginName) ?: false
+                val savedStatus = registry.isPluginEnabled(project, pluginName)
+                if (currentStatus != savedStatus) {
+                    isModified = true
+                }
+            }
         }
 
         return isModified
@@ -43,9 +49,16 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
 
         // Apply project settings if we have a project
         if (project != null) {
-            val projectSettings = AlpineProjectSettingsState.getInstance(project)
-            projectSettings.enableAlpineAjax = mySettingsComponent?.enableAlpineAjaxStatus != false
-            projectSettings.enableAlpineWizard = mySettingsComponent?.enableAlpineWizardStatus != false
+            val registry = AlpinePluginRegistry.getInstance()
+            registry.getRegisteredPlugins().forEach { plugin ->
+                val pluginName = plugin.getPluginName()
+                val enabled = mySettingsComponent?.getPluginStatus(pluginName) ?: false
+                if (enabled) {
+                    registry.enablePlugin(project, pluginName)
+                } else {
+                    registry.disablePlugin(project, pluginName)
+                }
+            }
         }
     }
 
@@ -55,9 +68,12 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
 
         // Reset project settings if we have a project
         if (project != null) {
-            val projectSettings = AlpineProjectSettingsState.getInstance(project)
-            mySettingsComponent?.enableAlpineAjaxStatus = projectSettings.enableAlpineAjax
-            mySettingsComponent?.enableAlpineWizardStatus = projectSettings.enableAlpineWizard
+            val registry = AlpinePluginRegistry.getInstance()
+            registry.getRegisteredPlugins().forEach { plugin ->
+                val pluginName = plugin.getPluginName()
+                val enabled = registry.isPluginEnabled(project, pluginName)
+                mySettingsComponent?.setPluginStatus(pluginName, enabled)
+            }
         }
     }
 

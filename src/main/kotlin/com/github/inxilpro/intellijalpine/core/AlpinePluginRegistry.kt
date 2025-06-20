@@ -2,6 +2,7 @@ package com.github.inxilpro.intellijalpine.core
 
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
+import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -28,7 +29,20 @@ class AlpinePluginRegistry {
     }
 
     fun getEnabledPlugins(project: Project): List<AlpinePlugin> {
-        return getRegisteredPlugins().filter { it.isEnabled(project) }
+        val settings = AlpineProjectSettingsState.getInstance(project)
+        return getRegisteredPlugins().filter { settings.isPluginEnabled(it.getPluginName()) }
+    }
+
+    fun isPluginEnabled(project: Project, pluginName: String): Boolean {
+        return AlpineProjectSettingsState.getInstance(project).isPluginEnabled(pluginName)
+    }
+
+    fun enablePlugin(project: Project, pluginName: String) {
+        AlpineProjectSettingsState.getInstance(project).setPluginEnabled(pluginName, true)
+    }
+
+    fun disablePlugin(project: Project, pluginName: String) {
+        AlpineProjectSettingsState.getInstance(project).setPluginEnabled(pluginName, false)
     }
 
     fun getAllDirectives(project: Project): List<String> {
@@ -55,8 +69,8 @@ class AlpinePluginRegistry {
 
     fun checkAndAutoEnablePlugins(project: Project) {
         getRegisteredPlugins().forEach { plugin ->
-            if (!plugin.isEnabled(project) && plugin.performDetection(project)) {
-                plugin.enable(project)
+            if (!isPluginEnabled(project, plugin.getPluginName()) && plugin.performDetection(project)) {
+                enablePlugin(project, plugin.getPluginName())
             }
         }
 
@@ -86,8 +100,8 @@ class AlpinePluginRegistry {
                     // Re-check and potentially auto-enable plugins on package.json changes
                     ApplicationManager.getApplication().runReadAction {
                         getRegisteredPlugins().forEach { plugin ->
-                            if (!plugin.isEnabled(project) && plugin.performDetection(project)) {
-                                plugin.enable(project)
+                            if (!isPluginEnabled(project, plugin.getPluginName()) && plugin.performDetection(project)) {
+                                enablePlugin(project, plugin.getPluginName())
                             }
                         }
                     }

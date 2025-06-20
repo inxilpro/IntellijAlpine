@@ -18,6 +18,8 @@ import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineWizardPlugin : AlpinePlugin {
 
+    override fun getPluginName(): String = "alpine-wizard"
+
     override fun getPackageDisplayName(): String = "alpine-wizard"
 
     override fun getPackageNamesForDetection(): List<String> = listOf(
@@ -107,18 +109,6 @@ class AlpineWizardPlugin : AlpinePlugin {
     override fun getPrefixes(): List<String> = listOf(
         "x-wizard"
     )
-
-    override fun isEnabled(project: Project): Boolean {
-        return AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineWizard
-    }
-
-    override fun enable(project: Project) {
-        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineWizard = true
-    }
-
-    override fun disable(project: Project) {
-        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineWizard = false
-    }
 
     override fun performDetection(project: Project): Boolean {
         return hasAlpineWizardInPackageJson(project) ||

@@ -8,8 +8,15 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(name = "com.github.inxilpro.intellijalpine.AlpineProjectSettingsState", storages = [Storage("alpine-project.xml")])
 class AlpineProjectSettingsState : PersistentStateComponent<AlpineProjectSettingsState?> {
-    var enableAlpineAjax = false
-    var enableAlpineWizard = false
+    var enabledPlugins = mutableMapOf<String, Boolean>()
+
+    fun isPluginEnabled(pluginName: String): Boolean {
+        return enabledPlugins[pluginName] ?: false
+    }
+
+    fun setPluginEnabled(pluginName: String, enabled: Boolean) {
+        enabledPlugins[pluginName] = enabled
+    }
 
     override fun getState(): AlpineProjectSettingsState? {
         return this

@@ -1,5 +1,6 @@
 package com.github.inxilpro.intellijalpine.settings
 
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 import com.intellij.openapi.project.Project
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.components.JBCheckBox
@@ -11,8 +12,7 @@ class AlpineSettingsComponent(private val project: Project?) {
     val panel: JPanel
 
     private val myShowGutterIconsStatus = JBCheckBox("Show Alpine gutter icons")
-    private val myEnableAlpineAjaxStatus = JBCheckBox("Enable alpine-ajax support for this project")
-    private val myEnableAlpineWizardStatus = JBCheckBox("Enable alpine-wizard support for this project")
+    private val pluginCheckBoxes = mutableMapOf<String, JBCheckBox>()
 
     val preferredFocusedComponent: JComponent
         get() = myShowGutterIconsStatus
@@ -23,17 +23,13 @@ class AlpineSettingsComponent(private val project: Project?) {
             myShowGutterIconsStatus.isSelected = newStatus
         }
 
-    var enableAlpineAjaxStatus: Boolean
-        get() = myEnableAlpineAjaxStatus.isSelected
-        set(newStatus) {
-            myEnableAlpineAjaxStatus.isSelected = newStatus
-        }
+    fun getPluginStatus(pluginName: String): Boolean {
+        return pluginCheckBoxes[pluginName]?.isSelected ?: false
+    }
 
-    var enableAlpineWizardStatus: Boolean
-        get() = myEnableAlpineWizardStatus.isSelected
-        set(newStatus) {
-            myEnableAlpineWizardStatus.isSelected = newStatus
-        }
+    fun setPluginStatus(pluginName: String, enabled: Boolean) {
+        pluginCheckBoxes[pluginName]?.isSelected = enabled
+    }
 
     init {
         val builder = FormBuilder.createFormBuilder()
@@ -43,8 +39,13 @@ class AlpineSettingsComponent(private val project: Project?) {
         // Only show project settings if we have a project context
         if (project != null) {
             builder.addComponent(TitledSeparator("Project Settings"))
-                .addComponent(myEnableAlpineAjaxStatus, 1)
-                .addComponent(myEnableAlpineWizardStatus, 1)
+            
+            // Dynamically add checkboxes for each registered plugin
+            AlpinePluginRegistry.getInstance().getRegisteredPlugins().forEach { plugin ->
+                val checkBox = JBCheckBox("Enable ${plugin.getPackageDisplayName()} support for this project")
+                pluginCheckBoxes[plugin.getPluginName()] = checkBox
+                builder.addComponent(checkBox, 1)
+            }
         }
 
         panel = builder.addComponentFillVertically(JPanel(), 0).panel
