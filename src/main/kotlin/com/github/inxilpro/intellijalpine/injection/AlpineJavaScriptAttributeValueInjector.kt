@@ -151,7 +151,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
         val globalContext = MutablePair(globalMagics, "");
-        val context = AlpinePluginRegistry.Companion.getInstance().injectAllJsContext(host.project, globalContext)
+        val context = AlpinePluginRegistry.getInstance().injectAllJsContext(host.project, globalContext)
 
         if ("x-data" != directive) {
             context.left = addTypingToCoreMagics(host) + context.left

@@ -207,12 +207,12 @@ object AttributeUtil {
     )
 
     fun getDirectivesForProject(project: Project): Array<String> {
-        val pluginDirectives = AlpinePluginRegistry.Companion.getInstance().getAllDirectives(project)
+        val pluginDirectives = AlpinePluginRegistry.getInstance().getAllDirectives(project)
         return (directives.toList() + pluginDirectives).toTypedArray()
     }
 
     fun getXmlPrefixesForProject(project: Project): Array<String> {
-        val pluginPrefixes = AlpinePluginRegistry.Companion.getInstance().getAllPrefixes(project)
+        val pluginPrefixes = AlpinePluginRegistry.getInstance().getAllPrefixes(project)
         return (prefixes.toList() + pluginPrefixes).toTypedArray()
     }
 
