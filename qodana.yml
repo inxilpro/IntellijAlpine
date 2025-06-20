@@ -3,15 +3,10 @@
 
 version: "1.0"
 linter: jetbrains/qodana-jvm-community:2025.1
-projectJDK: "17"
+projectJDK: "21"
 profile:
   name: qodana.recommended
 exclude:
   - name: All
     paths:
       - .qodana
-      - build
-      - .gradle
-      - .git
-      - src/test
-      - build.gradle.kts

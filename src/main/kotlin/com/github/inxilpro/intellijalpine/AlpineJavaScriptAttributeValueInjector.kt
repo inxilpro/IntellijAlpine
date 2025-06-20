@@ -2,7 +2,7 @@ package com.github.inxilpro.intellijalpine
 
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
-import com.intellij.lang.javascript.JavascriptLanguage
+import com.intellij.lang.Language
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
@@ -146,7 +146,9 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
         var (prefix, suffix) = getPrefixAndSuffix(attributeName, host)
 
-        registrar.startInjecting(JavascriptLanguage.INSTANCE)
+        val jsLanguage = Language.findLanguageByID("JavaScript") 
+            ?: throw IllegalStateException("JavaScript language not found")
+        registrar.startInjecting(jsLanguage)
 
         ranges.forEachIndexed { index, range ->
             if (index == ranges.lastIndex) {
