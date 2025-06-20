@@ -21,7 +21,7 @@ object AttributeUtil {
         "x-wizard", // glhd/alpine-wizard pacakge
     )
 
-    val directives = arrayOf(
+    private val coreDirectives = arrayOf(
         "x-data",
         "x-init",
         "x-show",
@@ -44,14 +44,26 @@ object AttributeUtil {
         "x-trap",
         "x-collapse",
         "x-spread", // deprecated
+    )
 
-        // Alpine AJAX directives
+    private val ajaxDirectives = arrayOf(
         "x-target",
         "x-headers",
         "x-merge",
         "x-autofocus",
         "x-sync",
     )
+
+    val directives: Array<String>
+        get() = coreDirectives + ajaxDirectives
+
+    fun getDirectivesForProject(project: com.intellij.openapi.project.Project, contextFile: com.intellij.psi.PsiFile?): Array<String> {
+        return if (AlpineProjectSettingsState.getInstance(project).enableAlpineAjax) {
+            coreDirectives + ajaxDirectives
+        } else {
+            coreDirectives
+        }
+    }
 
     val templateDirectives = arrayOf(
         "x-if",
@@ -320,8 +332,9 @@ object AttributeUtil {
 
     private fun buildValidAttributes(htmlTag: HtmlTag): Array<AttributeInfo> {
         val descriptors = mutableListOf<AttributeInfo>()
+        val projectDirectives = getDirectivesForProject(htmlTag.project, htmlTag.containingFile)
 
-        for (directive in directives) {
+        for (directive in projectDirectives) {
             if (htmlTag.name != "template" && isTemplateDirective(directive)) {
                 continue
             }

@@ -128,16 +128,6 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
-
-        val ajaxMagics = """
-            /**
-             * @param {string} action
-             * @param {Object} options
-             * @return string[]
-             */
-            function ${'$'}ajax(action, options = {}) {}
-            
-        """.trimIndent()
     }
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
@@ -202,7 +192,14 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
-        val context = MutablePair(globalMagics + ajaxMagics, "")
+        var magics = globalMagics
+        
+        // Conditionally add alpine-ajax magics if enabled in project settings
+        if (AlpineProjectSettingsState.getInstance(host.project).enableAlpineAjax) {
+            magics += AlpineAjaxDetector.getAlpineAjaxMagics()
+        }
+        
+        val context = MutablePair(magics, "")
 
         if ("x-data" != directive) {
             context.left = addTypingToCoreMagics(host) + context.left
