@@ -80,7 +80,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
     }
 
     private fun addPlugins() {
-        AlpinePluginRegistry.getInstance().injectAllAutoCompleteSuggestions(htmlTag.project, this)
+        AlpinePluginRegistry.instance.injectAllAutoCompleteSuggestions(htmlTag.project, this)
     }
 
     private fun addEvent(descriptor: XmlAttributeDescriptor) {

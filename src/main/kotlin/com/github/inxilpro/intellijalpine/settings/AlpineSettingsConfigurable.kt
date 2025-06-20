@@ -24,12 +24,12 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     }
 
     override fun isModified(): Boolean {
-        val appSettings = AlpineSettingsState.Companion.instance
+        val appSettings = AlpineSettingsState.instance
         var isModified = mySettingsComponent?.showGutterIconsStatus != appSettings.showGutterIcons
 
         // Check project settings if we have a project
         if (project != null) {
-            val registry = AlpinePluginRegistry.getInstance()
+            val registry = AlpinePluginRegistry.instance
             registry.getRegisteredPlugins().forEach { plugin ->
                 val pluginName = plugin.getPluginName()
                 val currentStatus = mySettingsComponent?.getPluginStatus(pluginName) ?: false
@@ -44,12 +44,12 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     }
 
     override fun apply() {
-        val appSettings = AlpineSettingsState.Companion.instance
+        val appSettings = AlpineSettingsState.instance
         appSettings.showGutterIcons = mySettingsComponent?.showGutterIconsStatus != false
 
         // Apply project settings if we have a project
         if (project != null) {
-            val registry = AlpinePluginRegistry.getInstance()
+            val registry = AlpinePluginRegistry.instance
             registry.getRegisteredPlugins().forEach { plugin ->
                 val pluginName = plugin.getPluginName()
                 val enabled = mySettingsComponent?.getPluginStatus(pluginName) ?: false
@@ -63,12 +63,12 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     }
 
     override fun reset() {
-        val appSettings = AlpineSettingsState.Companion.instance
+        val appSettings = AlpineSettingsState.instance
         mySettingsComponent?.showGutterIconsStatus = appSettings.showGutterIcons
 
         // Reset project settings if we have a project
         if (project != null) {
-            val registry = AlpinePluginRegistry.getInstance()
+            val registry = AlpinePluginRegistry.instance
             registry.getRegisteredPlugins().forEach { plugin ->
                 val pluginName = plugin.getPluginName()
                 val enabled = registry.isPluginEnabled(project, pluginName)

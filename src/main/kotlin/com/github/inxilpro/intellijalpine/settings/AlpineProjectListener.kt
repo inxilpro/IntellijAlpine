@@ -6,6 +6,6 @@ import com.intellij.openapi.project.ProjectManagerListener
 
 class AlpineProjectListener : ProjectManagerListener {
     override fun projectClosed(project: Project) {
-        AlpinePluginRegistry.getInstance().cleanup(project)
+        AlpinePluginRegistry.instance.cleanup(project)
     }
 }

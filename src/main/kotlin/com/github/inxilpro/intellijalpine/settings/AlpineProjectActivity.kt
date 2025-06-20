@@ -8,7 +8,7 @@ import com.intellij.openapi.startup.ProjectActivity
 class AlpineProjectActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
         readAction {
-            AlpinePluginRegistry.getInstance().checkAndAutoEnablePlugins(project)
+            AlpinePluginRegistry.instance.checkAndAutoEnablePlugins(project)
         }
     }
 }

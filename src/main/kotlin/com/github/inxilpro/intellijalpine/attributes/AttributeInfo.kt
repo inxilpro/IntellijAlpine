@@ -116,7 +116,7 @@ class AttributeInfo(val attribute: String) {
         }
 
         // First check plugin registry for type text
-        val pluginTypeText = AlpinePluginRegistry.Companion.getInstance().getTypeText(this)
+        val pluginTypeText = AlpinePluginRegistry.instance.getTypeText(this)
         if (pluginTypeText != null) {
             return pluginTypeText
         }

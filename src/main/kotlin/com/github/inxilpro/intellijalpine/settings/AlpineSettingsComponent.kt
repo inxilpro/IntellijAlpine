@@ -41,7 +41,7 @@ class AlpineSettingsComponent(private val project: Project?) {
             builder.addComponent(TitledSeparator("Project Settings"))
             
             // Dynamically add checkboxes for each registered plugin
-            AlpinePluginRegistry.getInstance().getRegisteredPlugins().forEach { plugin ->
+            AlpinePluginRegistry.instance.getRegisteredPlugins().forEach { plugin ->
                 val checkBox = JBCheckBox("Enable ${plugin.getPackageDisplayName()} support for this project")
                 pluginCheckBoxes[plugin.getPluginName()] = checkBox
                 builder.addComponent(checkBox, 1)

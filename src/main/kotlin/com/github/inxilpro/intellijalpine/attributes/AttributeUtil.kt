@@ -20,7 +20,7 @@ object AttributeUtil {
     )
 
     val prefixes: List<String> by lazy {
-        AlpinePluginRegistry.getInstance().getRegisteredPlugins()
+        AlpinePluginRegistry.instance.getRegisteredPlugins()
             .flatMap { it.getPrefixes() }
             .union(corePrefixes)
             .toList()
@@ -52,7 +52,7 @@ object AttributeUtil {
     )
 
     val directives: List<String> by lazy {
-        AlpinePluginRegistry.getInstance().getRegisteredPlugins()
+        AlpinePluginRegistry.instance.getRegisteredPlugins()
             .flatMap { it.getDirectives() }
             .union(coreDirectives)
             .toList()
@@ -205,12 +205,12 @@ object AttributeUtil {
     )
 
     fun getDirectivesForProject(project: Project): Array<String> {
-        val pluginDirectives = AlpinePluginRegistry.getInstance().getAllDirectives(project)
+        val pluginDirectives = AlpinePluginRegistry.instance.getAllDirectives(project)
         return (directives.toList() + pluginDirectives).toTypedArray()
     }
 
     fun getXmlPrefixesForProject(project: Project): Array<String> {
-        val pluginPrefixes = AlpinePluginRegistry.getInstance().getAllPrefixes(project)
+        val pluginPrefixes = AlpinePluginRegistry.instance.getAllPrefixes(project)
         return (prefixes.toList() + pluginPrefixes).toTypedArray()
     }
 
@@ -300,7 +300,7 @@ object AttributeUtil {
         }
 
 
-        val enabledPlugins = AlpinePluginRegistry.getInstance().getEnabledPlugins(project)
+        val enabledPlugins = AlpinePluginRegistry.instance.getEnabledPlugins(project)
         for (plugin in enabledPlugins) {
             val pluginDirectives = plugin.getDirectives()
             val pluginPrefixes = plugin.getPrefixes()

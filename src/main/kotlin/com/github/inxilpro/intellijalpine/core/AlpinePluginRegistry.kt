@@ -18,10 +18,8 @@ class AlpinePluginRegistry {
     private val listeners = ConcurrentHashMap<String, MessageBusConnection>()
 
     companion object {
-        fun getInstance(): AlpinePluginRegistry {
-            return ApplicationManager.getApplication()
-                .getService(AlpinePluginRegistry::class.java)
-        }
+        val instance: AlpinePluginRegistry
+            get() = ApplicationManager.getApplication().getService(AlpinePluginRegistry::class.java)
     }
 
     fun getRegisteredPlugins(): List<AlpinePlugin> {

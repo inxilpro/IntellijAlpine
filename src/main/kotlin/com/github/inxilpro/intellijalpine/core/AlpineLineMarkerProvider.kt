@@ -21,7 +21,7 @@ class AlpineLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>?>
     ) {
-        if (!AlpineSettingsState.Companion.instance.showGutterIcons) return
+        if (!AlpineSettingsState.instance.showGutterIcons) return
 
         if (element is XmlAttribute && element.descriptor is AlpineAttributeDescriptor) {
 
