@@ -51,7 +51,7 @@ class AttributeInfo(val attribute: String) {
 
     @Suppress("ComplexCondition")
     fun isAlpine(): Boolean {
-        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective()
+        return this.isDirective() || this.canBePrefix()
     }
 
     fun isEvent(): Boolean {
