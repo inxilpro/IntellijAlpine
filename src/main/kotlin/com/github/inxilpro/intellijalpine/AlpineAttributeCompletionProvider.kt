@@ -22,7 +22,7 @@ class AlpineAttributeCompletionProvider(vararg items: String) : CompletionProvid
     ) {
         val position = parameters.position
 
-        if (HTMLLanguage.INSTANCE !in position.containingFile.viewProvider.languages) {
+        if (!LanguageUtil.supportsAlpineJs(position.containingFile)) {
             return
         }
 

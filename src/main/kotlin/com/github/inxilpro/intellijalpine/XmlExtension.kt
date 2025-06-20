@@ -9,12 +9,9 @@ import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.HtmlXmlExtension
 
 class XmlExtension : HtmlXmlExtension() {
-    override fun isAvailable(file: PsiFile?): Boolean {
-        if (file != null) {
-            return HTMLLanguage.INSTANCE in file.viewProvider.languages
-        }
-
-        return false
+        override fun isAvailable(file: PsiFile?): Boolean {
+        if (file == null) return false
+        return LanguageUtil.supportsAlpineJs(file)
     }
 
     override fun getPrefixDeclaration(context: XmlTag, namespacePrefix: String?): SchemaPrefix? {
