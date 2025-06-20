@@ -36,8 +36,8 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        var platformType = providers.gradleProperty("platformType").toString()
-        var platformVersion = providers.gradleProperty("platformVersion").toString()
+        var platformType = providers.gradleProperty("platformType").get()
+        var platformVersion = providers.gradleProperty("platformVersion").get()
 
         // Auto-detect local PhpStorm installation if possible
         val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
