@@ -89,57 +89,6 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
                  */
                 function ${'$'}queryString(value) {}
                 
-                class AlpineAjaxMagic {
-                    /**
-                     * @param {string} url
-                     * @param {Object} options
-                     * @return {Promise<Response>}
-                     */
-                    get(url, options = {}) {}
-                    
-                    /**
-                     * @param {string} url
-                     * @param {Object} data
-                     * @param {Object} options
-                     * @return {Promise<Response>}
-                     */
-                    post(url, data = {}, options = {}) {}
-                    
-                    /**
-                     * @param {string} url
-                     * @param {Object} data
-                     * @param {Object} options
-                     * @return {Promise<Response>}
-                     */
-                    put(url, data = {}, options = {}) {}
-                    
-                    /**
-                     * @param {string} url
-                     * @param {Object} data
-                     * @param {Object} options
-                     * @return {Promise<Response>}
-                     */
-                    patch(url, data = {}, options = {}) {}
-                    
-                    /**
-                     * @param {string} url
-                     * @param {Object} options
-                     * @return {Promise<Response>}
-                     */
-                    delete(url, options = {}) {}
-                    
-                    /**
-                     * @param {string} url
-                     * @param {FormData} formData
-                     * @param {Object} options
-                     * @return {Promise<Response>}
-                     */
-                    submit(url, formData, options = {}) {}
-                }
-                
-                /** @type {AlpineAjaxMagic} */
-                let ${'$'}ajax;
-                
             """.trimIndent()
 
         val coreMagics =
@@ -179,6 +128,16 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             """.trimIndent()
 
         val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
+
+        val ajaxMagics = """
+            /**
+             * @param {string} action
+             * @param {Object} options
+             * @return string[]
+             */
+            function ${'$'}ajax(action, options = {}) {}
+            
+        """.trimIndent()
     }
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
@@ -243,7 +202,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
-        val context = MutablePair(globalMagics, "")
+        val context = MutablePair(globalMagics + ajaxMagics, "")
 
         if ("x-data" != directive) {
             context.left = addTypingToCoreMagics(host) + context.left
