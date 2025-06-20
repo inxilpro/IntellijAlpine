@@ -27,7 +27,9 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
         // Check project settings if we have a project
         if (project != null) {
             val projectSettings = AlpineProjectSettingsState.getInstance(project)
-            isModified = isModified || mySettingsComponent?.enableAlpineAjaxStatus != projectSettings.enableAlpineAjax
+            isModified = isModified || 
+                         mySettingsComponent?.enableAlpineAjaxStatus != projectSettings.enableAlpineAjax ||
+                         mySettingsComponent?.enableAlpineWizardStatus != projectSettings.enableAlpineWizard
         }
 
         return isModified
@@ -41,6 +43,7 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
         if (project != null) {
             val projectSettings = AlpineProjectSettingsState.getInstance(project)
             projectSettings.enableAlpineAjax = mySettingsComponent?.enableAlpineAjaxStatus != false
+            projectSettings.enableAlpineWizard = mySettingsComponent?.enableAlpineWizardStatus != false
         }
     }
 
@@ -52,6 +55,7 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
         if (project != null) {
             val projectSettings = AlpineProjectSettingsState.getInstance(project)
             mySettingsComponent?.enableAlpineAjaxStatus = projectSettings.enableAlpineAjax
+            mySettingsComponent?.enableAlpineWizardStatus = projectSettings.enableAlpineWizard
         }
     }
 

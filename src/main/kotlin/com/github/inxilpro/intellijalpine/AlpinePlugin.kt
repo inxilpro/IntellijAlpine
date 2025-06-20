@@ -19,6 +19,8 @@ interface AlpinePlugin {
 
     fun getDirectives(): List<String>
 
+    fun getPrefixes(): List<String>
+
     fun isEnabled(project: Project): Boolean
 
     fun enable(project: Project)

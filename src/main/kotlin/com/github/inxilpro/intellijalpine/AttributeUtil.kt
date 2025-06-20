@@ -14,12 +14,14 @@ import java.util.Collections
 object AttributeUtil {
     private val validAttributes = mutableMapOf<String, Array<AttributeInfo>>()
 
-    val xmlPrefixes = arrayOf(
+    private val coreXmlPrefixes = arrayOf(
         "x-on",
         "x-bind",
         "x-transition",
-        "x-wizard", // glhd/alpine-wizard pacakge
     )
+    
+    val xmlPrefixes: Array<String>
+        get() = coreXmlPrefixes // TODO: Merge in plugin prefixes
 
     private val coreDirectives = arrayOf(
         "x-data",
@@ -60,6 +62,11 @@ object AttributeUtil {
     fun getDirectivesForProject(project: com.intellij.openapi.project.Project, contextFile: com.intellij.psi.PsiFile?): Array<String> {
         val pluginDirectives = AlpinePluginRegistry.getInstance().getAllDirectives(project)
         return (coreDirectives.toList() + pluginDirectives).toTypedArray()
+    }
+    
+    fun getXmlPrefixesForProject(project: com.intellij.openapi.project.Project): Array<String> {
+        val pluginPrefixes = AlpinePluginRegistry.getInstance().getAllPrefixes(project)
+        return (coreXmlPrefixes.toList() + pluginPrefixes).toTypedArray()
     }
 
     val templateDirectives = arrayOf(

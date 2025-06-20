@@ -43,6 +43,7 @@
 
     <extensions defaultExtensionNs="com.github.inxilpro.intellijalpine">
         <alpinePlugin implementation="com.github.inxilpro.intellijalpine.AlpineAjaxPlugin"/>
+        <alpinePlugin implementation="com.github.inxilpro.intellijalpine.AlpineWizardPlugin"/>
     </extensions>
 
     <projectListeners>

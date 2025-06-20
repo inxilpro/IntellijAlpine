@@ -33,6 +33,10 @@ class AlpinePluginRegistry {
         return getEnabledPlugins(project).flatMap { it.getDirectives() }
     }
     
+    fun getAllPrefixes(project: Project): List<String> {
+        return getEnabledPlugins(project).flatMap { it.getPrefixes() }
+    }
+    
     fun getTypeText(info: AttributeInfo): String? {
         return getRegisteredPlugins().firstNotNullOfOrNull { it.getTypeText(info) }
     }

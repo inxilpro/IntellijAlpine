@@ -32,9 +32,6 @@ class AttributeInfo(val attribute: String) {
         "x-intersect" to "Bind an intersection observer",
         "x-trap" to "Add focus trap",
         "x-collapse" to "Collapse element when hidden",
-        "x-wizard:step" to "Add wizard step",
-        "x-wizard:if" to "Add wizard condition",
-        "x-wizard:title" to "Add title to wizard step",
     )
 
     val name: String
@@ -51,7 +48,7 @@ class AttributeInfo(val attribute: String) {
 
     @Suppress("ComplexCondition")
     fun isAlpine(): Boolean {
-        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective() || this.isWizard() || this.isTarget()
+        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective() || this.isTarget()
     }
 
     fun isEvent(): Boolean {
@@ -70,9 +67,6 @@ class AttributeInfo(val attribute: String) {
         return AttributeUtil.directives.contains(name)
     }
 
-    fun isWizard(): Boolean {
-        return "x-wizard:" == prefix
-    }
 
     fun isTarget(): Boolean {
         return "x-target:" == prefix // TODO: Move to plugin system (and in canBePrefix)
@@ -83,7 +77,7 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun canBePrefix(): Boolean {
-        return "x-bind" == name || "x-transition" == name || "x-on" == name || "x-wizard" == name || "x-target" == name
+        return "x-bind" == name || "x-transition" == name || "x-on" == name || "x-target" == name
     }
 
     @Suppress("ReturnCount")
@@ -104,9 +98,6 @@ class AttributeInfo(val attribute: String) {
             return "x-transition:"
         }
 
-        if (attribute.startsWith("x-wizard:")) {
-            return "x-wizard:"
-        }
 
         if (attribute.startsWith("x-target:")) {
             return "x-target:"

@@ -12,6 +12,7 @@ class AlpineSettingsComponent(private val project: Project?) {
 
     private val myShowGutterIconsStatus = JBCheckBox("Show Alpine gutter icons")
     private val myEnableAlpineAjaxStatus = JBCheckBox("Enable alpine-ajax support for this project")
+    private val myEnableAlpineWizardStatus = JBCheckBox("Enable alpine-wizard support for this project")
 
     val preferredFocusedComponent: JComponent
         get() = myShowGutterIconsStatus
@@ -28,6 +29,12 @@ class AlpineSettingsComponent(private val project: Project?) {
             myEnableAlpineAjaxStatus.isSelected = newStatus
         }
 
+    var enableAlpineWizardStatus: Boolean
+        get() = myEnableAlpineWizardStatus.isSelected
+        set(newStatus) {
+            myEnableAlpineWizardStatus.isSelected = newStatus
+        }
+
     init {
         val builder = FormBuilder.createFormBuilder()
             .addComponent(TitledSeparator("Application Settings"))
@@ -37,6 +44,7 @@ class AlpineSettingsComponent(private val project: Project?) {
         if (project != null) {
             builder.addComponent(TitledSeparator("Project Settings"))
                 .addComponent(myEnableAlpineAjaxStatus, 1)
+                .addComponent(myEnableAlpineWizardStatus, 1)
         }
 
         panel = builder.addComponentFillVertically(JPanel(), 0).panel

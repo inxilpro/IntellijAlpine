@@ -41,7 +41,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
     }
 
     private fun addPrefixes() {
-        for (prefix in AttributeUtil.xmlPrefixes) {
+        for (prefix in AttributeUtil.getXmlPrefixesForProject(htmlTag.project)) {
             descriptors.add(AttributeInfo(prefix))
         }
     }
