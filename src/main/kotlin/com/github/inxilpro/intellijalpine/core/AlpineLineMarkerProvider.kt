@@ -1,5 +1,8 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.core
 
+import com.github.inxilpro.intellijalpine.Alpine
+import com.github.inxilpro.intellijalpine.attributes.AlpineAttributeDescriptor
+import com.github.inxilpro.intellijalpine.settings.AlpineSettingsState
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder
@@ -18,7 +21,7 @@ class AlpineLineMarkerProvider : RelatedItemLineMarkerProvider() {
         element: PsiElement,
         result: MutableCollection<in RelatedItemLineMarkerInfo<*>?>
     ) {
-        if (!AlpineSettingsState.instance.showGutterIcons) return
+        if (!AlpineSettingsState.Companion.instance.showGutterIcons) return
 
         if (element is XmlAttribute && element.descriptor is AlpineAttributeDescriptor) {
 

@@ -1,5 +1,10 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.attributes
 
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
+import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
+import com.github.inxilpro.intellijalpine.support.LanguageUtil
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
@@ -8,8 +13,6 @@ import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.XmlAttributeDescriptor
-import java.util.Arrays
-import java.util.Collections
 
 object AttributeUtil {
     private val validAttributes = mutableMapOf<String, Array<AttributeInfo>>()
@@ -19,7 +22,7 @@ object AttributeUtil {
         "x-bind",
         "x-transition",
     )
-    
+
     val xmlPrefixes: Array<String>
         get() = coreXmlPrefixes // TODO: Merge in plugin prefixes
 
@@ -59,13 +62,13 @@ object AttributeUtil {
     val directives: Array<String>
         get() = coreDirectives + ajaxDirectives
 
-    fun getDirectivesForProject(project: com.intellij.openapi.project.Project, contextFile: com.intellij.psi.PsiFile?): Array<String> {
-        val pluginDirectives = AlpinePluginRegistry.getInstance().getAllDirectives(project)
+    fun getDirectivesForProject(project: Project, contextFile: PsiFile?): Array<String> {
+        val pluginDirectives = AlpinePluginRegistry.Companion.getInstance().getAllDirectives(project)
         return (coreDirectives.toList() + pluginDirectives).toTypedArray()
     }
-    
-    fun getXmlPrefixesForProject(project: com.intellij.openapi.project.Project): Array<String> {
-        val pluginPrefixes = AlpinePluginRegistry.getInstance().getAllPrefixes(project)
+
+    fun getXmlPrefixesForProject(project: Project): Array<String> {
+        val pluginPrefixes = AlpinePluginRegistry.Companion.getInstance().getAllPrefixes(project)
         return (coreXmlPrefixes.toList() + pluginPrefixes).toTypedArray()
     }
 
@@ -144,31 +147,6 @@ object AttributeUtil {
 
     val intersectModifiers = arrayOf(
         "once"
-    )
-    
-    val targetModifiers = arrayOf(
-        "200",
-        "301",
-        "302",
-        "303",
-        "400",
-        "401",
-        "403",
-        "404",
-        "422",
-        "500",
-        "502",
-        "503",
-        "2xx",
-        "3xx",
-        "4xx",
-        "5xx",
-        "back",
-        "away",
-        "replace",
-        "push",
-        "error",
-        "nofocus",
     )
 
     // Taken from https://developer.mozilla.org/en-US/docs
@@ -280,7 +258,7 @@ object AttributeUtil {
         if (!LanguageUtil.supportsAlpineJs(host.containingFile)) {
             return false
         }
-        
+
         // Make sure that we have an XML attribute as a parent
         val attribute = host.parent as? XmlAttribute ?: return false
 
@@ -330,7 +308,7 @@ object AttributeUtil {
     private fun shouldInjectJavaScript(name: String): Boolean {
         // `x-target:dynamic` should still inject JavaScript, but plain x-target should not
         if (name == "x-target") return false
-        
+
         return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name && "x-autofocus" != name && "x-sync" != name && "x-merge" != name
     }
 

@@ -1,5 +1,7 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.settings
 
+import com.github.inxilpro.intellijalpine.settings.AlpineSettingsComponent
+import com.github.inxilpro.intellijalpine.settings.AlpineSettingsState
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent
@@ -21,13 +23,13 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     }
 
     override fun isModified(): Boolean {
-        val appSettings = AlpineSettingsState.instance
+        val appSettings = AlpineSettingsState.Companion.instance
         var isModified = mySettingsComponent?.showGutterIconsStatus != appSettings.showGutterIcons
 
         // Check project settings if we have a project
         if (project != null) {
             val projectSettings = AlpineProjectSettingsState.getInstance(project)
-            isModified = isModified || 
+            isModified = isModified ||
                          mySettingsComponent?.enableAlpineAjaxStatus != projectSettings.enableAlpineAjax ||
                          mySettingsComponent?.enableAlpineWizardStatus != projectSettings.enableAlpineWizard
         }
@@ -36,7 +38,7 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     }
 
     override fun apply() {
-        val appSettings = AlpineSettingsState.instance
+        val appSettings = AlpineSettingsState.Companion.instance
         appSettings.showGutterIcons = mySettingsComponent?.showGutterIconsStatus != false
 
         // Apply project settings if we have a project
@@ -48,7 +50,7 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     }
 
     override fun reset() {
-        val appSettings = AlpineSettingsState.instance
+        val appSettings = AlpineSettingsState.Companion.instance
         mySettingsComponent?.showGutterIconsStatus = appSettings.showGutterIcons
 
         // Reset project settings if we have a project

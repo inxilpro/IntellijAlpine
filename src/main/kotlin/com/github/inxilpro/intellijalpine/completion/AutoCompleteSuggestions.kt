@@ -1,6 +1,8 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.completion
 
-import com.github.inxilpro.intellijalpine.AttributeUtil.isTemplateDirective
+import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
+import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
@@ -18,13 +20,12 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         addPrefixes()
         addDerivedAttributes()
         addTransitions()
-        addWizard()
-        addAjax()
+        addPlugins()
     }
 
     private fun addDirectives() {
         for (directive in AttributeUtil.directives) {
-            if (tagName != "template" && isTemplateDirective(directive)) {
+            if (tagName != "template" && AttributeUtil.isTemplateDirective(directive)) {
                 continue
             }
 
@@ -78,18 +79,8 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         }
     }
 
-    private fun addWizard() {
-        descriptors.add(AttributeInfo("x-wizard:step"))
-        addModifiers("x-wizard:step", arrayOf("rules"))
-
-        descriptors.add(AttributeInfo("x-wizard:if"))
-        descriptors.add(AttributeInfo("x-wizard:title"))
-    }
-
-    private fun addAjax() {
-        descriptors.add(AttributeInfo("x-target:dynamic"))
-        addModifiers("x-target", AttributeUtil.targetModifiers)
-        addModifiers("x-target:dynamic", AttributeUtil.targetModifiers)
+    private fun addPlugins() {
+        AlpinePluginRegistry.getInstance().injectAllAutoCompleteSuggestions(htmlTag.project, this)
     }
 
     private fun addEvent(descriptor: XmlAttributeDescriptor) {
@@ -111,7 +102,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         }
     }
 
-    private fun addModifiers(modifiableDirective: String, modifiers: Array<String>) {
+    fun addModifiers(modifiableDirective: String, modifiers: Array<String>) {
         if (!partialAttribute.startsWith(modifiableDirective)) {
             return
         }

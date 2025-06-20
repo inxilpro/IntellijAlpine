@@ -1,8 +1,13 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.plugins
 
+import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
+import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
+import com.github.inxilpro.intellijalpine.core.AlpinePlugin
+import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -12,14 +17,14 @@ import com.intellij.psi.xml.XmlTag
 import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineWizardPlugin : AlpinePlugin {
-    
+
     override fun getPackageDisplayName(): String = "alpine-wizard"
-    
+
     override fun getPackageNamesForDetection(): List<String> = listOf(
         "alpine-wizard",
         "@glhd/alpine-wizard"
     )
-    
+
     override fun getTypeText(info: AttributeInfo): String? {
         if ("x-wizard:" == info.prefix) {
             return when (info.name) {
@@ -29,7 +34,7 @@ class AlpineWizardPlugin : AlpinePlugin {
                 else -> "Alpine Wizard directive"
             }
         }
-        
+
         return when (info.attribute) {
             "x-wizard:step" -> "Define wizard step"
             "x-wizard:if" -> "Conditional wizard step"
@@ -37,7 +42,7 @@ class AlpineWizardPlugin : AlpinePlugin {
             else -> null
         }
     }
-    
+
     override fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> {
         val wizardMagics = """
             class AlpineWizardStep {
@@ -81,67 +86,75 @@ class AlpineWizardPlugin : AlpinePlugin {
             let ${'$'}wizard;
             
         """.trimIndent()
-        
+
         return MutablePair(context.left + wizardMagics, context.right)
     }
-    
+
+    override fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {
+        suggestions.descriptors.add(AttributeInfo("x-wizard:step"))
+        suggestions.addModifiers("x-wizard:step", arrayOf("rules"))
+
+        suggestions.descriptors.add(AttributeInfo("x-wizard:if"))
+        suggestions.descriptors.add(AttributeInfo("x-wizard:title"))
+    }
+
     override fun getDirectives(): List<String> = listOf(
         "x-wizard:step",
-        "x-wizard:if", 
+        "x-wizard:if",
         "x-wizard:title"
     )
-    
+
     override fun getPrefixes(): List<String> = listOf(
         "x-wizard"
     )
-    
+
     override fun isEnabled(project: Project): Boolean {
-        return AlpineProjectSettingsState.getInstance(project).enableAlpineWizard
+        return AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineWizard
     }
-    
+
     override fun enable(project: Project) {
-        AlpineProjectSettingsState.getInstance(project).enableAlpineWizard = true
+        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineWizard = true
     }
-    
+
     override fun disable(project: Project) {
-        AlpineProjectSettingsState.getInstance(project).enableAlpineWizard = false
+        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineWizard = false
     }
-    
+
     override fun performDetection(project: Project): Boolean {
-        return hasAlpineWizardInPackageJson(project) || 
-               hasAlpineWizardInScriptTags(project) || 
+        return hasAlpineWizardInPackageJson(project) ||
+               hasAlpineWizardInScriptTags(project) ||
                hasAlpineWizardCode(project)
     }
-    
+
     private fun hasAlpineWizardInPackageJson(project: Project): Boolean {
         val packageJsonFiles = FilenameIndex.getVirtualFilesByName(
-            "package.json", 
+            "package.json",
             GlobalSearchScope.projectScope(project)
         )
-        
+
         return packageJsonFiles.any { virtualFile ->
             val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
             if (psiFile is JsonFile) {
                 val rootObject = psiFile.topLevelValue as? JsonObject
                 val dependencies = rootObject?.findProperty("dependencies")?.value as? JsonObject
                 val devDependencies = rootObject?.findProperty("devDependencies")?.value as? JsonObject
-                
+
                 hasAlpineWizardDependency(dependencies) || hasAlpineWizardDependency(devDependencies)
             } else {
                 false
             }
         }
     }
-    
+
     private fun hasAlpineWizardDependency(dependencies: JsonObject?): Boolean {
         return getPackageNamesForDetection().any { packageName ->
             dependencies?.findProperty(packageName) != null
         }
     }
-    
+
     private fun hasAlpineWizardInScriptTags(project: Project): Boolean {
-        val htmlFiles = mutableListOf<com.intellij.openapi.vfs.VirtualFile>()
-        
+        val htmlFiles = mutableListOf<VirtualFile>()
+
         // Get files by extension
         val extensions = listOf("html", "htm", "php", "twig")
         for (extension in extensions) {
@@ -153,16 +166,16 @@ class AlpineWizardPlugin : AlpinePlugin {
                 )
             )
         }
-        
+
         return htmlFiles.any { virtualFile ->
             val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-            
+
             when {
                 psiFile is XmlFile -> {
                     // Handle HTML and XML files
                     val scriptTags = PsiTreeUtil.collectElementsOfType(psiFile, XmlTag::class.java)
                         .filter { it.name.equals("script", ignoreCase = true) }
-                    
+
                     scriptTags.any { scriptTag ->
                         val src = scriptTag.getAttributeValue("src")
                         if (src != null) {
@@ -185,25 +198,25 @@ class AlpineWizardPlugin : AlpinePlugin {
             }
         }
     }
-    
+
     private fun isAlpineWizardScriptSrc(src: String): Boolean {
         return src.contains("alpine-wizard", ignoreCase = true)
     }
-    
+
     private fun hasAlpineWizardScriptTagsInContent(content: String): Boolean {
         // Use regex to find script tags with alpine-wizard references in raw HTML content
         val scriptTagRegex = Regex("<script[^>]*src=['\"]([^'\"]*)['\"][^>]*>", RegexOption.IGNORE_CASE)
-        
+
         return scriptTagRegex.findAll(content).any { match ->
             val src = match.groupValues[1]
             isAlpineWizardScriptSrc(src)
         }
     }
-    
+
     private fun hasAlpineWizardCode(project: Project): Boolean {
         val jsExtensions = listOf("js", "ts", "mjs", "jsx", "tsx")
-        val jsFiles = mutableListOf<com.intellij.openapi.vfs.VirtualFile>()
-        
+        val jsFiles = mutableListOf<VirtualFile>()
+
         for (extension in jsExtensions) {
             jsFiles.addAll(
                 FilenameIndex.getAllFilesByExt(
@@ -213,7 +226,7 @@ class AlpineWizardPlugin : AlpinePlugin {
                 )
             )
         }
-        
+
         return jsFiles.any { virtualFile ->
             try {
                 val content = String(virtualFile.contentsToByteArray())
@@ -223,25 +236,25 @@ class AlpineWizardPlugin : AlpinePlugin {
             }
         }
     }
-    
+
     private fun hasAlpineWizardPatterns(content: String): Boolean {
         val alpineWizardPatterns = listOf(
             // Import statements
             "import.*alpine-wizard",
             "from.*alpine-wizard",
             "require.*alpine-wizard",
-            
+
             // Alpine.js plugin registration
             "Alpine\\.plugin\\s*\\(.*wizard",
             "alpine\\.plugin\\s*\\(.*wizard",
-            
+
             // Wizard-specific usage patterns
             "\\\$wizard\\s*\\.",
             "x-wizard:",
             "Alpine\\.wizard",
             "alpine\\.wizard"
         )
-        
+
         return alpineWizardPatterns.any { pattern ->
             Regex(pattern, RegexOption.IGNORE_CASE).containsMatchIn(content)
         }

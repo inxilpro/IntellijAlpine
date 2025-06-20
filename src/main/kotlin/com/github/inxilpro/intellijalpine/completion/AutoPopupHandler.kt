@@ -1,4 +1,4 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.completion
 
 import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate

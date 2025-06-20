@@ -1,8 +1,14 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.plugins
 
+import com.github.inxilpro.intellijalpine.core.AlpinePlugin
+import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
+import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
+import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
+import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -12,14 +18,39 @@ import com.intellij.psi.xml.XmlTag
 import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineAjaxPlugin : AlpinePlugin {
-    
+
+    val targetModifiers = arrayOf(
+        "200",
+        "301",
+        "302",
+        "303",
+        "400",
+        "401",
+        "403",
+        "404",
+        "422",
+        "500",
+        "502",
+        "503",
+        "2xx",
+        "3xx",
+        "4xx",
+        "5xx",
+        "back",
+        "away",
+        "replace",
+        "push",
+        "error",
+        "nofocus",
+    )
+
     override fun getPackageDisplayName(): String = "alpine-ajax"
-    
+
     override fun getPackageNamesForDetection(): List<String> = listOf(
         "alpine-ajax",
         "@imacrayon/alpine-ajax"
     )
-    
+
     override fun getTypeText(info: AttributeInfo): String? {
         if ("x-target:" == info.prefix) {
             return "DOM node to inject response into"
@@ -34,7 +65,7 @@ class AlpineAjaxPlugin : AlpinePlugin {
             else -> null
         }
     }
-    
+
     override fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> {
         val magics = """
             /**
@@ -45,69 +76,76 @@ class AlpineAjaxPlugin : AlpinePlugin {
             function ${'$'}ajax(action, options = {}) {}
             
         """.trimIndent()
-        
+
         return MutablePair(context.left + magics, context.right)
     }
-    
+
+
+    override fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {
+        suggestions.descriptors.add(AttributeInfo("x-target:dynamic"))
+        suggestions.addModifiers("x-target", targetModifiers)
+        suggestions.addModifiers("x-target:dynamic", targetModifiers)
+    }
+
     override fun getDirectives(): List<String> = listOf(
         "x-target",
-        "x-headers", 
+        "x-headers",
         "x-merge",
         "x-autofocus",
         "x-sync"
     )
-    
+
     override fun getPrefixes(): List<String> = listOf(
         "x-target"
     )
-    
+
     override fun isEnabled(project: Project): Boolean {
-        return AlpineProjectSettingsState.getInstance(project).enableAlpineAjax
+        return AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineAjax
     }
-    
+
     override fun enable(project: Project) {
-        AlpineProjectSettingsState.getInstance(project).enableAlpineAjax = true
+        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineAjax = true
     }
-    
+
     override fun disable(project: Project) {
-        AlpineProjectSettingsState.getInstance(project).enableAlpineAjax = false
+        AlpineProjectSettingsState.Companion.getInstance(project).enableAlpineAjax = false
     }
-    
+
     override fun performDetection(project: Project): Boolean {
-        return hasAlpineAjaxInPackageJson(project) || 
-               hasAlpineAjaxInScriptTags(project) || 
+        return hasAlpineAjaxInPackageJson(project) ||
+               hasAlpineAjaxInScriptTags(project) ||
                hasAlpineAjaxCode(project)
     }
-    
+
     private fun hasAlpineAjaxInPackageJson(project: Project): Boolean {
         val packageJsonFiles = FilenameIndex.getVirtualFilesByName(
-            "package.json", 
+            "package.json",
             GlobalSearchScope.projectScope(project)
         )
-        
+
         return packageJsonFiles.any { virtualFile ->
             val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
             if (psiFile is JsonFile) {
                 val rootObject = psiFile.topLevelValue as? JsonObject
                 val dependencies = rootObject?.findProperty("dependencies")?.value as? JsonObject
                 val devDependencies = rootObject?.findProperty("devDependencies")?.value as? JsonObject
-                
+
                 hasAlpineAjaxDependency(dependencies) || hasAlpineAjaxDependency(devDependencies)
             } else {
                 false
             }
         }
     }
-    
+
     private fun hasAlpineAjaxDependency(dependencies: JsonObject?): Boolean {
         return getPackageNamesForDetection().any { packageName ->
             dependencies?.findProperty(packageName) != null
         }
     }
-    
+
     private fun hasAlpineAjaxInScriptTags(project: Project): Boolean {
-        val htmlFiles = mutableListOf<com.intellij.openapi.vfs.VirtualFile>()
-        
+        val htmlFiles = mutableListOf<VirtualFile>()
+
         // Get files by extension
         val extensions = listOf("html", "htm", "php", "twig")
         for (extension in extensions) {
@@ -119,16 +157,16 @@ class AlpineAjaxPlugin : AlpinePlugin {
                 )
             )
         }
-        
+
         return htmlFiles.any { virtualFile ->
             val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-            
+
             when {
                 psiFile is XmlFile -> {
                     // Handle HTML and XML files
                     val scriptTags = PsiTreeUtil.collectElementsOfType(psiFile, XmlTag::class.java)
                         .filter { it.name.equals("script", ignoreCase = true) }
-                    
+
                     scriptTags.any { scriptTag ->
                         val src = scriptTag.getAttributeValue("src")
                         if (src != null) {
@@ -151,25 +189,25 @@ class AlpineAjaxPlugin : AlpinePlugin {
             }
         }
     }
-    
+
     private fun isAlpineAjaxScriptSrc(src: String): Boolean {
         return src.contains("alpine-ajax", ignoreCase = true)
     }
-    
+
     private fun hasAlpineAjaxScriptTagsInContent(content: String): Boolean {
         // Use regex to find script tags with alpine-ajax references in raw HTML content
         val scriptTagRegex = Regex("<script[^>]*src=['\"]([^'\"]*)['\"][^>]*>", RegexOption.IGNORE_CASE)
-        
+
         return scriptTagRegex.findAll(content).any { match ->
             val src = match.groupValues[1]
             isAlpineAjaxScriptSrc(src)
         }
     }
-    
+
     private fun hasAlpineAjaxCode(project: Project): Boolean {
         val jsExtensions = listOf("js", "ts", "mjs", "jsx", "tsx")
-        val jsFiles = mutableListOf<com.intellij.openapi.vfs.VirtualFile>()
-        
+        val jsFiles = mutableListOf<VirtualFile>()
+
         for (extension in jsExtensions) {
             jsFiles.addAll(
                 FilenameIndex.getAllFilesByExt(
@@ -179,7 +217,7 @@ class AlpineAjaxPlugin : AlpinePlugin {
                 )
             )
         }
-        
+
         return jsFiles.any { virtualFile ->
             try {
                 val content = String(virtualFile.contentsToByteArray())
@@ -189,25 +227,25 @@ class AlpineAjaxPlugin : AlpinePlugin {
             }
         }
     }
-    
+
     private fun hasAlpineAjaxPatterns(content: String): Boolean {
         val alpineAjaxPatterns = listOf(
             // Import statements
             "import.*alpine-ajax",
             "from.*alpine-ajax",
             "require.*alpine-ajax",
-            
+
             // Alpine.js plugin registration
             "Alpine\\.plugin\\s*\\(.*ajax",
             "alpine\\.plugin\\s*\\(.*ajax",
-            
+
             // Ajax-specific functions from the alpine-ajax source
             "AjaxInterceptor",
-            "AjaxCommand", 
+            "AjaxCommand",
             "ajaxCommand",
             "processAjaxResponse",
             "handleAjaxRequest",
-            
+
             // Magic helper usage patterns
             "\\\$ajax\\s*\\(",
             "x-target",
@@ -215,7 +253,7 @@ class AlpineAjaxPlugin : AlpinePlugin {
             "x-headers",
             "x-replace"
         )
-        
+
         return alpineAjaxPatterns.any { pattern ->
             Regex(pattern, RegexOption.IGNORE_CASE).containsMatchIn(content)
         }

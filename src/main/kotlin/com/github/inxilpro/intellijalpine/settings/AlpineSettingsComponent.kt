@@ -1,4 +1,4 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.settings
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.TitledSeparator

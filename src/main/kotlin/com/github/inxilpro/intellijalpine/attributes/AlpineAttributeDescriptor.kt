@@ -1,5 +1,7 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.attributes
 
+import com.github.inxilpro.intellijalpine.Alpine
+import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.intellij.psi.PsiElement
 import com.intellij.psi.meta.PsiPresentableMetaData
 import com.intellij.psi.xml.XmlTag

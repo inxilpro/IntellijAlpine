@@ -1,6 +1,7 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.support
 
-import com.intellij.lang.html.HTMLLanguage
+import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
+import com.github.inxilpro.intellijalpine.support.LanguageUtil
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.html.HtmlTag
@@ -9,7 +10,7 @@ import com.intellij.psi.xml.XmlTag
 import com.intellij.xml.HtmlXmlExtension
 
 class XmlExtension : HtmlXmlExtension() {
-        override fun isAvailable(file: PsiFile?): Boolean {
+    override fun isAvailable(file: PsiFile?): Boolean {
         if (file == null) return false
         return LanguageUtil.supportsAlpineJs(file)
     }

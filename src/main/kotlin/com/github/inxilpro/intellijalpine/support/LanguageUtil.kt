@@ -1,10 +1,8 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.support
 
 import com.intellij.lang.Language
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.lang.xml.XMLLanguage
-import com.intellij.openapi.fileTypes.FileType
-import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.psi.PsiFile
 import com.intellij.psi.templateLanguages.TemplateLanguageFileViewProvider
 
@@ -38,11 +36,11 @@ object LanguageUtil {
     }
 
     private fun isHtmlBasedLanguage(language: Language): Boolean {
-        if (language.isKindOf(HTMLLanguage.INSTANCE)) {
+        if (language.isKindOf(HTMLLanguage.Companion.INSTANCE)) {
             return true
         }
 
-        if (language.isKindOf(XMLLanguage.INSTANCE)) {
+        if (language.isKindOf(XMLLanguage.Companion.INSTANCE)) {
             return TEMPLATE_LANGUAGE_IDS.contains(language.id)
         }
 

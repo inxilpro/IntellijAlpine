@@ -1,12 +1,14 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.completion
 
+import com.github.inxilpro.intellijalpine.Alpine
+import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
+import com.github.inxilpro.intellijalpine.support.LanguageUtil
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.completion.XmlAttributeInsertHandler
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.xml.XmlAttribute

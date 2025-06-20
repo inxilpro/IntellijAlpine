@@ -1,8 +1,11 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.injection
 
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
+import com.github.inxilpro.intellijalpine.support.LanguageUtil
+import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
+import com.intellij.lang.Language
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
-import com.intellij.lang.Language
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
@@ -14,7 +17,6 @@ import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
-import java.util.*
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private companion object {
@@ -102,7 +104,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
         var (prefix, suffix) = getPrefixAndSuffix(attributeName, host)
 
-        val jsLanguage = Language.findLanguageByID("JavaScript") 
+        val jsLanguage = Language.findLanguageByID("JavaScript")
             ?: throw IllegalStateException("JavaScript language not found")
         registrar.startInjecting(jsLanguage)
 
@@ -149,7 +151,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
         val globalContext = MutablePair(globalMagics, "");
-        val context = AlpinePluginRegistry.getInstance().injectAllJsContext(host.project, globalContext)
+        val context = AlpinePluginRegistry.Companion.getInstance().injectAllJsContext(host.project, globalContext)
 
         if ("x-data" != directive) {
             context.left = addTypingToCoreMagics(host) + context.left

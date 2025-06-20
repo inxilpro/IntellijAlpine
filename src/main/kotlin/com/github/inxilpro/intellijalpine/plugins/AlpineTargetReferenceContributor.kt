@@ -1,5 +1,6 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.plugins
 
+import com.github.inxilpro.intellijalpine.Alpine
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.util.TextRange
 import com.intellij.patterns.XmlPatterns

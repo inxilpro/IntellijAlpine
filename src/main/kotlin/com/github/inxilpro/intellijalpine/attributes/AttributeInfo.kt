@@ -1,4 +1,6 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.attributes
+
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 
 @Suppress("MemberVisibilityCanBePrivate")
 class AttributeInfo(val attribute: String) {
@@ -121,11 +123,11 @@ class AttributeInfo(val attribute: String) {
         }
 
         // First check plugin registry for type text
-        val pluginTypeText = AlpinePluginRegistry.getInstance().getTypeText(this)
+        val pluginTypeText = AlpinePluginRegistry.Companion.getInstance().getTypeText(this)
         if (pluginTypeText != null) {
             return pluginTypeText
         }
-        
+
         return typeTexts.getOrDefault(attribute, "Alpine.js")
     }
 }
