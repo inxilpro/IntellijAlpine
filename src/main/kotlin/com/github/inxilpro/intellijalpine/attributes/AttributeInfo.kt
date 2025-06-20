@@ -4,19 +4,7 @@ import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 
 @Suppress("MemberVisibilityCanBePrivate")
 class AttributeInfo(val attribute: String) {
-    
-    companion object {
-        // Memoized values for all registered plugin directives and prefixes
-        private val pluginDirectives: List<String> by lazy {
-            AlpinePluginRegistry.getInstance().getRegisteredPlugins()
-                .flatMap { it.getDirectives() }
-        }
-        
-        private val pluginPrefixes: List<String> by lazy {
-            AlpinePluginRegistry.getInstance().getRegisteredPlugins()
-                .flatMap { it.getPrefixes() }
-        }
-    }
+
     private val typeTexts = hashMapOf<String, String>(
         "x-data" to "New Alpine.js component scope",
         "x-init" to "Run on initialization",
@@ -63,7 +51,7 @@ class AttributeInfo(val attribute: String) {
 
     @Suppress("ComplexCondition")
     fun isAlpine(): Boolean {
-        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective() || this.isTarget()
+        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective()
     }
 
     fun isEvent(): Boolean {
@@ -79,12 +67,7 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun isDirective(): Boolean {
-        return AttributeUtil.directives.contains(name) || pluginDirectives.contains(name)
-    }
-
-
-    fun isTarget(): Boolean {
-        return "x-target:" == prefix
+        return AttributeUtil.directives.contains(name)
     }
 
     fun hasValue(): Boolean {
@@ -92,16 +75,17 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun canBePrefix(): Boolean {
-        // Check core prefixes
-        if ("x-bind" == name || "x-transition" == name || "x-on" == name) {
-            return true
-        }
-
-        return pluginPrefixes.contains(name)
+        return AttributeUtil.prefixes.contains(name)
     }
 
     @Suppress("ReturnCount")
     private fun extractPrefix(): String {
+        for (prefix in AttributeUtil.prefixes) {
+            if (attribute.startsWith("$prefix:")) {
+                return "$prefix:"
+            }
+        }
+
         for (eventPrefix in AttributeUtil.eventPrefixes) {
             if (attribute.startsWith(eventPrefix)) {
                 return eventPrefix
@@ -111,17 +95,6 @@ class AttributeInfo(val attribute: String) {
         for (bindPrefix in AttributeUtil.bindPrefixes) {
             if (attribute.startsWith(bindPrefix)) {
                 return bindPrefix
-            }
-        }
-
-        if (attribute.startsWith("x-transition:")) {
-            return "x-transition:"
-        }
-
-        // Check all registered plugin prefixes (regardless of enablement)
-        for (prefix in pluginPrefixes) {
-            if (attribute.startsWith("$prefix:")) {
-                return "$prefix:"
             }
         }
 

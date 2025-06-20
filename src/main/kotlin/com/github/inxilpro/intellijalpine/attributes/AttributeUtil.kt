@@ -15,16 +15,20 @@ import com.intellij.xml.XmlAttributeDescriptor
 object AttributeUtil {
     private val validAttributes = mutableMapOf<String, Array<AttributeInfo>>()
 
-    private val coreXmlPrefixes = arrayOf(
+    private val corePrefixes = listOf(
         "x-on",
         "x-bind",
         "x-transition",
     )
 
-    val xmlPrefixes: Array<String>
-        get() = coreXmlPrefixes
+    val prefixes: List<String> by lazy {
+        AlpinePluginRegistry.getInstance().getRegisteredPlugins()
+            .flatMap { it.getPrefixes() }
+            .union(corePrefixes)
+            .toList()
+    }
 
-    val directives = arrayOf(
+    private val coreDirectives = listOf(
         "x-data",
         "x-init",
         "x-show",
@@ -48,6 +52,13 @@ object AttributeUtil {
         "x-collapse",
         "x-spread", // deprecated
     )
+
+    val directives: List<String> by lazy {
+        AlpinePluginRegistry.getInstance().getRegisteredPlugins()
+            .flatMap { it.getDirectives() }
+            .union(coreDirectives)
+            .toList()
+    }
 
     val templateDirectives = arrayOf(
         "x-if",
@@ -91,10 +102,6 @@ object AttributeUtil {
         "throttle",
         "duration",
         "delay",
-    )
-
-    val numericModifiers = arrayOf(
-        "scale",
     )
 
     val transitionModifiers = arrayOf(
@@ -206,11 +213,11 @@ object AttributeUtil {
 
     fun getXmlPrefixesForProject(project: Project): Array<String> {
         val pluginPrefixes = AlpinePluginRegistry.Companion.getInstance().getAllPrefixes(project)
-        return (coreXmlPrefixes.toList() + pluginPrefixes).toTypedArray()
+        return (prefixes.toList() + pluginPrefixes).toTypedArray()
     }
 
     fun isXmlPrefix(prefix: String): Boolean {
-        return xmlPrefixes.contains(prefix)
+        return prefixes.contains(prefix)
     }
 
     fun isTemplateDirective(directive: String): Boolean {
