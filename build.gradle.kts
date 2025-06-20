@@ -36,12 +36,12 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        // Auto-detect local PhpStorm installation, fallback to IntelliJ Ultimate
+        var platformType = providers.gradleProperty("platformType").toString()
+        var platformVersion = providers.gradleProperty("platformVersion").toString()
+
+        // Auto-detect local PhpStorm installation if possible
         val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
         if (localPhpStorm.exists()) {
-            var phpstormVersion = providers.gradleProperty("platformVersion").toString()
-
-            // Try to detect locally-installed PhpStorm version from Info.plist
             val infoPlist = file("${localPhpStorm}/Info.plist")
             if (infoPlist.exists()) {
                 try {
@@ -50,23 +50,17 @@ dependencies {
                     if (versionMatch != null) {
                         val detectedVersion = versionMatch.groupValues[1]
                         // Convert version like "2025.1.3" to "2025.1"
-                        val majorMinor = detectedVersion.split(".").take(2).joinToString(".")
-                        phpstormVersion = majorMinor
-                        println("🔍 Detected PhpStorm ${detectedVersion} - UI tests will use PhpStorm ${majorMinor}")
-                    } else {
-                        println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection failed)")
+                        platformVersion = detectedVersion.split(".").take(2).joinToString(".")
+                        platformType = "PS"
                     }
                 } catch (e: Exception) {
-                    println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (version detection error: ${e.message})")
+                    println("Unable to parse PhpStorm version number: ${e.message} (will not use local IDE)")
                 }
-            } else {
-                println("🔍 Detected PhpStorm installation - UI tests will use PhpStorm ${phpstormVersion} (no Info.plist found)")
             }
-            create("PS", phpstormVersion)
-        } else {
-            println("📦 Using IntelliJ Ultimate for UI tests (no local PhpStorm detected)")
-            create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
         }
+
+        println("Using $platformType $platformVersion for testing")
+        create(platformType, platformVersion)
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(
