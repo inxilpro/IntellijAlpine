@@ -24,7 +24,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
     }
 
     private fun addDirectives() {
-        for (directive in AttributeUtil.directives) {
+        for (directive in AttributeUtil.getDirectivesForProject(htmlTag.project)) {
             if (tagName != "template" && AttributeUtil.isTemplateDirective(directive)) {
                 continue
             }

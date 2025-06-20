@@ -66,20 +66,21 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun isDirective(): Boolean {
+        // FIXME: Handle plugin directives, too
         return AttributeUtil.directives.contains(name)
     }
 
 
     fun isTarget(): Boolean {
-        return "x-target:" == prefix // TODO: Move to plugin system (and in canBePrefix)
+        return "x-target:" == prefix
     }
 
     fun hasValue(): Boolean {
-        return "x-cloak" != name && "x-ignore" != name && "x-sync" != name
+        return "x-cloak" != name && "x-ignore" != name
     }
 
     fun canBePrefix(): Boolean {
-        return "x-bind" == name || "x-transition" == name || "x-on" == name || "x-target" == name
+        return "x-bind" == name || "x-transition" == name || "x-on" == name
     }
 
     @Suppress("ReturnCount")

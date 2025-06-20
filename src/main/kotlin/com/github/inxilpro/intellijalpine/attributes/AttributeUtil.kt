@@ -1,10 +1,8 @@
 package com.github.inxilpro.intellijalpine.attributes
 
 import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
-import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.support.LanguageUtil
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFile
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
 import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
@@ -24,9 +22,9 @@ object AttributeUtil {
     )
 
     val xmlPrefixes: Array<String>
-        get() = coreXmlPrefixes // TODO: Merge in plugin prefixes
+        get() = coreXmlPrefixes
 
-    private val coreDirectives = arrayOf(
+    val directives = arrayOf(
         "x-data",
         "x-init",
         "x-show",
@@ -50,27 +48,6 @@ object AttributeUtil {
         "x-collapse",
         "x-spread", // deprecated
     )
-
-    private val ajaxDirectives = arrayOf(
-        "x-target",
-        "x-headers",
-        "x-merge",
-        "x-autofocus",
-        "x-sync",
-    )
-
-    val directives: Array<String>
-        get() = coreDirectives + ajaxDirectives
-
-    fun getDirectivesForProject(project: Project, contextFile: PsiFile?): Array<String> {
-        val pluginDirectives = AlpinePluginRegistry.Companion.getInstance().getAllDirectives(project)
-        return (coreDirectives.toList() + pluginDirectives).toTypedArray()
-    }
-
-    fun getXmlPrefixesForProject(project: Project): Array<String> {
-        val pluginPrefixes = AlpinePluginRegistry.Companion.getInstance().getAllPrefixes(project)
-        return (coreXmlPrefixes.toList() + pluginPrefixes).toTypedArray()
-    }
 
     val templateDirectives = arrayOf(
         "x-if",
@@ -222,6 +199,16 @@ object AttributeUtil {
         Pair("wheel", "WheelEvent"),
     )
 
+    fun getDirectivesForProject(project: Project): Array<String> {
+        val pluginDirectives = AlpinePluginRegistry.Companion.getInstance().getAllDirectives(project)
+        return (directives.toList() + pluginDirectives).toTypedArray()
+    }
+
+    fun getXmlPrefixesForProject(project: Project): Array<String> {
+        val pluginPrefixes = AlpinePluginRegistry.Companion.getInstance().getAllPrefixes(project)
+        return (coreXmlPrefixes.toList() + pluginPrefixes).toTypedArray()
+    }
+
     fun isXmlPrefix(prefix: String): Boolean {
         return xmlPrefixes.contains(prefix)
     }
@@ -230,6 +217,7 @@ object AttributeUtil {
         return templateDirectives.contains(directive)
     }
 
+    // FIXME: Remove this or implement it
     fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
         return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
     }
@@ -280,7 +268,7 @@ object AttributeUtil {
         }
 
         // Make sure it's an attribute that is parsed as JavaScript
-        if (!shouldInjectJavaScript(attributeName)) {
+        if (!shouldInjectJavaScript(attributeName, host.containingFile.project)) {
             return false
         }
 
@@ -305,16 +293,31 @@ object AttributeUtil {
         return name.startsWith("x-") || name.startsWith("@") || name.startsWith(':')
     }
 
-    private fun shouldInjectJavaScript(name: String): Boolean {
-        // `x-target:dynamic` should still inject JavaScript, but plain x-target should not
-        if (name == "x-target") return false
+    private fun shouldInjectJavaScript(name: String, project: Project): Boolean {
+        // Never inject for these core attributes
+        if (name.startsWith("x-transition:") || name == "x-mask" || name == "x-modelable") {
+            return false
+        }
 
-        return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name && "x-autofocus" != name && "x-sync" != name && "x-merge" != name
+
+        val enabledPlugins = AlpinePluginRegistry.getInstance().getEnabledPlugins(project)
+        for (plugin in enabledPlugins) {
+            val pluginDirectives = plugin.getDirectives()
+            val pluginPrefixes = plugin.getPrefixes()
+            
+            // If this attribute belongs to this plugin, let the plugin decide
+            if (pluginDirectives.contains(name) || pluginPrefixes.any { name.startsWith("$it:") }) {
+                return plugin.directiveSupportJavaScript(name)
+            }
+        }
+        
+        // For core attributes and unknown attributes, default to true (inject JS)
+        return true
     }
 
     private fun buildValidAttributes(htmlTag: HtmlTag): Array<AttributeInfo> {
         val descriptors = mutableListOf<AttributeInfo>()
-        val projectDirectives = getDirectivesForProject(htmlTag.project, htmlTag.containingFile)
+        val projectDirectives = getDirectivesForProject(htmlTag.project)
 
         for (directive in projectDirectives) {
             if (htmlTag.name != "template" && isTemplateDirective(directive)) {

@@ -82,6 +82,12 @@ class AlpineAjaxPlugin : AlpinePlugin {
         return MutablePair(context.left + magics, context.right)
     }
 
+    override fun directiveSupportJavaScript(directive: String): Boolean {
+        return when (directive) {
+            "x-target", "x-autofocus", "x-sync", "x-merge" -> false
+            else -> true
+        }
+    }
 
     override fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {
         suggestions.descriptors.add(AttributeInfo("x-target:dynamic"))

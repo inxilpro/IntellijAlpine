@@ -21,6 +21,8 @@ interface AlpinePlugin {
 
     fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> = context
 
+    fun directiveSupportJavaScript(directive: String): Boolean = true
+
     fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {}
 
     fun getDirectives(): List<String> = emptyList()
