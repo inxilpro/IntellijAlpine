@@ -4,6 +4,19 @@ import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 
 @Suppress("MemberVisibilityCanBePrivate")
 class AttributeInfo(val attribute: String) {
+    
+    companion object {
+        // Memoized values for all registered plugin directives and prefixes
+        private val pluginDirectives: List<String> by lazy {
+            AlpinePluginRegistry.getInstance().getRegisteredPlugins()
+                .flatMap { it.getDirectives() }
+        }
+        
+        private val pluginPrefixes: List<String> by lazy {
+            AlpinePluginRegistry.getInstance().getRegisteredPlugins()
+                .flatMap { it.getPrefixes() }
+        }
+    }
     private val typeTexts = hashMapOf<String, String>(
         "x-data" to "New Alpine.js component scope",
         "x-init" to "Run on initialization",
@@ -66,8 +79,7 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun isDirective(): Boolean {
-        // FIXME: Handle plugin directives, too
-        return AttributeUtil.directives.contains(name)
+        return AttributeUtil.directives.contains(name) || pluginDirectives.contains(name)
     }
 
 
@@ -80,7 +92,12 @@ class AttributeInfo(val attribute: String) {
     }
 
     fun canBePrefix(): Boolean {
-        return "x-bind" == name || "x-transition" == name || "x-on" == name
+        // Check core prefixes
+        if ("x-bind" == name || "x-transition" == name || "x-on" == name) {
+            return true
+        }
+
+        return pluginPrefixes.contains(name)
     }
 
     @Suppress("ReturnCount")
@@ -101,9 +118,11 @@ class AttributeInfo(val attribute: String) {
             return "x-transition:"
         }
 
-
-        if (attribute.startsWith("x-target:")) {
-            return "x-target:"
+        // Check all registered plugin prefixes (regardless of enablement)
+        for (prefix in pluginPrefixes) {
+            if (attribute.startsWith("$prefix:")) {
+                return "$prefix:"
+            }
         }
 
         return ""
