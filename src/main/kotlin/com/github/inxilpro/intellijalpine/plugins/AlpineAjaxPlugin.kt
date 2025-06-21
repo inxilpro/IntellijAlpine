@@ -99,7 +99,9 @@ class AlpineAjaxPlugin : AlpinePlugin {
         return listOf(
             CompletionProviderRegistration(
                 XmlPatterns.psiElement(XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)
-                    .withParent(XmlPatterns.xmlAttributeValue().withParent(XmlPatterns.xmlAttribute().withName("x-merge"))),
+                    .withParent(
+                        XmlPatterns.xmlAttributeValue().withParent(XmlPatterns.xmlAttribute().withName("x-merge"))
+                    ),
                 AlpineMergeValueCompletionProvider(this)
             )
         )
@@ -116,124 +118,4 @@ class AlpineAjaxPlugin : AlpinePlugin {
     override fun getPrefixes(): List<String> = listOf(
         "x-target"
     )
-
-    override fun performDetection(project: Project): Boolean {
-        return hasAlpineAjaxInScriptTags(project) || hasAlpineAjaxCode(project)
-    }
-
-    private fun hasAlpineAjaxInScriptTags(project: Project): Boolean {
-        val htmlFiles = mutableListOf<VirtualFile>()
-
-        // Get files by extension
-        val extensions = listOf("html", "htm", "php", "twig")
-        for (extension in extensions) {
-            htmlFiles.addAll(
-                FilenameIndex.getAllFilesByExt(
-                    project,
-                    extension,
-                    GlobalSearchScope.projectScope(project)
-                )
-            )
-        }
-
-        return htmlFiles.any { virtualFile ->
-            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-
-            when {
-                psiFile is XmlFile -> {
-                    // Handle HTML and XML files
-                    val scriptTags = PsiTreeUtil.collectElementsOfType(psiFile, XmlTag::class.java)
-                        .filter { it.name.equals("script", ignoreCase = true) }
-
-                    scriptTags.any { scriptTag ->
-                        val src = scriptTag.getAttributeValue("src")
-                        if (src != null) {
-                            isAlpineAjaxScriptSrc(src)
-                        } else {
-                            hasAlpineAjaxPatterns(scriptTag.value.text)
-                        }
-                    }
-                }
-                virtualFile.name.endsWith(".blade.php") -> {
-                    // Handle Blade files by checking their raw content
-                    try {
-                        val content = String(virtualFile.contentsToByteArray())
-                        hasAlpineAjaxPatterns(content) || hasAlpineAjaxScriptTagsInContent(content)
-                    } catch (_: Exception) {
-                        false
-                    }
-                }
-                else -> false
-            }
-        }
-    }
-
-    private fun isAlpineAjaxScriptSrc(src: String): Boolean {
-        return src.contains("alpine-ajax", ignoreCase = true)
-    }
-
-    private fun hasAlpineAjaxScriptTagsInContent(content: String): Boolean {
-        // Use regex to find script tags with alpine-ajax references in raw HTML content
-        val scriptTagRegex = Regex("<script[^>]*src=['\"]([^'\"]*)['\"][^>]*>", RegexOption.IGNORE_CASE)
-
-        return scriptTagRegex.findAll(content).any { match ->
-            val src = match.groupValues[1]
-            isAlpineAjaxScriptSrc(src)
-        }
-    }
-
-    private fun hasAlpineAjaxCode(project: Project): Boolean {
-        val jsExtensions = listOf("js", "ts", "mjs", "jsx", "tsx")
-        val jsFiles = mutableListOf<VirtualFile>()
-
-        for (extension in jsExtensions) {
-            jsFiles.addAll(
-                FilenameIndex.getAllFilesByExt(
-                    project,
-                    extension,
-                    GlobalSearchScope.projectScope(project)
-                )
-            )
-        }
-
-        return jsFiles.any { virtualFile ->
-            try {
-                val content = String(virtualFile.contentsToByteArray())
-                hasAlpineAjaxPatterns(content)
-            } catch (_: Exception) {
-                false
-            }
-        }
-    }
-
-    private fun hasAlpineAjaxPatterns(content: String): Boolean {
-        val alpineAjaxPatterns = listOf(
-            // Import statements
-            "import.*alpine-ajax",
-            "from.*alpine-ajax",
-            "require.*alpine-ajax",
-
-            // Alpine.js plugin registration
-            "Alpine\\.plugin\\s*\\(.*ajax",
-            "alpine\\.plugin\\s*\\(.*ajax",
-
-            // Ajax-specific functions from the alpine-ajax source
-            "AjaxInterceptor",
-            "AjaxCommand",
-            "ajaxCommand",
-            "processAjaxResponse",
-            "handleAjaxRequest",
-
-            // Magic helper usage patterns
-            "\\\$ajax\\s*\\(",
-            "x-target",
-            "x-swap",
-            "x-headers",
-            "x-replace"
-        )
-
-        return alpineAjaxPatterns.any { pattern ->
-            Regex(pattern, RegexOption.IGNORE_CASE).containsMatchIn(content)
-        }
-    }
 }
