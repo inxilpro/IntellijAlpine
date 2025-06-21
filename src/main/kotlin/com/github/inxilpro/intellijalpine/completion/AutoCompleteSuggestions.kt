@@ -102,6 +102,10 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         }
     }
 
+    fun addModifiers(modifiableDirective: String, modifiers: List<String>) {
+        addModifiers(modifiableDirective, modifiers.toTypedArray())
+    }
+
     fun addModifiers(modifiableDirective: String, modifiers: Array<String>) {
         if (!partialAttribute.startsWith(modifiableDirective)) {
             return
