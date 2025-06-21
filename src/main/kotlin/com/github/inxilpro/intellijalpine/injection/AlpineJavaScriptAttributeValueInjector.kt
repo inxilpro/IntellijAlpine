@@ -19,74 +19,71 @@ import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
-    private companion object {
-        val globalState =
-            """
-                /** @type {Object.<string, HTMLElement>} */
-                let ${'$'}refs;
-                
-                /** @type {Object.<string, *>} */
-                let ${'$'}store;
-                
-            """.trimIndent()
+    private val globalState =
+        """
+            /** @type {Object.<string, HTMLElement>} */
+            let ${'$'}refs;
+            
+            /** @type {Object.<string, *>} */
+            let ${'$'}store;
+            
+        """.trimIndent()
 
+    private val globalMagics =
+        """
+            /**
+             * @param {*<ValueToPersist>} value
+             * @return {ValueToPersist}
+             * @template ValueToPersist
+             */
+            function ${'$'}persist(value) {}
+            
+            /**
+             * @param {*<ValueForQueryString>} value
+             * @return {ValueForQueryString}
+             * @template ValueForQueryString
+             */
+            function ${'$'}queryString(value) {}
+            
+        """.trimIndent()
 
-        val globalMagics =
-            """
-                /**
-                 * @param {*<ValueToPersist>} value
-                 * @return {ValueToPersist}
-                 * @template ValueToPersist
-                 */
-                function ${'$'}persist(value) {}
-                
-                /**
-                 * @param {*<ValueForQueryString>} value
-                 * @return {ValueForQueryString}
-                 * @template ValueForQueryString
-                 */
-                function ${'$'}queryString(value) {}
-                
-            """.trimIndent()
+    private val coreMagics =
+        """
+            /** @type {elType} */
+            let ${'$'}el;
+            
+            /** @type {rootType} */
+            let ${'$'}root;
 
-        val coreMagics =
-            """
-                /** @type {elType} */
-                let ${'$'}el;
-                
-                /** @type {rootType} */
-                let ${'$'}root;
+            /**
+             * @param {string} event
+             * @param {Object} detail
+             * @return boolean
+             */
+            function ${'$'}dispatch(event, detail = {}) {}
 
-                /**
-                 * @param {string} event
-                 * @param {Object} detail
-                 * @return boolean
-                 */
-                function ${'$'}dispatch(event, detail = {}) {}
+            /**
+             * @param {Function} callback
+             * @return void
+             */
+            function ${'$'}nextTick(callback) {}
 
-                /**
-                 * @param {Function} callback
-                 * @return void
-                 */
-                function ${'$'}nextTick(callback) {}
+            /**
+             * @param {string} property
+             * @param {Function} callback
+             * @return void
+             */
+            function ${'$'}watch(property, callback) {}
+            
+            /**
+             * @param {string} scope
+             * @return string
+             */
+            function ${'$'}id(scope) {}
+            
+        """.trimIndent()
 
-                /**
-                 * @param {string} property
-                 * @param {Function} callback
-                 * @return void
-                 */
-                function ${'$'}watch(property, callback) {}
-                
-                /**
-                 * @param {string} scope
-                 * @return string
-                 */
-                function ${'$'}id(scope) {}
-                
-            """.trimIndent()
-
-        val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
-    }
+    private val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
         if (host !is XmlAttributeValue) {
@@ -135,7 +132,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             return listOf(valueRange)
         }
 
-        val phpMatcher = Regex("(?:(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?)")
+        val phpMatcher = Regex("(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?")
         val ranges = mutableListOf<TextRange>()
 
         var offset = valueRange.startOffset

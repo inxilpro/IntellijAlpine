@@ -8,6 +8,7 @@ import javax.swing.JComponent
 class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     private var mySettingsComponent: AlpineSettingsComponent? = null
 
+    @Suppress("DialogTitleCapitalization")
     override fun getDisplayName(): String {
         return "Alpine.js"
     }

@@ -10,7 +10,7 @@ import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class AlpineSettingsComponent(private val project: Project?) {
+class AlpineSettingsComponent(project: Project?) {
     val panel: JPanel
 
     private val myShowGutterIconsStatus = JBCheckBox("Show Alpine gutter icons")
