@@ -50,33 +50,21 @@ class AttributeInfo(val attribute: String) {
     }
 
     @Suppress("ComplexCondition")
-    fun isAlpine(): Boolean {
-        return this.isDirective() || this.canBePrefix()
-    }
+    fun isAlpine(): Boolean = isDirective() || isPrefixed() || canBePrefix()
 
-    fun isEvent(): Boolean {
-        return "@" == prefix || "x-on:" == prefix
-    }
+    fun isEvent(): Boolean = "@" == prefix || "x-on:" == prefix
 
-    fun isBound(): Boolean {
-        return ":" == prefix || "x-bind:" == prefix
-    }
+    fun isBound(): Boolean = ":" == prefix || "x-bind:" == prefix
 
-    fun isTransition(): Boolean {
-        return "x-transition:" == prefix
-    }
+    fun isTransition(): Boolean = "x-transition:" == prefix
 
-    fun isDirective(): Boolean {
-        return AttributeUtil.directives.contains(name)
-    }
+    fun isDirective(): Boolean = AttributeUtil.directives.contains(name)
 
-    fun hasValue(): Boolean {
-        return "x-cloak" != name && "x-ignore" != name
-    }
+    fun hasValue(): Boolean = "x-cloak" != name && "x-ignore" != name
 
-    fun canBePrefix(): Boolean {
-        return AttributeUtil.prefixes.contains(name)
-    }
+    fun canBePrefix(): Boolean = AttributeUtil.prefixes.contains(name)
+
+    fun isPrefixed(): Boolean = prefix != ""
 
     @Suppress("ReturnCount")
     private fun extractPrefix(): String {
