@@ -56,7 +56,7 @@ class ScriptReferenceDetector : DetectionStrategy {
 
         for (extension in jsExtensions) {
             jsFiles.addAll(
-                FilenameIndex.getAllFilesByExt(project,extension,GlobalSearchScope.projectScope(project))
+                FilenameIndex.getAllFilesByExt(project, extension, GlobalSearchScope.projectScope(project))
             )
         }
 

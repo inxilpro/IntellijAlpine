@@ -10,7 +10,7 @@ import com.intellij.util.ProcessingContext
 abstract class AlpinePluginCompletionProvider(
     private val plugin: AlpinePlugin
 ) : CompletionProvider<CompletionParameters>() {
-    
+
     final override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,

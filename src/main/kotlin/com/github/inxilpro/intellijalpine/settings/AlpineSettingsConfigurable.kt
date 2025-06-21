@@ -1,8 +1,6 @@
 package com.github.inxilpro.intellijalpine.settings
 
 import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
-import com.github.inxilpro.intellijalpine.settings.AlpineSettingsComponent
-import com.github.inxilpro.intellijalpine.settings.AlpineSettingsState
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import javax.swing.JComponent

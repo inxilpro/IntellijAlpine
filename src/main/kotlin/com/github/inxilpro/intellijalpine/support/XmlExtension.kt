@@ -1,7 +1,6 @@
 package com.github.inxilpro.intellijalpine.support
 
 import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
-import com.github.inxilpro.intellijalpine.support.LanguageUtil
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.html.HtmlTag

@@ -8,7 +8,8 @@ import org.apache.commons.lang3.tuple.MutablePair
 
 interface AlpinePlugin {
     companion object {
-        val EP_NAME = ExtensionPointName.Companion.create<AlpinePlugin>("com.github.inxilpro.intellijalpine.alpinePlugin")
+        val EP_NAME =
+            ExtensionPointName.Companion.create<AlpinePlugin>("com.github.inxilpro.intellijalpine.alpinePlugin")
     }
 
     fun getPluginName(): String
@@ -24,7 +25,7 @@ interface AlpinePlugin {
     fun directiveSupportJavaScript(directive: String): Boolean = true
 
     fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {}
-    
+
     fun getCompletionProviders(): List<CompletionProviderRegistration> = emptyList()
 
     fun getDirectives(): List<String> = emptyList()

@@ -20,7 +20,9 @@ object LanguageUtil {
     )
 
     fun supportsAlpineJs(file: PsiFile): Boolean {
-        return hasHtmlBasedLanguage(file) || hasTemplateLanguage(file) || hasHtmlLikeExtension(file) || isTemplateLanguageFile(file);
+        return hasHtmlBasedLanguage(file) || hasTemplateLanguage(file) || hasHtmlLikeExtension(file) || isTemplateLanguageFile(
+            file
+        )
     }
 
     fun hasPhpLanguage(file: PsiFile): Boolean {

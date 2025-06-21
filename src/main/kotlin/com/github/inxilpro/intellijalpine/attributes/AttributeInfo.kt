@@ -5,7 +5,7 @@ import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 @Suppress("MemberVisibilityCanBePrivate")
 class AttributeInfo(val attribute: String) {
 
-    private val typeTexts = hashMapOf<String, String>(
+    private val typeTexts = hashMapOf(
         "x-data" to "New Alpine.js component scope",
         "x-init" to "Run on initialization",
         "x-show" to "Toggles 'display: none'",

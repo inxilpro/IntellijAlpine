@@ -1,8 +1,8 @@
 package com.github.inxilpro.intellijalpine.injection
 
+import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
 import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 import com.github.inxilpro.intellijalpine.support.LanguageUtil
-import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
 import com.intellij.lang.Language
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
@@ -150,7 +150,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
-        val globalContext = MutablePair(globalMagics, "");
+        val globalContext = MutablePair(globalMagics, "")
         val context = AlpinePluginRegistry.instance.injectAllJsContext(host.project, globalContext)
 
         if ("x-data" != directive) {

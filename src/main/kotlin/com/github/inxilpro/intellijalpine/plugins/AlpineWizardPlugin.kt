@@ -3,14 +3,6 @@ package com.github.inxilpro.intellijalpine.plugins
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.xml.XmlFile
-import com.intellij.psi.xml.XmlTag
 import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineWizardPlugin : AlpinePlugin {

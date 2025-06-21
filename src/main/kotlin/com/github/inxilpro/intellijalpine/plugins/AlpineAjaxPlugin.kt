@@ -1,19 +1,10 @@
 package com.github.inxilpro.intellijalpine.plugins
 
-import com.github.inxilpro.intellijalpine.core.AlpinePlugin
-import com.github.inxilpro.intellijalpine.core.CompletionProviderRegistration
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.patterns.PlatformPatterns
+import com.github.inxilpro.intellijalpine.core.AlpinePlugin
+import com.github.inxilpro.intellijalpine.core.CompletionProviderRegistration
 import com.intellij.patterns.XmlPatterns
-import com.intellij.psi.PsiManager
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.xml.XmlFile
-import com.intellij.psi.xml.XmlTag
 import com.intellij.psi.xml.XmlTokenType
 import org.apache.commons.lang3.tuple.MutablePair
 

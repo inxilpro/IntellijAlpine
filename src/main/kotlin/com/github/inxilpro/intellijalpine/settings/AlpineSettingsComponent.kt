@@ -42,13 +42,13 @@ class AlpineSettingsComponent(private val project: Project?) {
         if (project != null) {
             builder.addVerticalGap(10)  // Add spacing between sections
                 .addComponent(TitledSeparator("Project Settings for “${project.name}”"))
-            
+
             val projectLabel = JBLabel("These settings apply only to the current project")
             projectLabel.foreground = UIUtil.getContextHelpForeground()
             projectLabel.font = UIUtil.getLabelFont(UIUtil.FontSize.SMALL)
             builder.addComponent(projectLabel, 1)
                 .addVerticalGap(5)
-            
+
             // Dynamically add checkboxes for each registered plugin
             AlpinePluginRegistry.instance.getRegisteredPlugins().forEach { plugin ->
                 val checkBox = JBCheckBox("Enable “${plugin.getPackageDisplayName()}” support for this project")

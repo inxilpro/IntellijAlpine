@@ -6,7 +6,10 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 
-@State(name = "com.github.inxilpro.intellijalpine.AlpineProjectSettingsState", storages = [Storage("alpinejs-support.xml")])
+@State(
+    name = "com.github.inxilpro.intellijalpine.AlpineProjectSettingsState",
+    storages = [Storage("alpinejs-support.xml")]
+)
 class AlpineProjectSettingsState : PersistentStateComponent<AlpineProjectSettingsState?> {
     var enabledPlugins = mutableMapOf<String, Boolean>()
 

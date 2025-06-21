@@ -5,12 +5,8 @@ import com.github.inxilpro.intellijalpine.support.LanguageUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
-import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
-import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
-import com.intellij.psi.xml.XmlTag
-import com.intellij.xml.XmlAttributeDescriptor
 
 object AttributeUtil {
     private val corePrefixes = listOf(

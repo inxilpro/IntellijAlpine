@@ -21,22 +21,25 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- com.jetbrains.php.blade.psi.BladePsiLanguageInjectionHost -->
-        <multiHostInjector implementation="com.github.inxilpro.intellijalpine.injection.AlpineJavaScriptAttributeValueInjector"/>
-        <xml.attributeDescriptorsProvider implementation="com.github.inxilpro.intellijalpine.attributes.AttributesProvider"/>
+        <multiHostInjector
+                implementation="com.github.inxilpro.intellijalpine.injection.AlpineJavaScriptAttributeValueInjector"/>
+        <xml.attributeDescriptorsProvider
+                implementation="com.github.inxilpro.intellijalpine.attributes.AttributesProvider"/>
         <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.support.XmlExtension"/>
         <typedHandler implementation="com.github.inxilpro.intellijalpine.completion.AutoPopupHandler"/>
         <completion.contributor language="HTML"
                                 implementationClass="com.github.inxilpro.intellijalpine.completion.AlpineCompletionContributor"
                                 id="AlpineCompletionContributor"/>
-        <psi.referenceContributor language="HTML" 
+        <psi.referenceContributor language="HTML"
                                   implementation="com.github.inxilpro.intellijalpine.plugins.AlpineTargetReferenceContributor"/>
         <codeInsight.lineMarkerProvider language="HTML"
-                implementationClass="com.github.inxilpro.intellijalpine.core.AlpineLineMarkerProvider" />
+                                        implementationClass="com.github.inxilpro.intellijalpine.core.AlpineLineMarkerProvider"/>
         <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.settings.AlpineSettingsState"/>
         <projectService serviceImplementation="com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState"/>
-        <projectConfigurable parentId="Settings.JavaScript" instance="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"
+        <projectConfigurable parentId="Settings.JavaScript"
+                             instance="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"
                              id="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"
-                             displayName="Alpine.js" />
+                             displayName="Alpine.js"/>
         <postStartupActivity implementation="com.github.inxilpro.intellijalpine.settings.AlpineProjectActivity"/>
     </extensions>
 

@@ -4,7 +4,12 @@ import com.github.inxilpro.intellijalpine.Alpine
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.util.TextRange
 import com.intellij.patterns.XmlPatterns
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiReference
+import com.intellij.psi.PsiReferenceBase
+import com.intellij.psi.PsiReferenceContributor
+import com.intellij.psi.PsiReferenceProvider
+import com.intellij.psi.PsiReferenceRegistrar
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlFile
@@ -87,7 +92,7 @@ class AlpineIdReference(
 
     private fun collectElementIds(xmlFile: XmlFile): Set<String> {
         val allTags = PsiTreeUtil.findChildrenOfType(xmlFile, XmlTag::class.java)
-        
+
         return allTags.mapNotNull { tag ->
             tag.getAttribute("id")?.value?.takeIf { it.isNotBlank() }
         }.toSet()

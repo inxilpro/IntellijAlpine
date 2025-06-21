@@ -1,7 +1,6 @@
 package com.github.inxilpro.intellijalpine.completion
 
 import com.github.inxilpro.intellijalpine.Alpine
-import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.github.inxilpro.intellijalpine.support.LanguageUtil
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
