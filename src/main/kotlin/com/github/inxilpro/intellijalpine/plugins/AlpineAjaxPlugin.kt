@@ -2,12 +2,8 @@ package com.github.inxilpro.intellijalpine.plugins
 
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
 import com.github.inxilpro.intellijalpine.core.CompletionProviderRegistration
-import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
-import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
-import com.intellij.json.psi.JsonFile
-import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.patterns.PlatformPatterns
@@ -122,35 +118,7 @@ class AlpineAjaxPlugin : AlpinePlugin {
     )
 
     override fun performDetection(project: Project): Boolean {
-        return hasAlpineAjaxInPackageJson(project) ||
-               hasAlpineAjaxInScriptTags(project) ||
-               hasAlpineAjaxCode(project)
-    }
-
-    private fun hasAlpineAjaxInPackageJson(project: Project): Boolean {
-        val packageJsonFiles = FilenameIndex.getVirtualFilesByName(
-            "package.json",
-            GlobalSearchScope.projectScope(project)
-        )
-
-        return packageJsonFiles.any { virtualFile ->
-            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-            if (psiFile is JsonFile) {
-                val rootObject = psiFile.topLevelValue as? JsonObject
-                val dependencies = rootObject?.findProperty("dependencies")?.value as? JsonObject
-                val devDependencies = rootObject?.findProperty("devDependencies")?.value as? JsonObject
-
-                hasAlpineAjaxDependency(dependencies) || hasAlpineAjaxDependency(devDependencies)
-            } else {
-                false
-            }
-        }
-    }
-
-    private fun hasAlpineAjaxDependency(dependencies: JsonObject?): Boolean {
-        return getPackageNamesForDetection().any { packageName ->
-            dependencies?.findProperty(packageName) != null
-        }
+        return hasAlpineAjaxInScriptTags(project) || hasAlpineAjaxCode(project)
     }
 
     private fun hasAlpineAjaxInScriptTags(project: Project): Boolean {

@@ -3,9 +3,6 @@ package com.github.inxilpro.intellijalpine.plugins
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
-import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
-import com.intellij.json.psi.JsonFile
-import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -111,35 +108,7 @@ class AlpineWizardPlugin : AlpinePlugin {
     )
 
     override fun performDetection(project: Project): Boolean {
-        return hasAlpineWizardInPackageJson(project) ||
-               hasAlpineWizardInScriptTags(project) ||
-               hasAlpineWizardCode(project)
-    }
-
-    private fun hasAlpineWizardInPackageJson(project: Project): Boolean {
-        val packageJsonFiles = FilenameIndex.getVirtualFilesByName(
-            "package.json",
-            GlobalSearchScope.projectScope(project)
-        )
-
-        return packageJsonFiles.any { virtualFile ->
-            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-            if (psiFile is JsonFile) {
-                val rootObject = psiFile.topLevelValue as? JsonObject
-                val dependencies = rootObject?.findProperty("dependencies")?.value as? JsonObject
-                val devDependencies = rootObject?.findProperty("devDependencies")?.value as? JsonObject
-
-                hasAlpineWizardDependency(dependencies) || hasAlpineWizardDependency(devDependencies)
-            } else {
-                false
-            }
-        }
-    }
-
-    private fun hasAlpineWizardDependency(dependencies: JsonObject?): Boolean {
-        return getPackageNamesForDetection().any { packageName ->
-            dependencies?.findProperty(packageName) != null
-        }
+        return hasAlpineWizardInScriptTags(project) || hasAlpineWizardCode(project)
     }
 
     private fun hasAlpineWizardInScriptTags(project: Project): Boolean {

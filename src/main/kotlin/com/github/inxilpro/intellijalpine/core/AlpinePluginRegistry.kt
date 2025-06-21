@@ -3,12 +3,17 @@ package com.github.inxilpro.intellijalpine.core
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
+import com.intellij.json.psi.JsonFile
+import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.psi.PsiManager
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.messages.MessageBusConnection
 import org.apache.commons.lang3.tuple.MutablePair
 import java.util.concurrent.ConcurrentHashMap
@@ -71,13 +76,42 @@ class AlpinePluginRegistry {
 
     fun checkAndAutoEnablePlugins(project: Project) {
         getRegisteredPlugins().forEach { plugin ->
-            if (!isPluginEnabled(project, plugin.getPluginName()) && plugin.performDetection(project)) {
+            if (!isPluginEnabled(project, plugin.getPluginName()) && isPluginDetected(project, plugin)) {
                 enablePlugin(project, plugin.getPluginName())
             }
         }
 
-        // Set up package.json listener for auto-enabling plugins
         setupPackageJsonListener(project)
+    }
+
+    private fun isPluginDetected(project: Project, plugin: AlpinePlugin): Boolean {
+        return hasPluginInPackageJson(project, plugin) || plugin.performDetection(project)
+    }
+
+    private fun hasPluginInPackageJson(project: Project, plugin: AlpinePlugin): Boolean {
+        val packageJsonFiles = FilenameIndex.getVirtualFilesByName(
+            "package.json",
+            GlobalSearchScope.projectScope(project)
+        )
+
+        return packageJsonFiles.any { virtualFile ->
+            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
+            if (psiFile is JsonFile) {
+                val rootObject = psiFile.topLevelValue as? JsonObject
+                val dependencies = rootObject?.findProperty("dependencies")?.value as? JsonObject
+                val devDependencies = rootObject?.findProperty("devDependencies")?.value as? JsonObject
+
+                hasPluginDependency(plugin, dependencies) || hasPluginDependency(plugin, devDependencies)
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun hasPluginDependency(plugin: AlpinePlugin, dependencies: JsonObject?): Boolean {
+        return plugin.getPackageNamesForDetection().any { packageName ->
+            dependencies?.findProperty(packageName) != null
+        }
     }
 
     private fun setupPackageJsonListener(project: Project) {
@@ -99,10 +133,9 @@ class AlpinePluginRegistry {
                 }
 
                 if (hasPackageJsonChanges) {
-                    // Re-check and potentially auto-enable plugins on package.json changes
                     ApplicationManager.getApplication().runReadAction {
                         getRegisteredPlugins().forEach { plugin ->
-                            if (!isPluginEnabled(project, plugin.getPluginName()) && plugin.performDetection(project)) {
+                            if (!isPluginEnabled(project, plugin.getPluginName()) && isPluginDetected(project, plugin)) {
                                 enablePlugin(project, plugin.getPluginName())
                             }
                         }
