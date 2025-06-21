@@ -35,6 +35,10 @@ class AlpinePluginRegistry {
         return AlpineProjectSettingsState.getInstance(project).isPluginEnabled(pluginName)
     }
 
+    fun isPluginEnabled(project: Project, plugin: AlpinePlugin): Boolean {
+        return isPluginEnabled(project, plugin.getPluginName())
+    }
+
     fun enablePlugin(project: Project, pluginName: String) {
         AlpineProjectSettingsState.getInstance(project).setPluginEnabled(pluginName, true)
     }

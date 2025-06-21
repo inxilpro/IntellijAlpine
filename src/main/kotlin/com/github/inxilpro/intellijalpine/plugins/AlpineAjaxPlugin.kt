@@ -1,6 +1,7 @@
 package com.github.inxilpro.intellijalpine.plugins
 
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
+import com.github.inxilpro.intellijalpine.core.CompletionProviderRegistration
 import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
@@ -9,12 +10,15 @@ import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.patterns.PlatformPatterns
+import com.intellij.patterns.XmlPatterns
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlFile
 import com.intellij.psi.xml.XmlTag
+import com.intellij.psi.xml.XmlTokenType
 import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineAjaxPlugin : AlpinePlugin {
@@ -93,6 +97,16 @@ class AlpineAjaxPlugin : AlpinePlugin {
         suggestions.descriptors.add(AttributeInfo("x-target:dynamic"))
         suggestions.addModifiers("x-target", targetModifiers)
         suggestions.addModifiers("x-target:dynamic", targetModifiers)
+    }
+
+    override fun getCompletionProviders(): List<CompletionProviderRegistration> {
+        return listOf(
+            CompletionProviderRegistration(
+                XmlPatterns.psiElement(XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)
+                    .withParent(XmlPatterns.xmlAttributeValue().withParent(XmlPatterns.xmlAttribute().withName("x-merge"))),
+                AlpineMergeValueCompletionProvider(this)
+            )
+        )
     }
 
     override fun getDirectives(): List<String> = listOf(

@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Always use modern idiomatic Kotlin code
 - When implementing singletons, prefer `Foo.instance` over `Foo.Companion.instance` or `Foo.getInstance()`
+- Only add docblocks and comments when they provide substantive value. Comments should always explain "why" not "what."
 
 ## Commands
 

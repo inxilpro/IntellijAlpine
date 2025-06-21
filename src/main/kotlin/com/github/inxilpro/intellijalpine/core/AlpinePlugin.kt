@@ -24,6 +24,8 @@ interface AlpinePlugin {
     fun directiveSupportJavaScript(directive: String): Boolean = true
 
     fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {}
+    
+    fun getCompletionProviders(): List<CompletionProviderRegistration> = emptyList()
 
     fun getDirectives(): List<String> = emptyList()
 

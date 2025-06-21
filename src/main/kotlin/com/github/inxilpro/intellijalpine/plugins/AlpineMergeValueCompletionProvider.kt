@@ -1,15 +1,18 @@
 package com.github.inxilpro.intellijalpine.plugins
 
 import com.github.inxilpro.intellijalpine.Alpine
+import com.github.inxilpro.intellijalpine.completion.AlpinePluginCompletionProvider
+import com.github.inxilpro.intellijalpine.core.AlpinePlugin
 import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.util.ProcessingContext
 
-class AlpineMergeValueCompletionProvider : CompletionProvider<CompletionParameters>() {
+class AlpineMergeValueCompletionProvider(
+    plugin: AlpinePlugin
+) : AlpinePluginCompletionProvider(plugin) {
 
     private val mergeStrategies = arrayOf(
         "before" to "Insert content before target",
@@ -21,7 +24,7 @@ class AlpineMergeValueCompletionProvider : CompletionProvider<CompletionParamete
         "morph" to "Morph content preserving state"
     )
 
-    override fun addCompletions(
+    override fun addPluginCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
         result: CompletionResultSet

@@ -1,6 +1,6 @@
 package com.github.inxilpro.intellijalpine.completion
 
-import com.github.inxilpro.intellijalpine.plugins.AlpineMergeValueCompletionProvider
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns
@@ -16,12 +16,15 @@ class AlpineCompletionContributor : CompletionContributor() {
             AlpineAttributeCompletionProvider()
         )
 
-        // Attribute value completion for x-merge
-        extend(
-            CompletionType.BASIC,
-            PlatformPatterns.psiElement(XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)
-                .inside(XmlPatterns.xmlAttributeValue().withParent(XmlPatterns.xmlAttribute().withName("x-merge"))),
-            AlpineMergeValueCompletionProvider()
-        )
+        // Plugin completions
+        AlpinePluginRegistry.instance.getRegisteredPlugins().forEach { plugin ->
+            plugin.getCompletionProviders().forEach { registration ->
+                extend(
+                    registration.type,
+                    registration.pattern,
+                    registration.provider
+                )
+            }
+        }
     }
 }
