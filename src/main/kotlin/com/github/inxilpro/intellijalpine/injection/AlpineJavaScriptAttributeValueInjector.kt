@@ -1,8 +1,11 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.injection
 
+import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
+import com.github.inxilpro.intellijalpine.support.LanguageUtil
+import com.intellij.lang.Language
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
-import com.intellij.lang.Language
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
@@ -12,123 +15,75 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
-import com.intellij.refactoring.suggested.startOffset
 import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
-import java.util.*
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
-    private companion object {
-        val globalState =
-            """
-                /** @type {Object.<string, HTMLElement>} */
-                let ${'$'}refs;
-                
-                /** @type {Object.<string, *>} */
-                let ${'$'}store;
-                
-            """.trimIndent()
+    private val globalState =
+        """
+            /** @type {Object.<string, HTMLElement>} */
+            let ${'$'}refs;
+            
+            /** @type {Object.<string, *>} */
+            let ${'$'}store;
+            
+        """.trimIndent()
 
-        val alpineWizardState =
-            """
-                class AlpineWizardStep {
-                	/** @type {HTMLElement} */ el;
-                	/** @type {string} */ title;
-                	/** @type {boolean} */ is_applicable;
-                	/** @type {boolean} */ is_complete;
-                }
+    private val globalMagics =
+        """
+            /**
+             * @param {*<ValueToPersist>} value
+             * @return {ValueToPersist}
+             * @template ValueToPersist
+             */
+            function ${'$'}persist(value) {}
+            
+            /**
+             * @param {*<ValueForQueryString>} value
+             * @return {ValueForQueryString}
+             * @template ValueForQueryString
+             */
+            function ${'$'}queryString(value) {}
+            
+        """.trimIndent()
 
-                class AlpineWizardProgress {
-                	/** @type {number} */ current;
-                	/** @type {number} */ total;
-                	/** @type {number} */ complete;
-                	/** @type {number} */ incomplete;
-                	/** @type {string} */ percentage;
-                	/** @type {number} */ percentage_int;
-                	/** @type {number} */ percentage_float;
-                }
+    private val coreMagics =
+        """
+            /** @type {elType} */
+            let ${'$'}el;
+            
+            /** @type {rootType} */
+            let ${'$'}root;
 
-                class AlpineWizardMagic {
-                	/** @returns {AlpineWizardStep} */ current() {}
-                	/** @returns {AlpineWizardStep|null} */ next() {}
-                	/** @returns {AlpineWizardStep|null} */ previous() {}
-                	/** @returns {AlpineWizardProgress} */ progress() {}
-                	/** @returns {boolean} */ isFirst() {}
-                	/** @returns {boolean} */ isNotFirst() {}
-                	/** @returns {boolean} */ isLast() {}
-                	/** @returns {boolean} */ isNotLast() {}
-                	/** @returns {boolean} */ isComplete() {}
-                	/** @returns {boolean} */ isNotComplete() {}
-                	/** @returns {boolean} */ isIncomplete() {}
-                	/** @returns {boolean} */ canGoForward() {}
-                	/** @returns {boolean} */ cannotGoForward() {}
-                	/** @returns {boolean} */ canGoBack() {}
-                	/** @returns {boolean} */ cannotGoBack() {}
-                	/** @returns {void} */ forward() {}
-                	/** @returns {void} */ back() {}
-                }
+            /**
+             * @param {string} event
+             * @param {Object} detail
+             * @return boolean
+             */
+            function ${'$'}dispatch(event, detail = {}) {}
 
-                /** @type {AlpineWizardMagic} */
-                let ${'$'}wizard;
-                
-            """.trimIndent()
+            /**
+             * @param {Function} callback
+             * @return void
+             */
+            function ${'$'}nextTick(callback) {}
 
-        val globalMagics =
-            """
-                /**
-                 * @param {*<ValueToPersist>} value
-                 * @return {ValueToPersist}
-                 * @template ValueToPersist
-                 */
-                function ${'$'}persist(value) {}
-                
-                /**
-                 * @param {*<ValueForQueryString>} value
-                 * @return {ValueForQueryString}
-                 * @template ValueForQueryString
-                 */
-                function ${'$'}queryString(value) {}
-                
-            """.trimIndent()
+            /**
+             * @param {string} property
+             * @param {Function} callback
+             * @return void
+             */
+            function ${'$'}watch(property, callback) {}
+            
+            /**
+             * @param {string} scope
+             * @return string
+             */
+            function ${'$'}id(scope) {}
+            
+        """.trimIndent()
 
-        val coreMagics =
-            """
-                /** @type {elType} */
-                let ${'$'}el;
-                
-                /** @type {rootType} */
-                let ${'$'}root;
-
-                /**
-                 * @param {string} event
-                 * @param {Object} detail
-                 * @return boolean
-                 */
-                function ${'$'}dispatch(event, detail = {}) {}
-
-                /**
-                 * @param {Function} callback
-                 * @return void
-                 */
-                function ${'$'}nextTick(callback) {}
-
-                /**
-                 * @param {string} property
-                 * @param {Function} callback
-                 * @return void
-                 */
-                function ${'$'}watch(property, callback) {}
-                
-                /**
-                 * @param {string} scope
-                 * @return string
-                 */
-                function ${'$'}id(scope) {}
-                
-            """.trimIndent()
-
-        val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
-    }
+    private val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
         if (host !is XmlAttributeValue) {
@@ -146,7 +101,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
         var (prefix, suffix) = getPrefixAndSuffix(attributeName, host)
 
-        val jsLanguage = Language.findLanguageByID("JavaScript") 
+        val jsLanguage = Language.findLanguageByID("JavaScript")
             ?: throw IllegalStateException("JavaScript language not found")
         registrar.startInjecting(jsLanguage)
 
@@ -177,7 +132,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             return listOf(valueRange)
         }
 
-        val phpMatcher = Regex("(?:(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?)")
+        val phpMatcher = Regex("(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?")
         val ranges = mutableListOf<TextRange>()
 
         var offset = valueRange.startOffset
@@ -192,7 +147,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
-        val context = MutablePair(globalMagics, "")
+        val globalContext = MutablePair(globalMagics, "")
+        val context = AlpinePluginRegistry.instance.injectAllJsContext(host.project, globalContext)
 
         if ("x-data" != directive) {
             context.left = addTypingToCoreMagics(host) + context.left
@@ -243,7 +199,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             val data = dataParent.getAttribute("x-data")?.value
             if (null != data) {
                 val (prefix, suffix) = context
-                context.left = "$globalState\n$alpineWizardState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
+                context.left = "$globalState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
                 context.right = "$suffix\n\n}"
             }
         }

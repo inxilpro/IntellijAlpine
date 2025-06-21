@@ -1,27 +1,28 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.attributes
 
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
+import com.github.inxilpro.intellijalpine.support.LanguageUtil
+import com.intellij.openapi.project.Project
 import com.intellij.psi.html.HtmlTag
 import com.intellij.psi.impl.source.html.dtd.HtmlAttributeDescriptorImpl
-import com.intellij.psi.impl.source.html.dtd.HtmlElementDescriptorImpl
-import com.intellij.psi.impl.source.html.dtd.HtmlNSDescriptorImpl
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
-import com.intellij.psi.xml.XmlTag
-import com.intellij.xml.XmlAttributeDescriptor
-import java.util.Arrays
-import java.util.Collections
 
 object AttributeUtil {
-    private val validAttributes = mutableMapOf<String, Array<AttributeInfo>>()
-
-    val xmlPrefixes = arrayOf(
+    private val corePrefixes = listOf(
         "x-on",
         "x-bind",
         "x-transition",
-        "x-wizard", // glhd/alpine-wizard pacakge
     )
 
-    val directives = arrayOf(
+    val prefixes: List<String> by lazy {
+        AlpinePluginRegistry.instance.getRegisteredPlugins()
+            .flatMap { it.getPrefixes() }
+            .union(corePrefixes)
+            .toList()
+    }
+
+    private val coreDirectives = listOf(
         "x-data",
         "x-init",
         "x-show",
@@ -45,6 +46,13 @@ object AttributeUtil {
         "x-collapse",
         "x-spread", // deprecated
     )
+
+    val directives: List<String> by lazy {
+        AlpinePluginRegistry.instance.getRegisteredPlugins()
+            .flatMap { it.getDirectives() }
+            .union(coreDirectives)
+            .toList()
+    }
 
     val templateDirectives = arrayOf(
         "x-if",
@@ -88,10 +96,6 @@ object AttributeUtil {
         "throttle",
         "duration",
         "delay",
-    )
-
-    val numericModifiers = arrayOf(
-        "scale",
     )
 
     val transitionModifiers = arrayOf(
@@ -196,16 +200,22 @@ object AttributeUtil {
         Pair("wheel", "WheelEvent"),
     )
 
+    fun getDirectivesForProject(project: Project): Array<String> {
+        val pluginDirectives = AlpinePluginRegistry.instance.getAllDirectives(project)
+        return (directives.toList() + pluginDirectives).toTypedArray()
+    }
+
+    fun getXmlPrefixesForProject(project: Project): Array<String> {
+        val pluginPrefixes = AlpinePluginRegistry.instance.getAllPrefixes(project)
+        return (prefixes.toList() + pluginPrefixes).toTypedArray()
+    }
+
     fun isXmlPrefix(prefix: String): Boolean {
-        return xmlPrefixes.contains(prefix)
+        return prefixes.contains(prefix)
     }
 
     fun isTemplateDirective(directive: String): Boolean {
         return templateDirectives.contains(directive)
-    }
-
-    fun getValidAttributesWithInfo(xmlTag: HtmlTag): Array<AttributeInfo> {
-        return validAttributes.getOrPut(xmlTag.name, { buildValidAttributes(xmlTag) })
     }
 
     fun isEvent(attribute: String): Boolean {
@@ -232,7 +242,7 @@ object AttributeUtil {
         if (!LanguageUtil.supportsAlpineJs(host.containingFile)) {
             return false
         }
-        
+
         // Make sure that we have an XML attribute as a parent
         val attribute = host.parent as? XmlAttribute ?: return false
 
@@ -254,7 +264,7 @@ object AttributeUtil {
         }
 
         // Make sure it's an attribute that is parsed as JavaScript
-        if (!shouldInjectJavaScript(attributeName)) {
+        if (!shouldInjectJavaScript(attributeName, host.containingFile.project)) {
             return false
         }
 
@@ -279,41 +289,25 @@ object AttributeUtil {
         return name.startsWith("x-") || name.startsWith("@") || name.startsWith(':')
     }
 
-    private fun shouldInjectJavaScript(name: String): Boolean {
-        return !name.startsWith("x-transition:") && "x-mask" != name && "x-modelable" != name
-    }
-
-    private fun buildValidAttributes(htmlTag: HtmlTag): Array<AttributeInfo> {
-        val descriptors = mutableListOf<AttributeInfo>()
-
-        for (directive in directives) {
-            if (htmlTag.name != "template" && isTemplateDirective(directive)) {
-                continue
-            }
-
-            descriptors.add(AttributeInfo(directive))
+    private fun shouldInjectJavaScript(name: String, project: Project): Boolean {
+        // Never inject for these core attributes
+        if (name.startsWith("x-transition:") || name == "x-mask" || name == "x-modelable") {
+            return false
         }
 
-        for (descriptor in getDefaultHtmlAttributes(htmlTag)) {
-            if (descriptor.name.startsWith("on")) {
-                val event = descriptor.name.substring(2)
-                for (prefix in eventPrefixes) {
-                    descriptors.add(AttributeInfo(prefix + event))
-                }
-            } else {
-                for (prefix in bindPrefixes) {
-                    descriptors.add(AttributeInfo(prefix + descriptor.name))
-                }
+
+        val enabledPlugins = AlpinePluginRegistry.instance.getEnabledPlugins(project)
+        for (plugin in enabledPlugins) {
+            val pluginDirectives = plugin.getDirectives()
+            val pluginPrefixes = plugin.getPrefixes()
+
+            // If this attribute belongs to this plugin, let the plugin decide
+            if (pluginDirectives.contains(name) || pluginPrefixes.any { name.startsWith("$it:") }) {
+                return plugin.directiveSupportJavaScript(name)
             }
         }
 
-        return descriptors.toTypedArray()
-    }
-
-    private fun getDefaultHtmlAttributes(xmlTag: XmlTag): Array<out XmlAttributeDescriptor> {
-        val tagDescriptor = xmlTag.descriptor as? HtmlElementDescriptorImpl
-        val descriptor = tagDescriptor ?: HtmlNSDescriptorImpl.guessTagForCommonAttributes(xmlTag)
-
-        return (descriptor as? HtmlElementDescriptorImpl)?.getDefaultAttributeDescriptors(xmlTag) ?: emptyArray()
+        // For core attributes and unknown attributes, default to true (inject JS)
+        return true
     }
 }

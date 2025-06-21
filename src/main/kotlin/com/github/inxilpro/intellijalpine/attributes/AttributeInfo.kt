@@ -1,8 +1,11 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.attributes
+
+import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 
 @Suppress("MemberVisibilityCanBePrivate")
 class AttributeInfo(val attribute: String) {
-    private val typeTexts = hashMapOf<String, String>(
+
+    private val typeTexts = hashMapOf(
         "x-data" to "New Alpine.js component scope",
         "x-init" to "Run on initialization",
         "x-show" to "Toggles 'display: none'",
@@ -32,9 +35,6 @@ class AttributeInfo(val attribute: String) {
         "x-intersect" to "Bind an intersection observer",
         "x-trap" to "Add focus trap",
         "x-collapse" to "Collapse element when hidden",
-        "x-wizard:step" to "Add wizard step",
-        "x-wizard:if" to "Add wizard condition",
-        "x-wizard:title" to "Add title to wizard step",
     )
 
     val name: String
@@ -50,40 +50,30 @@ class AttributeInfo(val attribute: String) {
     }
 
     @Suppress("ComplexCondition")
-    fun isAlpine(): Boolean {
-        return this.isEvent() || this.isBound() || this.isTransition() || this.isDirective() || this.isWizard()
-    }
+    fun isAlpine(): Boolean = isDirective() || isPrefixed() || canBePrefix()
 
-    fun isEvent(): Boolean {
-        return "@" == prefix || "x-on:" == prefix
-    }
+    fun isEvent(): Boolean = "@" == prefix || "x-on:" == prefix
 
-    fun isBound(): Boolean {
-        return ":" == prefix || "x-bind:" == prefix
-    }
+    fun isBound(): Boolean = ":" == prefix || "x-bind:" == prefix
 
-    fun isTransition(): Boolean {
-        return "x-transition:" == prefix
-    }
+    fun isTransition(): Boolean = "x-transition:" == prefix
 
-    fun isDirective(): Boolean {
-        return AttributeUtil.directives.contains(name)
-    }
+    fun isDirective(): Boolean = AttributeUtil.directives.contains(name)
 
-    fun isWizard(): Boolean {
-        return "x-wizard:" == prefix
-    }
+    fun hasValue(): Boolean = "x-cloak" != name && "x-ignore" != name
 
-    fun hasValue(): Boolean {
-        return "x-cloak" != name && "x-ignore" != name
-    }
+    fun canBePrefix(): Boolean = AttributeUtil.prefixes.contains(name)
 
-    fun canBePrefix(): Boolean {
-        return "x-bind" == name || "x-transition" == name || "x-on" == name || "x-wizard" == name
-    }
+    fun isPrefixed(): Boolean = prefix != ""
 
     @Suppress("ReturnCount")
     private fun extractPrefix(): String {
+        for (prefix in AttributeUtil.prefixes) {
+            if (attribute.startsWith("$prefix:")) {
+                return "$prefix:"
+            }
+        }
+
         for (eventPrefix in AttributeUtil.eventPrefixes) {
             if (attribute.startsWith(eventPrefix)) {
                 return eventPrefix
@@ -94,14 +84,6 @@ class AttributeInfo(val attribute: String) {
             if (attribute.startsWith(bindPrefix)) {
                 return bindPrefix
             }
-        }
-
-        if (attribute.startsWith("x-transition:")) {
-            return "x-transition:"
-        }
-
-        if (attribute.startsWith("x-wizard:")) {
-            return "x-wizard:"
         }
 
         return ""
@@ -119,6 +101,12 @@ class AttributeInfo(val attribute: String) {
 
         if (isTransition()) {
             return "CSS classes for '$name' transition phase"
+        }
+
+        // First check plugin registry for type text
+        val pluginTypeText = AlpinePluginRegistry.instance.getTypeText(this)
+        if (pluginTypeText != null) {
+            return pluginTypeText
         }
 
         return typeTexts.getOrDefault(attribute, "Alpine.js")

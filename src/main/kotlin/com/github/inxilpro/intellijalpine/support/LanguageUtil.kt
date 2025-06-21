@@ -1,10 +1,8 @@
-package com.github.inxilpro.intellijalpine
+package com.github.inxilpro.intellijalpine.support
 
 import com.intellij.lang.Language
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.lang.xml.XMLLanguage
-import com.intellij.openapi.fileTypes.FileType
-import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.psi.PsiFile
 import com.intellij.psi.templateLanguages.TemplateLanguageFileViewProvider
 
@@ -22,7 +20,9 @@ object LanguageUtil {
     )
 
     fun supportsAlpineJs(file: PsiFile): Boolean {
-        return hasHtmlBasedLanguage(file) || hasTemplateLanguage(file) || hasHtmlLikeExtension(file) || isTemplateLanguageFile(file);
+        return hasHtmlBasedLanguage(file) || hasTemplateLanguage(file) || hasHtmlLikeExtension(file) || isTemplateLanguageFile(
+            file
+        )
     }
 
     fun hasPhpLanguage(file: PsiFile): Boolean {

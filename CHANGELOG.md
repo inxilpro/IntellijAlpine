@@ -4,10 +4,18 @@
 
 ## [Unreleased]
 
+### Changed
+- Improved support for [alpine-wizard](https://github.com/glhd/alpine-wizard)
+- Improved overall performance of plugin
+
 ### Added
+- Added support for [alpine-ajax](https://alpine-ajax.js.org/)
+- Added basic support for [alpine-tooltip](https://github.com/ryangjchandler/alpine-tooltip)
+- Added configuration for plugins (enable/disable) when not auto-detected
 - Added support for newer IntelliJ platforms
 - Added better local PhpStorm testing
 - Added better handling of non-HTML file types
+- Added new plugin extension system
 
 ## [0.6.6] - 2025-06-19
 

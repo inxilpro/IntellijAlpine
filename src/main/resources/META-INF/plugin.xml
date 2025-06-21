@@ -15,20 +15,42 @@
     <depends>com.intellij.modules.xml</depends>
     <depends>JavaScript</depends>
 
+    <extensionPoints>
+        <extensionPoint name="alpinePlugin" interface="com.github.inxilpro.intellijalpine.core.AlpinePlugin"/>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="com.intellij">
         <!-- com.jetbrains.php.blade.psi.BladePsiLanguageInjectionHost -->
-        <multiHostInjector implementation="com.github.inxilpro.intellijalpine.AlpineJavaScriptAttributeValueInjector"/>
-        <xml.attributeDescriptorsProvider implementation="com.github.inxilpro.intellijalpine.AttributesProvider"/>
-        <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.XmlExtension"/>
-        <typedHandler implementation="com.github.inxilpro.intellijalpine.AutoPopupHandler"/>
+        <multiHostInjector
+                implementation="com.github.inxilpro.intellijalpine.injection.AlpineJavaScriptAttributeValueInjector"/>
+        <xml.attributeDescriptorsProvider
+                implementation="com.github.inxilpro.intellijalpine.attributes.AttributesProvider"/>
+        <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.support.XmlExtension"/>
+        <typedHandler implementation="com.github.inxilpro.intellijalpine.completion.AutoPopupHandler"/>
         <completion.contributor language="HTML"
-                                implementationClass="com.github.inxilpro.intellijalpine.AlpineCompletionContributor"
+                                implementationClass="com.github.inxilpro.intellijalpine.completion.AlpineCompletionContributor"
                                 id="AlpineCompletionContributor"/>
+        <psi.referenceContributor language="HTML"
+                                  implementation="com.github.inxilpro.intellijalpine.plugins.AlpineTargetReferenceContributor"/>
         <codeInsight.lineMarkerProvider language="HTML"
-                implementationClass="com.github.inxilpro.intellijalpine.AlpineLineMarkerProvider" />
-        <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.AlpineSettingsState"/>
-        <applicationConfigurable parentId="Settings.JavaScript" instance="com.github.inxilpro.intellijalpine.AlpineSettingsConfigurable"
-                                 id="com.github.inxilpro.intellijalpine.AlpineSettingsConfigurable"
-                                 displayName="Alpine.js" />
+                                        implementationClass="com.github.inxilpro.intellijalpine.core.AlpineLineMarkerProvider"/>
+        <applicationService serviceImplementation="com.github.inxilpro.intellijalpine.settings.AlpineSettingsState"/>
+        <projectService serviceImplementation="com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState"/>
+        <projectConfigurable parentId="Settings.JavaScript"
+                             instance="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"
+                             id="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"
+                             displayName="Alpine.js"/>
+        <postStartupActivity implementation="com.github.inxilpro.intellijalpine.settings.AlpineProjectActivity"/>
     </extensions>
+
+    <extensions defaultExtensionNs="com.github.inxilpro.intellijalpine">
+        <alpinePlugin implementation="com.github.inxilpro.intellijalpine.plugins.AlpineAjaxPlugin"/>
+        <alpinePlugin implementation="com.github.inxilpro.intellijalpine.plugins.AlpineWizardPlugin"/>
+        <alpinePlugin implementation="com.github.inxilpro.intellijalpine.plugins.TooltipPlugin"/>
+    </extensions>
+
+    <projectListeners>
+        <listener class="com.github.inxilpro.intellijalpine.settings.AlpineProjectListener"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </projectListeners>
 </idea-plugin>
