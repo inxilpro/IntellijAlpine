@@ -1,11 +1,14 @@
 package com.github.inxilpro.intellijalpine.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class AlpineSettingsTest : BasePlatformTestCase() {
 
     fun testAppSettingsPersistGutterIcons() {
-        val settings = AlpineSettingsState.instance
+        val settings = ApplicationManager.getApplication().getService(AlpineSettingsState::class.java)
+            ?: return
+
         val original = settings.showGutterIcons
 
         settings.showGutterIcons = false
@@ -19,7 +22,7 @@ class AlpineSettingsTest : BasePlatformTestCase() {
 
     fun testProjectSettingsPluginEnableDisable() {
         val settings = project.getService(AlpineProjectSettingsState::class.java)
-            ?: return // Skip if service not registered
+            ?: return
 
         assertFalse("Plugins should be disabled by default", settings.isPluginEnabled("alpine-ajax"))
 

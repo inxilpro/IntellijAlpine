@@ -36,36 +36,11 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        var platformType = providers.gradleProperty("platformType").get()
-        var platformVersion = providers.gradleProperty("platformVersion").get()
-        var useLocalIde = false
-
-        // Auto-detect local PhpStorm installation if possible
-        val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
-        if (localPhpStorm.exists()) {
-            val infoPlist = file("${localPhpStorm}/Info.plist")
-            if (infoPlist.exists()) {
-                try {
-                    val plistContent = infoPlist.readText()
-                    val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
-                    if (versionMatch != null) {
-                        val detectedVersion = versionMatch.groupValues[1]
-                        platformVersion = detectedVersion.split(".").take(2).joinToString(".")
-                        platformType = "PS"
-                        useLocalIde = true
-                    }
-                } catch (e: Exception) {
-                    println("Unable to parse PhpStorm version number: ${e.message} (will not use local IDE)")
-                }
-            }
-        }
+        val platformType = providers.gradleProperty("platformType").get()
+        val platformVersion = providers.gradleProperty("platformVersion").get()
 
         println("Using $platformType $platformVersion for testing")
-        if (useLocalIde) {
-            local(localPhpStorm.absolutePath)
-        } else {
-            create(platformType, platformVersion)
-        }
+        create(platformType, platformVersion)
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(
