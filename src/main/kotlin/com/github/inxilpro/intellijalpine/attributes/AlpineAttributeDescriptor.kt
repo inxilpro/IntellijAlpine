@@ -22,7 +22,8 @@ class AlpineAttributeDescriptor(
         return info.typeText
     }
 
-    override fun init(psiElement: PsiElement) {}
+    @Suppress("WRONG_NULLABILITY_FOR_JAVA_OVERRIDE")
+    override fun init(psiElement: PsiElement?) {}
 
     override fun isRequired(): Boolean = false
 
