@@ -45,7 +45,7 @@
                                     implementationClass="com.github.inxilpro.intellijalpine.documentation.AlpineDocumentationProvider"/>
         <localInspection language="HTML"
                          groupName="Alpine.js"
-                         displayName="Deprecated x-spread directive"
+                         displayName="Deprecated 'x-spread' directive"
                          enabledByDefault="true"
                          level="WARNING"
                          implementationClass="com.github.inxilpro.intellijalpine.inspections.DeprecatedXSpreadInspection"/>

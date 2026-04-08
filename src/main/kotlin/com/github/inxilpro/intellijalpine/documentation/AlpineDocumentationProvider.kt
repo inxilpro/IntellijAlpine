@@ -1,6 +1,5 @@
 package com.github.inxilpro.intellijalpine.documentation
 
-import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
 import com.intellij.lang.documentation.DocumentationProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.source.xml.XmlTokenImpl
@@ -162,21 +161,6 @@ class AlpineDocumentationProvider : DocumentationProvider {
             "<code>x-spread=\"directives\"</code>",
             "This directive is deprecated in Alpine v3. Use object syntax with <code>x-bind</code> instead."
         ),
-    )
-
-    private val magicDocs = mapOf(
-        "\$refs" to "Access DOM elements marked with <code>x-ref</code>.",
-        "\$store" to "Access global Alpine stores registered with <code>Alpine.store()</code>.",
-        "\$el" to "Reference to the current DOM element.",
-        "\$root" to "Reference to the root element of the current Alpine component.",
-        "\$dispatch" to "Dispatch a custom browser event from the current element.",
-        "\$nextTick" to "Execute a callback after Alpine has finished updating the DOM.",
-        "\$watch" to "Watch a reactive property and run a callback when it changes.",
-        "\$id" to "Generate a scoped unique ID (requires <code>x-id</code> on an ancestor).",
-        "\$persist" to "Persist a data property in localStorage.",
-        "\$queryString" to "Bind a data property to the URL query string.",
-        "\$data" to "Access the current component's reactive data object.",
-        "\$event" to "Access the native browser event inside an event handler.",
     )
 
     override fun generateDoc(element: PsiElement?, originalElement: PsiElement?): String? {
