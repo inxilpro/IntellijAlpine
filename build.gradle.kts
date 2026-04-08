@@ -38,6 +38,7 @@ dependencies {
     intellijPlatform {
         var platformType = providers.gradleProperty("platformType").get()
         var platformVersion = providers.gradleProperty("platformVersion").get()
+        var useLocalIde = false
 
         // Auto-detect local PhpStorm installation if possible
         val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
@@ -49,9 +50,9 @@ dependencies {
                     val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
                     if (versionMatch != null) {
                         val detectedVersion = versionMatch.groupValues[1]
-                        // Convert version like "2025.1.3" to "2025.1"
                         platformVersion = detectedVersion.split(".").take(2).joinToString(".")
                         platformType = "PS"
+                        useLocalIde = true
                     }
                 } catch (e: Exception) {
                     println("Unable to parse PhpStorm version number: ${e.message} (will not use local IDE)")
@@ -60,7 +61,11 @@ dependencies {
         }
 
         println("Using $platformType $platformVersion for testing")
-        create(platformType, platformVersion)
+        if (useLocalIde) {
+            local(localPhpStorm.absolutePath)
+        } else {
+            create(platformType, platformVersion)
+        }
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(
