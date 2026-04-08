@@ -131,8 +131,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            // Only verify against the current version to speed up CI
-            ide("IU-2025.1")
+            recommended()
         }
     }
 }
