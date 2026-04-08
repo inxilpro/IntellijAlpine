@@ -4,9 +4,9 @@ import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
 import com.github.inxilpro.intellijalpine.core.CompletionProviderRegistration
+import com.github.inxilpro.intellijalpine.core.JsContext
 import com.intellij.patterns.XmlPatterns
 import com.intellij.psi.xml.XmlTokenType
-import org.apache.commons.lang3.tuple.MutablePair
 
 class AlpineAjaxPlugin : AlpinePlugin {
 
@@ -59,7 +59,7 @@ class AlpineAjaxPlugin : AlpinePlugin {
         }
     }
 
-    override fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> {
+    override fun injectJsContext(context: JsContext): JsContext {
         val magics = """
             /**
              * @param {string} action
@@ -67,10 +67,10 @@ class AlpineAjaxPlugin : AlpinePlugin {
              * @return {Promise<Response>}
              */
             function ${'$'}ajax(action, options = {}) {}
-            
+
         """.trimIndent()
 
-        return MutablePair(context.left + magics, context.right)
+        return JsContext(context.prefix + magics, context.suffix)
     }
 
     override fun directiveSupportJavaScript(directive: String): Boolean {

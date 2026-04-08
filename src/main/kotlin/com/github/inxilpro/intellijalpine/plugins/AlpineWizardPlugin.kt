@@ -3,7 +3,7 @@ package com.github.inxilpro.intellijalpine.plugins
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
-import org.apache.commons.lang3.tuple.MutablePair
+import com.github.inxilpro.intellijalpine.core.JsContext
 
 class AlpineWizardPlugin : AlpinePlugin {
 
@@ -34,7 +34,7 @@ class AlpineWizardPlugin : AlpinePlugin {
         }
     }
 
-    override fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> {
+    override fun injectJsContext(context: JsContext): JsContext {
         val wizardMagics = """
             class AlpineWizardStep {
                 /** @type {HTMLElement} */ el;
@@ -78,7 +78,7 @@ class AlpineWizardPlugin : AlpinePlugin {
             
         """.trimIndent()
 
-        return MutablePair(context.left + wizardMagics, context.right)
+        return JsContext(context.prefix + wizardMagics, context.suffix)
     }
 
     override fun injectAutoCompleteSuggestions(suggestions: AutoCompleteSuggestions) {

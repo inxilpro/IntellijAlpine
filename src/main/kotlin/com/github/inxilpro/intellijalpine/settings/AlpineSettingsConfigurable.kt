@@ -3,56 +3,61 @@ package com.github.inxilpro.intellijalpine.settings
 import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
 class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
-    private var mySettingsComponent: AlpineSettingsComponent? = null
+    private lateinit var showGutterIcons: JBCheckBox
+    private val pluginCheckBoxes = mutableMapOf<String, JBCheckBox>()
 
     @Suppress("DialogTitleCapitalization")
-    override fun getDisplayName(): String {
-        return "Alpine.js"
-    }
+    override fun getDisplayName(): String = "Alpine.js"
 
-    override fun getPreferredFocusedComponent(): JComponent? {
-        return mySettingsComponent?.preferredFocusedComponent
-    }
+    override fun createComponent(): JComponent {
+        showGutterIcons = JBCheckBox("Show Alpine gutter icons")
+        pluginCheckBoxes.clear()
 
-    override fun createComponent(): JComponent? {
-        mySettingsComponent = AlpineSettingsComponent(project)
-        return mySettingsComponent?.panel
+        return panel {
+            group("Plugin Settings") {
+                row { cell(showGutterIcons) }
+            }
+
+            if (project != null) {
+                group("Project Settings for \u201c${project.name}\u201d") {
+                    AlpinePluginRegistry.instance.getRegisteredPlugins().forEach { plugin ->
+                        row {
+                            val cb = JBCheckBox("Enable \u201c${plugin.getPackageDisplayName()}\u201d support for this project")
+                            pluginCheckBoxes[plugin.getPluginName()] = cb
+                            cell(cb)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun isModified(): Boolean {
         val appSettings = AlpineSettingsState.instance
-        var isModified = mySettingsComponent?.showGutterIconsStatus != appSettings.showGutterIcons
+        if (showGutterIcons.isSelected != appSettings.showGutterIcons) return true
 
-        // Check project settings if we have a project
         if (project != null) {
             val registry = AlpinePluginRegistry.instance
-            registry.getRegisteredPlugins().forEach { plugin ->
-                val pluginName = plugin.getPluginName()
-                val currentStatus = mySettingsComponent?.getPluginStatus(pluginName) ?: false
-                val savedStatus = registry.isPluginEnabled(project, pluginName)
-                if (currentStatus != savedStatus) {
-                    isModified = true
-                }
+            for ((pluginName, cb) in pluginCheckBoxes) {
+                if (cb.isSelected != registry.isPluginEnabled(project, pluginName)) return true
             }
         }
 
-        return isModified
+        return false
     }
 
     override fun apply() {
-        val appSettings = AlpineSettingsState.instance
-        appSettings.showGutterIcons = mySettingsComponent?.showGutterIconsStatus != false
+        AlpineSettingsState.instance.showGutterIcons = showGutterIcons.isSelected
 
-        // Apply project settings if we have a project
         if (project != null) {
             val registry = AlpinePluginRegistry.instance
-            registry.getRegisteredPlugins().forEach { plugin ->
-                val pluginName = plugin.getPluginName()
-                val enabled = mySettingsComponent?.getPluginStatus(pluginName) ?: false
-                if (enabled) {
+            for ((pluginName, cb) in pluginCheckBoxes) {
+                if (cb.isSelected) {
                     registry.enablePlugin(project, pluginName)
                 } else {
                     registry.disablePlugin(project, pluginName)
@@ -62,21 +67,13 @@ class AlpineSettingsConfigurable(private val project: Project?) : Configurable {
     }
 
     override fun reset() {
-        val appSettings = AlpineSettingsState.instance
-        mySettingsComponent?.showGutterIconsStatus = appSettings.showGutterIcons
+        showGutterIcons.isSelected = AlpineSettingsState.instance.showGutterIcons
 
-        // Reset project settings if we have a project
         if (project != null) {
             val registry = AlpinePluginRegistry.instance
-            registry.getRegisteredPlugins().forEach { plugin ->
-                val pluginName = plugin.getPluginName()
-                val enabled = registry.isPluginEnabled(project, pluginName)
-                mySettingsComponent?.setPluginStatus(pluginName, enabled)
+            for ((pluginName, cb) in pluginCheckBoxes) {
+                cb.isSelected = registry.isPluginEnabled(project, pluginName)
             }
         }
-    }
-
-    override fun disposeUIResources() {
-        mySettingsComponent = null
     }
 }

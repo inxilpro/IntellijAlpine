@@ -4,7 +4,6 @@ import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.apache.commons.lang3.tuple.MutablePair
 
 interface AlpinePlugin {
     companion object {
@@ -20,7 +19,7 @@ interface AlpinePlugin {
 
     fun getTypeText(info: AttributeInfo): String? = null
 
-    fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> = context
+    fun injectJsContext(context: JsContext): JsContext = context
 
     fun directiveSupportJavaScript(directive: String): Boolean = true
 

@@ -16,7 +16,7 @@
     <depends>JavaScript</depends>
 
     <extensionPoints>
-        <extensionPoint name="alpinePlugin" interface="com.github.inxilpro.intellijalpine.core.AlpinePlugin"/>
+        <extensionPoint name="alpinePlugin" interface="com.github.inxilpro.intellijalpine.core.AlpinePlugin" dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
