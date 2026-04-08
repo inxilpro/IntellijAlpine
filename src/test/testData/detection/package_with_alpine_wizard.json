@@ -1,0 +1,7 @@
+{
+  "name": "test-project",
+  "devDependencies": {
+    "alpinejs": "^3.0.0",
+    "@glhd/alpine-wizard": "^1.0.0"
+  }
+}

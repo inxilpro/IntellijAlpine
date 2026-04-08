@@ -1,0 +1,7 @@
+{
+  "name": "test-project",
+  "dependencies": {
+    "alpinejs": "^3.0.0",
+    "alpine-ajax": "^0.8.0"
+  }
+}
