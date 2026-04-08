@@ -41,6 +41,14 @@
                              id="com.github.inxilpro.intellijalpine.settings.AlpineSettingsConfigurable"
                              displayName="Alpine.js"/>
         <postStartupActivity implementation="com.github.inxilpro.intellijalpine.settings.AlpineProjectActivity"/>
+        <lang.documentationProvider language="HTML"
+                                    implementationClass="com.github.inxilpro.intellijalpine.documentation.AlpineDocumentationProvider"/>
+        <localInspection language="HTML"
+                         groupName="Alpine.js"
+                         displayName="Deprecated x-spread directive"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.github.inxilpro.intellijalpine.inspections.DeprecatedXSpreadInspection"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.github.inxilpro.intellijalpine">
