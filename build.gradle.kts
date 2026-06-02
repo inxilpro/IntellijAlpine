@@ -67,6 +67,9 @@ dependencies {
             providers.gradleProperty("platformBundledPlugins")
                 .map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
 
+        // The JSON plugin was extracted into a separate module (2024.3+); package.json parsing needs it explicitly.
+        bundledModule("com.intellij.modules.json")
+
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(
             providers.gradleProperty("platformPlugins")
@@ -110,7 +113,8 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            // No upper bound — keep the plugin compatible with future platform releases.
+            untilBuild = provider { null }
         }
     }
 
@@ -131,8 +135,9 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            // Only verify against the current version to speed up CI
-            ide("IU-2025.1")
+            // Verify against JetBrains' curated set of IDEs across the supported range,
+            // auto-tracking new platform releases since there's no upper compatibility bound.
+            recommended()
         }
     }
 }

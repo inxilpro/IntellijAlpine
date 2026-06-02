@@ -2,7 +2,7 @@
 
 # Alpine.js Support
 
-## [Unreleased]
+## [0.8.0] - 2026-06-02
 
 ### Changed
 - Improved support for [alpine-wizard](https://github.com/glhd/alpine-wizard)
@@ -12,7 +12,9 @@
 - Added support for [alpine-ajax](https://alpine-ajax.js.org/)
 - Added basic support for [alpine-tooltip](https://github.com/ryangjchandler/alpine-tooltip)
 - Added configuration for plugins (enable/disable) when not auto-detected
-- Added support for newer IntelliJ platforms
+- Added support for PhpStorm / IntelliJ Platform 2026.1.2+ (removed the upper compatibility bound)
+- Added quick documentation for Alpine directives
+- Added inspection flagging the deprecated `x-spread` directive
 - Added better local PhpStorm testing
 - Added better handling of non-HTML file types
 - Added new plugin extension system
@@ -151,7 +153,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...v0.8.0
 [0.6.6]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.3...v0.6.4

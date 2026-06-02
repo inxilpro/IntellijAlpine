@@ -6,6 +6,8 @@ import com.github.inxilpro.intellijalpine.core.detection.PluginDetector
 import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
@@ -13,6 +15,8 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.util.messages.MessageBusConnection
 import org.apache.commons.lang3.tuple.MutablePair
 import java.util.concurrent.ConcurrentHashMap
+
+private val LOG = logger<AlpinePluginRegistry>()
 
 @Service(Service.Level.APP)
 class AlpinePluginRegistry {
@@ -72,8 +76,11 @@ class AlpinePluginRegistry {
     }
 
     fun checkAndAutoEnablePlugins(project: Project) {
+        if (DumbService.isDumb(project)) return
+
         getRegisteredPlugins().forEach { plugin ->
             if (!isPluginEnabled(project, plugin.getPluginName()) && detector.detect(project, plugin)) {
+                LOG.info("Auto-enabling Alpine plugin '${plugin.getPluginName()}' for project '${project.name}'")
                 enablePlugin(project, plugin.getPluginName())
             }
         }
@@ -84,12 +91,11 @@ class AlpinePluginRegistry {
     private fun setupPackageJsonListener(project: Project) {
         val projectPath = project.basePath ?: project.name
 
-        // Don't set up listener if already exists
         if (listeners.containsKey(projectPath)) {
             return
         }
 
-        val connection = project.messageBus.connect()
+        val connection = project.messageBus.connect(project)
         listeners[projectPath] = connection
 
         connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
@@ -101,10 +107,13 @@ class AlpinePluginRegistry {
 
                 if (hasPackageJsonChanges) {
                     ApplicationManager.getApplication().executeOnPooledThread {
-                        ApplicationManager.getApplication().runReadAction {
-                            getRegisteredPlugins().forEach { plugin ->
-                                if (!isPluginEnabled(project, plugin.getPluginName()) && detector.detect(project, plugin)) {
-                                    enablePlugin(project, plugin.getPluginName())
+                        DumbService.getInstance(project).runWhenSmart {
+                            ApplicationManager.getApplication().runReadAction {
+                                getRegisteredPlugins().forEach { plugin ->
+                                    if (!isPluginEnabled(project, plugin.getPluginName()) && detector.detect(project, plugin)) {
+                                        LOG.info("Auto-enabling Alpine plugin '${plugin.getPluginName()}' after package.json change")
+                                        enablePlugin(project, plugin.getPluginName())
+                                    }
                                 }
                             }
                         }

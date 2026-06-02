@@ -21,9 +21,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Testing & Verification
 - `./gradlew test` - Run unit tests
 - `./gradlew check` - Run all checks (tests + verification)
-- `./gradlew verifyPlugin` - Validate plugin structure and descriptors
-- `./gradlew runPluginVerifier` - Check binary compatibility with target IDEs
-- `./gradlew runInspections` - Run Qodana code inspections
+- `./gradlew verifyPluginStructure` - Validate plugin structure and descriptors
+- `./gradlew verifyPlugin` - Check binary compatibility with target IDEs (replaces 1.x `runPluginVerifier`)
+- `./gradlew qodanaScan` - Run Qodana code inspections (requires Docker)
 - `./gradlew koverReport` - Generate code coverage reports
 
 ## Architecture
