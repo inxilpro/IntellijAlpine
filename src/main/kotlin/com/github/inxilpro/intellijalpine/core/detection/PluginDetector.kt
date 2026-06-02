@@ -9,7 +9,23 @@ class PluginDetector : DetectionStrategy {
         ScriptReferenceDetector()
     )
 
-    override fun detect(project: Project, plugin: AlpinePlugin): Boolean {
-        return strategies.any { it.detect(project, plugin) } || plugin.performDetection(project)
+    override fun detect(project: Project, plugins: List<AlpinePlugin>): Set<AlpinePlugin> {
+        if (plugins.isEmpty()) return emptySet()
+
+        val detected = mutableSetOf<AlpinePlugin>()
+
+        for (strategy in strategies) {
+            val remaining = plugins.filter { it !in detected }
+            if (remaining.isEmpty()) break
+            detected += strategy.detect(project, remaining)
+        }
+
+        for (plugin in plugins) {
+            if (plugin !in detected && plugin.performDetection(project)) {
+                detected += plugin
+            }
+        }
+
+        return detected
     }
 }

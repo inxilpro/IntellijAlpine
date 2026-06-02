@@ -78,14 +78,18 @@ class AlpinePluginRegistry {
     fun checkAndAutoEnablePlugins(project: Project) {
         if (DumbService.isDumb(project)) return
 
-        getRegisteredPlugins().forEach { plugin ->
-            if (!isPluginEnabled(project, plugin.getPluginName()) && detector.detect(project, plugin)) {
-                LOG.info("Auto-enabling Alpine plugin '${plugin.getPluginName()}' for project '${project.name}'")
-                enablePlugin(project, plugin.getPluginName())
-            }
-        }
-
+        detectAndEnable(project, "for project '${project.name}'")
         setupPackageJsonListener(project)
+    }
+
+    private fun detectAndEnable(project: Project, reason: String) {
+        val candidates = getRegisteredPlugins().filter { !isPluginEnabled(project, it.getPluginName()) }
+        if (candidates.isEmpty()) return
+
+        detector.detect(project, candidates).forEach { plugin ->
+            LOG.info("Auto-enabling Alpine plugin '${plugin.getPluginName()}' $reason")
+            enablePlugin(project, plugin.getPluginName())
+        }
     }
 
     private fun setupPackageJsonListener(project: Project) {
@@ -109,12 +113,7 @@ class AlpinePluginRegistry {
                     ApplicationManager.getApplication().executeOnPooledThread {
                         DumbService.getInstance(project).runWhenSmart {
                             ApplicationManager.getApplication().runReadAction {
-                                getRegisteredPlugins().forEach { plugin ->
-                                    if (!isPluginEnabled(project, plugin.getPluginName()) && detector.detect(project, plugin)) {
-                                        LOG.info("Auto-enabling Alpine plugin '${plugin.getPluginName()}' after package.json change")
-                                        enablePlugin(project, plugin.getPluginName())
-                                    }
-                                }
+                                detectAndEnable(project, "after package.json change")
                             }
                         }
                     }

@@ -2,6 +2,11 @@
 
 # Alpine.js Support
 
+## [0.8.1] - 2026-06-02
+
+### Changed
+- Improved plugin auto-detection performance: the project is now scanned once for all plugins (instead of once per plugin), candidate files are located via the IDE's text index rather than reading every file, and `node_modules` is excluded from detection
+
 ## [0.8.0] - 2026-06-02
 
 ### Changed
@@ -153,7 +158,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...v0.8.0
 [0.6.6]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.4...v0.6.5
