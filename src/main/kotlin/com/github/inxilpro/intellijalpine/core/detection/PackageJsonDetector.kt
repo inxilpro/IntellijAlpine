@@ -3,30 +3,39 @@ package com.github.inxilpro.intellijalpine.core.detection
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonObject
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
 
 class PackageJsonDetector : DetectionStrategy {
-    override fun detect(project: Project, plugin: AlpinePlugin): Boolean {
+    override fun detect(project: Project, plugins: List<AlpinePlugin>): Set<AlpinePlugin> {
+        if (plugins.isEmpty() || DumbService.isDumb(project)) return emptySet()
+
         val packageJsonFiles = FilenameIndex.getVirtualFilesByName(
             "package.json",
-            GlobalSearchScope.projectScope(project)
+            DetectionScopes.projectScopeExcludingNodeModules(project)
         )
+        if (packageJsonFiles.isEmpty()) return emptySet()
 
-        return packageJsonFiles.any { virtualFile ->
-            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-            if (psiFile is JsonFile) {
-                val rootObject = psiFile.topLevelValue as? JsonObject
-                val dependencies = rootObject?.findProperty("dependencies")?.value as? JsonObject
-                val devDependencies = rootObject?.findProperty("devDependencies")?.value as? JsonObject
+        val psiManager = PsiManager.getInstance(project)
+        val detected = mutableSetOf<AlpinePlugin>()
 
-                hasPluginDependency(plugin, dependencies) || hasPluginDependency(plugin, devDependencies)
-            } else {
-                false
+        for (virtualFile in packageJsonFiles) {
+            val psiFile = psiManager.findFile(virtualFile) as? JsonFile ?: continue
+            val rootObject = psiFile.topLevelValue as? JsonObject ?: continue
+            val dependencies = rootObject.findProperty("dependencies")?.value as? JsonObject
+            val devDependencies = rootObject.findProperty("devDependencies")?.value as? JsonObject
+
+            for (plugin in plugins) {
+                if (plugin in detected) continue
+                if (hasPluginDependency(plugin, dependencies) || hasPluginDependency(plugin, devDependencies)) {
+                    detected += plugin
+                }
             }
         }
+
+        return detected
     }
 
     private fun hasPluginDependency(plugin: AlpinePlugin, dependencies: JsonObject?): Boolean {

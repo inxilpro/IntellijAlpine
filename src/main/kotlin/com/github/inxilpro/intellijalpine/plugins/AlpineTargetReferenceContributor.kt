@@ -10,6 +10,9 @@ import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.PsiReferenceContributor
 import com.intellij.psi.PsiReferenceProvider
 import com.intellij.psi.PsiReferenceRegistrar
+import com.intellij.psi.util.CachedValueProvider
+import com.intellij.psi.util.CachedValuesManager
+import com.intellij.psi.util.PsiModificationTracker
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlFile
@@ -63,15 +66,15 @@ class AlpineIdReference(
 
     override fun resolve(): PsiElement? {
         val xmlFile = element.containingFile as? XmlFile ?: return null
-        return findElementWithId(xmlFile, idValue)
+        return getIdMap(xmlFile)[idValue]
     }
 
     override fun getVariants(): Array<Any> {
         val xmlFile = element.containingFile as? XmlFile ?: return emptyArray()
-        val allIds = collectElementIds(xmlFile)
+        val idMap = getIdMap(xmlFile)
         val currentValue = (element as XmlAttributeValue).value
         val usedIds = currentValue.split("\\s+".toRegex()).filter { it.isNotBlank() }.toSet()
-        val availableIds = allIds - usedIds
+        val availableIds = idMap.keys - usedIds
 
         return availableIds.map { id ->
             LookupElementBuilder.create(id)
@@ -80,21 +83,22 @@ class AlpineIdReference(
         }.toTypedArray()
     }
 
-    override fun isSoft(): Boolean = false // Hard reference - should show error if unresolved
+    override fun isSoft(): Boolean = false
 
-    private fun findElementWithId(xmlFile: XmlFile, id: String): PsiElement? {
-        val allTags = PsiTreeUtil.findChildrenOfType(xmlFile, XmlTag::class.java)
+    private fun getIdMap(xmlFile: XmlFile): Map<String, PsiElement> {
+        return CachedValuesManager.getCachedValue(xmlFile) {
+            val allTags = PsiTreeUtil.findChildrenOfType(xmlFile, XmlTag::class.java)
+            val map = mutableMapOf<String, PsiElement>()
 
-        return allTags.firstOrNull { tag ->
-            tag.getAttribute("id")?.value == id
-        }?.getAttribute("id")?.valueElement
-    }
+            for (tag in allTags) {
+                val idAttr = tag.getAttribute("id")
+                val idVal = idAttr?.value
+                if (!idVal.isNullOrBlank() && idAttr.valueElement != null) {
+                    map[idVal] = idAttr.valueElement!!
+                }
+            }
 
-    private fun collectElementIds(xmlFile: XmlFile): Set<String> {
-        val allTags = PsiTreeUtil.findChildrenOfType(xmlFile, XmlTag::class.java)
-
-        return allTags.mapNotNull { tag ->
-            tag.getAttribute("id")?.value?.takeIf { it.isNotBlank() }
-        }.toSet()
+            CachedValueProvider.Result.create(map as Map<String, PsiElement>, PsiModificationTracker.MODIFICATION_COUNT)
+        }
     }
 }

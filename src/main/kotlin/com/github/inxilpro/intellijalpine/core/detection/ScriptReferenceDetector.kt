@@ -1,61 +1,97 @@
 package com.github.inxilpro.intellijalpine.core.detection
 
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.PsiSearchHelper
+import com.intellij.psi.search.UsageSearchContext
 
 class ScriptReferenceDetector : DetectionStrategy {
-    override fun detect(project: Project, plugin: AlpinePlugin): Boolean {
-        return hasScriptTagReferences(project, plugin) || hasImportReferences(project, plugin)
+    private companion object {
+        val HTML_EXTENSIONS = setOf("html", "htm", "php", "twig", "djhtml", "jinja", "astro")
+        val JS_EXTENSIONS = setOf("js", "ts", "mjs")
+
+        // "alpine" appears in nearly every file of an Alpine project, so it does nothing to
+        // narrow the candidate set. The precise package name is still confirmed per file below.
+        val GENERIC_TOKENS = setOf("alpine")
+
+        const val MIN_TOKEN_LENGTH = 4
+        const val MAX_FILE_SIZE = 1_000_000L
+
+        private val NON_ALPHANUMERIC = Regex("[^a-zA-Z0-9]+")
+        private val SCRIPT_TAG_REGEX = Regex("<script[^>]*src=['\"]([^'\"]*)['\"][^>]*>", RegexOption.IGNORE_CASE)
     }
 
-    private fun hasScriptTagReferences(project: Project, plugin: AlpinePlugin): Boolean {
-        val htmlFiles = mutableListOf<VirtualFile>()
-        val extensions = listOf("html", "htm", "php", "twig", "djhtml", "jinja", "astro")
+    override fun detect(project: Project, plugins: List<AlpinePlugin>): Set<AlpinePlugin> {
+        if (plugins.isEmpty() || DumbService.isDumb(project)) return emptySet()
 
-        for (extension in extensions) {
-            htmlFiles.addAll(
-                FilenameIndex.getAllFilesByExt(project, extension, GlobalSearchScope.projectScope(project))
-            )
-        }
+        val tokens = plugins.flatMapTo(mutableSetOf()) { searchTokensFor(it) }
+        if (tokens.isEmpty()) return emptySet()
 
-        return htmlFiles.any { virtualFile ->
-            try {
-                val content = String(virtualFile.contentsToByteArray())
-                hasScriptTagsInContent(content, plugin)
+        val candidates = findCandidateFiles(project, tokens)
+        if (candidates.isEmpty()) return emptySet()
+
+        val detected = mutableSetOf<AlpinePlugin>()
+        val remaining = plugins.toMutableList()
+
+        for (file in candidates) {
+            if (remaining.isEmpty()) break
+
+            val extension = file.extension?.lowercase()
+            val isHtml = extension in HTML_EXTENSIONS
+            val isJs = extension in JS_EXTENSIONS
+            if (!isHtml && !isJs) continue
+            if (file.length > MAX_FILE_SIZE || file.fileType.isBinary) continue
+
+            val content = try {
+                VfsUtilCore.loadText(file)
             } catch (_: Exception) {
-                false
+                continue
+            }
+
+            val iterator = remaining.iterator()
+            while (iterator.hasNext()) {
+                val plugin = iterator.next()
+                val matched =
+                    if (isHtml) hasScriptTagsInContent(content, plugin) else hasImportStatements(content, plugin)
+                if (matched) {
+                    detected += plugin
+                    iterator.remove()
+                }
             }
         }
+
+        return detected
     }
 
-    private fun hasImportReferences(project: Project, plugin: AlpinePlugin): Boolean {
-        val jsExtensions = listOf("js", "ts", "mjs")
-        val jsFiles = mutableListOf<VirtualFile>()
+    private fun findCandidateFiles(project: Project, tokens: Set<String>): Set<VirtualFile> {
+        val helper = PsiSearchHelper.getInstance(project)
+        val scope = DetectionScopes.projectScopeExcludingNodeModules(project)
+        val candidates = mutableSetOf<VirtualFile>()
 
-        for (extension in jsExtensions) {
-            jsFiles.addAll(
-                FilenameIndex.getAllFilesByExt(project, extension, GlobalSearchScope.projectScope(project))
-            )
+        for (token in tokens) {
+            helper.processCandidateFilesForText(scope, UsageSearchContext.ANY, false, token) { file ->
+                candidates.add(file)
+                true
+            }
         }
 
-        return jsFiles.any { virtualFile ->
-            try {
-                val content = String(virtualFile.contentsToByteArray())
-                hasImportStatements(content, plugin)
-            } catch (_: Exception) {
-                false
-            }
+        return candidates
+    }
+
+    private fun searchTokensFor(plugin: AlpinePlugin): List<String> {
+        return plugin.getPackageNamesForDetection().flatMap { packageName ->
+            val tokens = packageName.split(NON_ALPHANUMERIC).filter { it.isNotEmpty() }
+            val distinctive = tokens.filter { it.length >= MIN_TOKEN_LENGTH && it.lowercase() !in GENERIC_TOKENS }
+            distinctive.ifEmpty { listOfNotNull(tokens.maxByOrNull { it.length }) }
         }
     }
 
     private fun hasScriptTagsInContent(content: String, plugin: AlpinePlugin): Boolean {
-        val scriptTagRegex = Regex("<script[^>]*src=['\"]([^'\"]*)['\"][^>]*>", RegexOption.IGNORE_CASE)
-        return scriptTagRegex.findAll(content).any { match ->
-            val src = match.groupValues[1]
-            containsPackageReference(src, plugin)
+        return SCRIPT_TAG_REGEX.findAll(content).any { match ->
+            containsPackageReference(match.groupValues[1], plugin)
         }
     }
 

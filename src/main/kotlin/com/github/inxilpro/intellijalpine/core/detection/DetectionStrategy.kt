@@ -4,5 +4,5 @@ import com.github.inxilpro.intellijalpine.core.AlpinePlugin
 import com.intellij.openapi.project.Project
 
 interface DetectionStrategy {
-    fun detect(project: Project, plugin: AlpinePlugin): Boolean
+    fun detect(project: Project, plugins: List<AlpinePlugin>): Set<AlpinePlugin>
 }
