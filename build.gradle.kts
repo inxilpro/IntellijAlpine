@@ -131,8 +131,8 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            // Only verify against the current version to speed up CI
-            ide("IU-2025.1")
+            // The 2.x verifier API replaced ide("...") notation; verify against JetBrains' recommended IDE set.
+            recommended()
         }
     }
 }
