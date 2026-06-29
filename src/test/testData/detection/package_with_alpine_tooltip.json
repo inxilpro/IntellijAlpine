@@ -1,0 +1,7 @@
+{
+  "name": "test-project",
+  "dependencies": {
+    "alpinejs": "^3.0.0",
+    "@ryangjchandler/alpine-tooltip": "^2.0.0"
+  }
+}

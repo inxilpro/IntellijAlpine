@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head><title>Alpine X-Data Scope Test</title></head>
+<body>
+<div x-data="{ items: [], loading: false }">
+    <template x-for="item in items">
+        <span x-text="item.name"></span>
+    </template>
+    <div x-show="loading">Loading...</div>
+</div>
+</body>
+</html>

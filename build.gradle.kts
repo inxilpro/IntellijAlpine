@@ -36,28 +36,8 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        var platformType = providers.gradleProperty("platformType").get()
-        var platformVersion = providers.gradleProperty("platformVersion").get()
-
-        // Auto-detect local PhpStorm installation if possible
-        val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
-        if (localPhpStorm.exists()) {
-            val infoPlist = file("${localPhpStorm}/Info.plist")
-            if (infoPlist.exists()) {
-                try {
-                    val plistContent = infoPlist.readText()
-                    val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
-                    if (versionMatch != null) {
-                        val detectedVersion = versionMatch.groupValues[1]
-                        // Convert version like "2025.1.3" to "2025.1"
-                        platformVersion = detectedVersion.split(".").take(2).joinToString(".")
-                        platformType = "PS"
-                    }
-                } catch (e: Exception) {
-                    println("Unable to parse PhpStorm version number: ${e.message} (will not use local IDE)")
-                }
-            }
-        }
+        val platformType = providers.gradleProperty("platformType").get()
+        val platformVersion = providers.gradleProperty("platformVersion").get()
 
         println("Using $platformType $platformVersion for testing")
         create(platformType, platformVersion)
@@ -131,8 +111,7 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            // Only verify against the current version to speed up CI
-            ide("IU-2025.1")
+            recommended()
         }
     }
 }

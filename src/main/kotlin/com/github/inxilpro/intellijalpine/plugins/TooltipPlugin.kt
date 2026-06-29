@@ -3,7 +3,7 @@ package com.github.inxilpro.intellijalpine.plugins
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
 import com.github.inxilpro.intellijalpine.core.AlpinePlugin
-import org.apache.commons.lang3.tuple.MutablePair
+import com.github.inxilpro.intellijalpine.core.JsContext
 
 class TooltipPlugin : AlpinePlugin {
 
@@ -44,7 +44,7 @@ class TooltipPlugin : AlpinePlugin {
         }
     }
 
-    override fun injectJsContext(context: MutablePair<String, String>): MutablePair<String, String> {
+    override fun injectJsContext(context: JsContext): JsContext {
         val magics = """
             /**
              * @param {string} value
@@ -52,10 +52,10 @@ class TooltipPlugin : AlpinePlugin {
              * @return {Promise<Response>}
              */
             function ${'$'}tooltip(value, options = {}) {}
-            
+
         """.trimIndent()
 
-        return MutablePair(context.left + magics, context.right)
+        return JsContext(context.prefix + magics, context.suffix)
     }
 
     override fun getDirectives(): List<String> = listOf(

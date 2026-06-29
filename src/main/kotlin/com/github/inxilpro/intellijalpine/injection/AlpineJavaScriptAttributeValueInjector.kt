@@ -2,6 +2,7 @@ package com.github.inxilpro.intellijalpine.injection
 
 import com.github.inxilpro.intellijalpine.attributes.AttributeUtil
 import com.github.inxilpro.intellijalpine.core.AlpinePluginRegistry
+import com.github.inxilpro.intellijalpine.core.JsContext
 import com.github.inxilpro.intellijalpine.support.LanguageUtil
 import com.intellij.lang.Language
 import com.intellij.lang.injection.MultiHostInjector
@@ -15,7 +16,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
-import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
@@ -148,41 +148,41 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
-        val globalContext = MutablePair(globalMagics, "")
+        val globalContext = JsContext(globalMagics, "")
         val context = AlpinePluginRegistry.instance.injectAllJsContext(host.project, globalContext)
 
         if ("x-data" != directive) {
-            context.left = addTypingToCoreMagics(host) + context.left
+            context.prefix = addTypingToCoreMagics(host) + context.prefix
         }
 
         if ("x-spread" == directive) {
-            context.right += "()"
+            context.suffix += "()"
         }
 
         if (AttributeUtil.isEvent(directive)) {
-            context.left += addTypingToEventMagics(directive, host)
+            context.prefix += addTypingToEventMagics(directive, host)
         } else if ("x-for" == directive) {
-            context.left += "for (let "
-            context.right += ") {}"
+            context.prefix += "for (let "
+            context.suffix += ") {}"
         } else if ("x-ref" == directive) {
-            context.left += "\$refs."
-            context.right += "= \$el"
+            context.prefix += "\$refs."
+            context.suffix += "= \$el"
         } else if ("x-teleport" == directive) {
-            context.left += "{ /** @var {HTMLElement} teleport */let teleport = "
-            context.right += " }"
+            context.prefix += "{ /** @var {HTMLElement} teleport */let teleport = "
+            context.suffix += " }"
         } else if ("x-init" == directive) {
             // We want x-init to skip the directive wrapping
         } else {
-            context.left += "__ALPINE_DIRECTIVE(\n"
-            context.right += "\n)"
+            context.prefix += "__ALPINE_DIRECTIVE(\n"
+            context.suffix += "\n)"
         }
 
         addWithData(host, directive, context)
 
-        return context.toPair()
+        return Pair(context.prefix, context.suffix)
     }
 
-    private fun addWithData(host: XmlAttributeValue, directive: String, context: MutablePair<String, String>) {
+    private fun addWithData(host: XmlAttributeValue, directive: String, context: JsContext) {
         val dataParent: HtmlTag?
 
         if ("x-data" == directive) {
@@ -200,8 +200,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             val data = dataParent.getAttribute("x-data")?.value
             if (null != data) {
                 val (prefix, suffix) = context
-                context.left = "$globalState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
-                context.right = "$suffix\n\n}"
+                context.prefix = "$globalState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
+                context.suffix = "$suffix\n\n}"
             }
         }
     }
