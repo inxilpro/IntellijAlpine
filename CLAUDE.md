@@ -51,7 +51,10 @@ The plugin requires:
 
 ### Release Process
 
-1. Update version in `gradle.properties`
-2. Update `CHANGELOG.md` Unreleased section with version number
-3. Push changes to main branch
-4. Create and publish a GitHub release - this triggers automatic publishing to JetBrains Marketplace
+1. Land the changes on main. Each push to main refreshes a draft GitHub release for the current
+   `pluginVersion`, using the `CHANGELOG.md` Unreleased section as its notes. The draft is skipped
+   if that version has already been published.
+2. Publish the draft release - this triggers automatic publishing to JetBrains Marketplace
+3. The release workflow then opens a "Post-release update" pull request that files the notes under
+   the published version in `CHANGELOG.md` and bumps `pluginVersion` to the next patch. Merge it,
+   editing the version by hand first if the next release should be a minor or major bump.

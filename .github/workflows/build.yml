@@ -230,8 +230,26 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v4
 
+      # A draft for an already-published version duplicates a shipped release, and publishing it
+      # would overwrite that version on the Marketplace with whatever is on main.
+      - name: Check Version Is Unreleased
+        id: version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ needs.build.outputs.version }}
+        run: |
+          DRAFT="$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null || true)"
+
+          if [ "$DRAFT" = "false" ]; then
+            echo "::warning::$TAG is already published — skipping release draft. Bump pluginVersion in gradle.properties."
+            echo "unreleased=false" >> $GITHUB_OUTPUT
+          else
+            echo "unreleased=true" >> $GITHUB_OUTPUT
+          fi
+
       # Remove old release drafts by using the curl request for the available releases with a draft flag
       - name: Remove Old Release Drafts
+        if: steps.version.outputs.unreleased == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -241,6 +259,7 @@ jobs:
 
       # Create a new release draft which is not publicly visible and requires manual acceptance
       - name: Create Release Draft
+        if: steps.version.outputs.unreleased == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

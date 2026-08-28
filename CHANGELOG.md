@@ -5,6 +5,12 @@
 ## [Unreleased]
 
 ### Changed
+- Removed the upper compatibility bound so the plugin is not capped at a specific platform build
+- Plugin detection now runs on a background thread
+
+## [0.7.0] - 2025-06-21
+
+### Changed
 - Improved support for [alpine-wizard](https://github.com/glhd/alpine-wizard)
 - Improved overall performance of plugin
 
@@ -151,7 +157,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...v0.7.0
 [0.6.6]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.3...v0.6.4

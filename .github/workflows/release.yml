@@ -17,6 +17,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    outputs:
+      changelog: ${{ steps.properties.outputs.changelog }}
     steps:
 
       # Check out current repository
@@ -30,13 +32,11 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
 
       # Setup Gradle
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-home-cache-cleanup: true
+        uses: gradle/actions/setup-gradle@v4
 
       # Set environment variables
       - name: Export Properties
@@ -75,29 +75,92 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ github.event.release.tag_name }} ./build/distributions/*
 
-      # Create pull request
+  # Open a pull request against the default branch that files the release notes under the
+  # published version and bumps pluginVersion, so the default branch never sits on a version
+  # that has already shipped. Skipped for pre-releases, which keep iterating the same version.
+  postRelease:
+    name: Post-release update
+    needs: [ release ]
+    if: github.event.action == 'released' && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+
+      # Check out the default branch rather than the release tag, so the pull request only
+      # contains these updates and does not revert anything merged since the tag
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Move the release notes out of the Unreleased section and into the published version
+      - name: Patch Changelog
+        env:
+          CHANGELOG: ${{ needs.release.outputs.changelog }}
+        run: |
+          if [ -n "$CHANGELOG" ]; then
+            ./gradlew patchChangelog --release-note="$CHANGELOG"
+          else
+            ./gradlew patchChangelog
+          fi
+
+      # Bump the patch version. A maintainer can still choose a minor or major bump by hand
+      # before the next release; this only guarantees the version is never a published one.
+      - name: Bump Plugin Version
+        id: bump
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          RELEASED="${TAG#v}"
+          CURRENT="$(sed -n 's/^pluginVersion = //p' gradle.properties)"
+
+          if [ "$CURRENT" != "$RELEASED" ]; then
+            echo "::notice::pluginVersion is $CURRENT but $RELEASED was released — leaving it alone."
+            exit 0
+          fi
+
+          NEXT="$(echo "$RELEASED" | awk -F. -v OFS=. '{ $3 += 1; print }')"
+          sed -i "s/^pluginVersion = .*/pluginVersion = $NEXT/" gradle.properties
+          echo "next=$NEXT" >> $GITHUB_OUTPUT
+
       - name: Create Pull Request
-        if: ${{ steps.properties.outputs.changelog != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.event.release.tag_name }}
+          NEXT: ${{ steps.bump.outputs.next }}
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          BRANCH="changelog-update-$VERSION"
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "::notice::Nothing to update after $VERSION."
+            exit 0
+          fi
+
+          BRANCH="post-release-$VERSION"
           LABEL="release changelog"
 
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
 
-          git checkout -b $BRANCH
-          git commit -am "Changelog update - $VERSION"
-          git push --set-upstream origin $BRANCH
-          
+          git checkout -b "$BRANCH"
+          git commit -am "Post-release update - $VERSION"
+          git push --set-upstream origin "$BRANCH"
+
           gh label create "$LABEL" \
             --description "Pull requests with release changelog update" \
             || true
 
           gh pr create \
-            --title "Changelog update - \`$VERSION\`" \
-            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version." \
+            --title "Post-release update - \`$VERSION\`" \
+            --body "Files the \`$VERSION\` release notes in \`CHANGELOG.md\`${NEXT:+ and bumps \`pluginVersion\` to \`$NEXT\`}." \
             --label "$LABEL" \
-            --head $BRANCH
+            --head "$BRANCH"
