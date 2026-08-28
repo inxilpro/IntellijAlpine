@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-08-28
+
+- Post-release update - `v0.7.1` by @github-actions[bot] in https://github.com/inxilpro/IntellijAlpine/pull/126
+- Support `x-resize` directive by @aguingand in https://github.com/inxilpro/IntellijAlpine/pull/123
+- Disable `x-effect` attribute wrapping by @aguingand in https://github.com/inxilpro/IntellijAlpine/pull/124
+- @aguingand made their first contribution in https://github.com/inxilpro/IntellijAlpine/pull/123
+
 ## [0.7.1] - 2026-08-28
 
 Using IU 2025.1 for testing
@@ -190,7 +197,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/inxilpro/IntellijAlpine/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...v0.7.0
 [0.6.6]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.5...v0.6.6
