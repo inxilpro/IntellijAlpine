@@ -13,6 +13,7 @@ object AttributeUtil {
         "x-on",
         "x-bind",
         "x-transition",
+        "x-intersect",
     )
 
     val prefixes: List<String> by lazy {
