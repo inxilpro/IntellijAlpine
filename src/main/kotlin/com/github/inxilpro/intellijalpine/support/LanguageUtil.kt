@@ -56,10 +56,7 @@ object LanguageUtil {
     }
 
     private fun hasHtmlLikeExtension(file: PsiFile): Boolean {
-        val fileName = file.name.lowercase()
-        return HTML_LIKE_EXTENSIONS.any { ext ->
-            fileName.endsWith(".$ext")
-        }
+        return HTML_LIKE_EXTENSIONS.contains(file.name.substringAfterLast('.', "").lowercase())
     }
 
     private fun isTemplateLanguageFile(file: PsiFile): Boolean {

@@ -1,6 +1,8 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 
 plugins {
     id("java") // Java support
@@ -36,31 +38,22 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        var platformType = providers.gradleProperty("platformType").get()
-        var platformVersion = providers.gradleProperty("platformVersion").get()
+        // Build against a locally installed PhpStorm when there is one, so EAP builds (whose
+        // marketing version has no matching artifact in the IntelliJ repository) work too.
+        val localPhpStorm = listOf(
+            file("${System.getProperty("user.home")}/Applications/PhpStorm.app"),
+            file("/Applications/PhpStorm.app"),
+        ).firstOrNull { it.resolve("Contents/Info.plist").exists() }
 
-        // Auto-detect local PhpStorm installation if possible
-        val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
-        if (localPhpStorm.exists()) {
-            val infoPlist = file("${localPhpStorm}/Info.plist")
-            if (infoPlist.exists()) {
-                try {
-                    val plistContent = infoPlist.readText()
-                    val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
-                    if (versionMatch != null) {
-                        val detectedVersion = versionMatch.groupValues[1]
-                        // Convert version like "2025.1.3" to "2025.1"
-                        platformVersion = detectedVersion.split(".").take(2).joinToString(".")
-                        platformType = "PS"
-                    }
-                } catch (e: Exception) {
-                    println("Unable to parse PhpStorm version number: ${e.message} (will not use local IDE)")
-                }
-            }
+        if (localPhpStorm != null) {
+            println("Using local PhpStorm at $localPhpStorm for testing")
+            local(localPhpStorm)
+        } else {
+            val platformType = providers.gradleProperty("platformType").get()
+            val platformVersion = providers.gradleProperty("platformVersion").get()
+            println("Using $platformType $platformVersion for testing")
+            create(platformType, platformVersion)
         }
-
-        println("Using $platformType $platformVersion for testing")
-        create(platformType, platformVersion)
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(
@@ -135,9 +128,13 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            // Verify against JetBrains' curated set of IDEs across the supported range,
-            // auto-tracking new platform releases since there's no upper compatibility bound.
-            recommended()
+            // The plugin still installs on 2025.x, but only current platforms are worth verifying.
+            // No upper bound, so this keeps picking up new releases and EAPs automatically.
+            select {
+                types = listOf(IntelliJPlatformType.PhpStorm)
+                channels = listOf(ProductRelease.Channel.RELEASE, ProductRelease.Channel.EAP)
+                sinceBuild = "261"
+            }
         }
     }
 }

@@ -2,6 +2,22 @@
 
 # Alpine.js Support
 
+## [0.8.2] - 2026-09-24
+
+### Fixed
+- Plugin auto-detection no longer silently skips projects that are still indexing when they are opened — detection now waits for indexes to be ready, and the `package.json` watcher is always installed
+- Directives and prefixes of disabled plugins are no longer suggested in completion, and directives of enabled plugins are no longer suggested twice
+- JavaScript injection no longer fails when a template language supplies an attribute value that is not an injection host
+- `x-target` references now resolve correctly for unquoted attribute values
+
+### Changed
+- Reduced the plugin's cost on the editor highlighting path, where it is asked about every attribute of every tag:
+  - Directive type-text table is now shared instead of being rebuilt for every attribute, and the description itself is only built when something presents the attribute
+  - `$el` and `$root` element types are cached per tag name instead of building an HTML DOM document on every injection
+  - Directive and prefix lookups use sets instead of lists
+  - Injection candidates are rejected on the attribute name first, before the file and descriptor are inspected
+- The build now compiles against a locally installed PhpStorm directly, so EAP builds (such as 2026.3) can be used for development
+
 ## [0.8.1] - 2026-06-02
 
 ### Changed
@@ -158,7 +174,8 @@ A bug was introduced that impacted Alpine when you did something like `x-data="@
 ### Fixed
 - Removed Alpine icon which seemed to cause issues for some people
 
-[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/inxilpro/IntellijAlpine/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.6...v0.8.0
 [0.6.6]: https://github.com/inxilpro/IntellijAlpine/compare/v0.6.5...v0.6.6

@@ -4,6 +4,7 @@ import com.github.inxilpro.intellijalpine.Alpine
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.util.TextRange
 import com.intellij.patterns.XmlPatterns
+import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceBase
@@ -44,11 +45,13 @@ class AlpineTargetReferenceProvider : PsiReferenceProvider() {
         val ids = value.split("\\s+".toRegex()).filter { it.isNotBlank() }
         var searchStart = 0
 
+        // Ranges are relative to the whole element, which may or may not be quoted
+        val valueOffset = ElementManipulators.getValueTextRange(attributeValue).startOffset
+
         for (id in ids) {
             val startIndex = value.indexOf(id, searchStart)
             if (startIndex >= 0) {
-                // Range relative to the attribute value element (includes quotes)
-                val range = TextRange(startIndex + 1, startIndex + id.length + 1)
+                val range = TextRange(startIndex + valueOffset, startIndex + id.length + valueOffset)
                 references.add(AlpineIdReference(attributeValue, range, id))
                 searchStart = startIndex + id.length
             }

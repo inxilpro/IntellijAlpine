@@ -17,6 +17,7 @@ import com.intellij.psi.xml.XmlAttributeValue
 import com.intellij.psi.xml.XmlTag
 import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
+import java.util.concurrent.ConcurrentHashMap
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private val globalState =
@@ -86,7 +87,8 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     private val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
-        if (host !is XmlAttributeValue) {
+        // Template languages can supply attribute values that are not injection hosts (e.g. Blade tags).
+        if (host !is XmlAttributeValue || host !is PsiLanguageInjectionHost) {
             return
         }
         if (!AttributeUtil.isValidInjectionTarget(host)) {
@@ -206,18 +208,24 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         }
     }
 
-    private fun addTypingToCoreMagics(host: XmlAttributeValue): String {
-        var typedCoreMagics = coreMagics
-        val attribute = host.parent as XmlAttribute
-        val tag = attribute.parent
+    // Building a DOM document just to learn the element class is expensive, and the answer only
+    // depends on the tag name, of which there is a small fixed set.
+    private val jsElementNames = ConcurrentHashMap<String, String>()
 
-        fun jsElementNameFromXmlTag(tag: XmlTag): String {
-            return try {
-                HTMLDocumentImpl().createElement(tag.localName).javaClass.simpleName.removeSuffix("Impl")
+    private fun jsElementNameFromXmlTag(tag: XmlTag): String {
+        return jsElementNames.computeIfAbsent(tag.localName) { localName ->
+            try {
+                HTMLDocumentImpl().createElement(localName).javaClass.simpleName.removeSuffix("Impl")
             } catch (e: Exception) {
                 "HTMLElement"
             }
         }
+    }
+
+    private fun addTypingToCoreMagics(host: XmlAttributeValue): String {
+        var typedCoreMagics = coreMagics
+        val attribute = host.parent as XmlAttribute
+        val tag = attribute.parent
 
         // Determine type for $el
         run {

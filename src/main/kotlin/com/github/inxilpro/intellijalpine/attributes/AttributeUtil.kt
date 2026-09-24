@@ -15,11 +15,11 @@ object AttributeUtil {
         "x-transition",
     )
 
-    val prefixes: List<String> by lazy {
+    // Sets, because these are looked up once per attribute of every tag the IDE highlights
+    val prefixes: Set<String> by lazy {
         AlpinePluginRegistry.instance.getRegisteredPlugins()
             .flatMap { it.getPrefixes() }
             .union(corePrefixes)
-            .toList()
     }
 
     private val coreDirectives = listOf(
@@ -47,11 +47,10 @@ object AttributeUtil {
         "x-spread", // deprecated
     )
 
-    val directives: List<String> by lazy {
+    val directives: Set<String> by lazy {
         AlpinePluginRegistry.instance.getRegisteredPlugins()
             .flatMap { it.getDirectives() }
             .union(coreDirectives)
-            .toList()
     }
 
     val templateDirectives = arrayOf(
@@ -200,14 +199,16 @@ object AttributeUtil {
         Pair("wheel", "WheelEvent"),
     )
 
+    // Completion must only offer directives of plugins enabled for the project, so these build on the
+    // core lists rather than on `directives`/`prefixes` (which cover every registered plugin).
     fun getDirectivesForProject(project: Project): Array<String> {
         val pluginDirectives = AlpinePluginRegistry.instance.getAllDirectives(project)
-        return (directives.toList() + pluginDirectives).toTypedArray()
+        return (coreDirectives + pluginDirectives).distinct().toTypedArray()
     }
 
     fun getXmlPrefixesForProject(project: Project): Array<String> {
         val pluginPrefixes = AlpinePluginRegistry.instance.getAllPrefixes(project)
-        return (prefixes.toList() + pluginPrefixes).toTypedArray()
+        return (corePrefixes + pluginPrefixes).distinct().toTypedArray()
     }
 
     fun isXmlPrefix(prefix: String): Boolean {
@@ -239,22 +240,23 @@ object AttributeUtil {
     }
 
     fun isValidInjectionTarget(host: XmlAttributeValue): Boolean {
+        // Make sure that we have an XML attribute as a parent
+        val attribute = host.parent as? XmlAttribute ?: return false
+
+        // Make sure we have an attribute that looks like it's Alpine. This is the cheapest check and
+        // rejects nearly every attribute, so the costlier ones below rarely run.
+        val attributeName = attribute.name
+        if (!isAlpineAttributeName(attributeName)) {
+            return false
+        }
+
         if (!LanguageUtil.supportsAlpineJs(host.containingFile)) {
             return false
         }
 
-        // Make sure that we have an XML attribute as a parent
-        val attribute = host.parent as? XmlAttribute ?: return false
-
         // Make sure we have an HTML tag (and not a Blade <x- tag)
         val tag = attribute.parent as? HtmlTag ?: return false
         if (!isValidHtmlTag(tag)) {
-            return false
-        }
-
-        // Make sure we have an attribute that looks like it's Alpine
-        val attributeName = attribute.name
-        if (!isAlpineAttributeName(attributeName)) {
             return false
         }
 
