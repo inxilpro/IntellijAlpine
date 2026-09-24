@@ -38,7 +38,7 @@ jobs:
 
       # Check out the current repository
       - name: Fetch Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Set up Java environment for the next steps
       - name: Setup Java
@@ -98,7 +98,7 @@ jobs:
 
       # Check out the current repository
       - name: Fetch Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Set up Java environment for the next steps
       - name: Setup Java
@@ -149,7 +149,7 @@ jobs:
 
       # Check out the current repository
       - name: Fetch Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
           fetch-depth: 0  # a full history is required for pull request analysis
@@ -183,7 +183,7 @@ jobs:
 
       # Check out the current repository
       - name: Fetch Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Set up Java environment for the next steps
       - name: Setup Java
@@ -228,7 +228,7 @@ jobs:
 
       # Check out the current repository
       - name: Fetch Sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # A draft for an already-published version duplicates a shipped release, and publishing it
       # would overwrite that version on the Marketplace with whatever is on main.
