@@ -1,77 +1,33 @@
-import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    id("java") // Java support
-    alias(libs.plugins.kotlin) // Kotlin support
-    alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
-    alias(libs.plugins.changelog) // Gradle Changelog Plugin
-    alias(libs.plugins.qodana) // Gradle Qodana Plugin
-    alias(libs.plugins.kover) // Gradle Kover Plugin
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.intellij.platform")
+    id("org.jetbrains.changelog")
 }
 
-group = providers.gradleProperty("pluginGroup").get()
-version = providers.gradleProperty("pluginVersion").get()
-
-// Set the JVM language level used to build the project.
-kotlin {
-    jvmToolchain(21)
-}
-
-// Configure project's dependencies
-repositories {
-    mavenCentral()
-
-    // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
-    intellijPlatform {
-        defaultRepositories()
-    }
-}
-
-// Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    testImplementation(libs.junit)
-    testImplementation(libs.opentest4j)
+    testImplementation("junit:junit:4.13.2")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        var platformType = providers.gradleProperty("platformType").get()
-        var platformVersion = providers.gradleProperty("platformVersion").get()
+        // Test against the locally installed PhpStorm's major version when there is one
+        val localPhpStormVersion = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents/Info.plist")
+            .takeIf { it.exists() }
+            ?.readText()
+            ?.let { Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(it) }
+            ?.groupValues?.get(1)
+            ?.split(".")?.take(2)?.joinToString(".")
 
-        // Auto-detect local PhpStorm installation if possible
-        val localPhpStorm = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents")
-        if (localPhpStorm.exists()) {
-            val infoPlist = file("${localPhpStorm}/Info.plist")
-            if (infoPlist.exists()) {
-                try {
-                    val plistContent = infoPlist.readText()
-                    val versionMatch = Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(plistContent)
-                    if (versionMatch != null) {
-                        val detectedVersion = versionMatch.groupValues[1]
-                        // Convert version like "2025.1.3" to "2025.1"
-                        platformVersion = detectedVersion.split(".").take(2).joinToString(".")
-                        platformType = "PS"
-                    }
-                } catch (e: Exception) {
-                    println("Unable to parse PhpStorm version number: ${e.message} (will not use local IDE)")
-                }
-            }
+        if (localPhpStormVersion != null) {
+            println("Using PhpStorm $localPhpStormVersion for testing")
+            phpstorm(localPhpStormVersion)
+        } else {
+            intellijIdeaUltimate("2025.1")
         }
 
-        println("Using $platformType $platformVersion for testing")
-        create(platformType, platformVersion)
-
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        bundledPlugins(
-            providers.gradleProperty("platformBundledPlugins")
-                .map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
-
-        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
-        plugins(
-            providers.gradleProperty("platformPlugins")
-                .map { it.split(',').map(String::trim).filter(String::isNotEmpty) })
-
+        bundledPlugins("JavaScript", "HtmlTools")
         testFramework(TestFrameworkType.Platform)
     }
 }
@@ -79,9 +35,6 @@ dependencies {
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
 intellijPlatform {
     pluginConfiguration {
-        name = providers.gradleProperty("pluginName")
-        version = providers.gradleProperty("pluginVersion")
-
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
             val start = "<!-- Plugin description -->"
@@ -95,92 +48,17 @@ intellijPlatform {
             }
         }
 
-        val changelog = project.changelog // local variable for configuration cache compatibility
-        // Get the latest available change notes from the changelog file
-        changeNotes = providers.gradleProperty("pluginVersion").map { pluginVersion ->
-            with(changelog) {
-                renderItem(
-                    (getOrNull(pluginVersion) ?: getUnreleased())
-                        .withHeader(false)
-                        .withEmptySections(false),
-                    Changelog.OutputType.HTML,
-                )
-            }
-        }
-
+        // Defaults to the target platform's build, which follows the local PhpStorm version.
+        // No untilBuild: compatibility with newer platforms is checked by the plugin verifier.
         ideaVersion {
-            sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            sinceBuild = "251"
         }
-    }
-
-    signing {
-        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
-        privateKey = providers.environmentVariable("PRIVATE_KEY")
-        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
-    }
-
-    publishing {
-        token = providers.environmentVariable("PUBLISH_TOKEN")
-        // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-        // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
-        // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion")
-            .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
     pluginVerification {
         ides {
-            // Only verify against the current version to speed up CI
-            ide("IU-2025.1")
-        }
-    }
-}
-
-// Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-changelog {
-    groups.empty()
-    repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
-}
-
-// Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
-kover {
-    reports {
-        total {
-            xml {
-                onCheck = true
-            }
-        }
-    }
-}
-
-tasks {
-    wrapper {
-        gradleVersion = providers.gradleProperty("gradleVersion").get()
-    }
-
-    publishPlugin {
-        dependsOn(patchChangelog)
-    }
-}
-
-intellijPlatformTesting {
-    runIde {
-        register("runIdeForUiTests") {
-            task {
-                jvmArgumentProviders += CommandLineArgumentProvider {
-                    listOf(
-                        "-Drobot-server.port=8082",
-                        "-Dide.mac.message.dialogs.as.sheets=false",
-                        "-Djb.privacy.policy.text=<!--999.999-->",
-                        "-Djb.consents.confirmation.enabled=false",
-                    )
-                }
-            }
-
-            plugins {
-                robotServerPlugin()
-            }
+            // Only verify against the minimum supported version to speed up CI
+            create("IU", "2025.1")
         }
     }
 }
