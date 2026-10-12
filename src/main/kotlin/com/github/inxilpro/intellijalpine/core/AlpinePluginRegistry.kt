@@ -2,23 +2,14 @@ package com.github.inxilpro.intellijalpine.core
 
 import com.github.inxilpro.intellijalpine.attributes.AttributeInfo
 import com.github.inxilpro.intellijalpine.completion.AutoCompleteSuggestions
-import com.github.inxilpro.intellijalpine.core.detection.PluginDetector
 import com.github.inxilpro.intellijalpine.settings.AlpineProjectSettingsState
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.BulkFileListener
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import com.intellij.util.messages.MessageBusConnection
 import org.apache.commons.lang3.tuple.MutablePair
-import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.APP)
 class AlpinePluginRegistry {
-    private val listeners = ConcurrentHashMap<String, MessageBusConnection>()
-    private val detector = PluginDetector()
-
     companion object {
         val instance: AlpinePluginRegistry
             get() = ApplicationManager.getApplication().getService(AlpinePluginRegistry::class.java)
@@ -69,53 +60,5 @@ class AlpinePluginRegistry {
 
     fun injectAllAutoCompleteSuggestions(project: Project, suggestions: AutoCompleteSuggestions) {
         getEnabledPlugins(project).forEach { it.injectAutoCompleteSuggestions(suggestions) }
-    }
-
-    fun checkAndAutoEnablePlugins(project: Project) {
-        getRegisteredPlugins().forEach { plugin ->
-            if (!isPluginEnabled(project, plugin.getPluginName()) && detector.detect(project, plugin)) {
-                enablePlugin(project, plugin.getPluginName())
-            }
-        }
-
-        setupPackageJsonListener(project)
-    }
-
-    private fun setupPackageJsonListener(project: Project) {
-        val projectPath = project.basePath ?: project.name
-
-        // Don't set up listener if already exists
-        if (listeners.containsKey(projectPath)) {
-            return
-        }
-
-        val connection = project.messageBus.connect()
-        listeners[projectPath] = connection
-
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
-            override fun after(events: List<VFileEvent>) {
-                val hasPackageJsonChanges = events.any { event ->
-                    val file = event.file
-                    file != null && file.name == "package.json"
-                }
-
-                if (hasPackageJsonChanges) {
-                    ApplicationManager.getApplication().executeOnPooledThread {
-                        ApplicationManager.getApplication().runReadAction {
-                            getRegisteredPlugins().forEach { plugin ->
-                                if (!isPluginEnabled(project, plugin.getPluginName()) && detector.detect(project, plugin)) {
-                                    enablePlugin(project, plugin.getPluginName())
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        })
-    }
-
-    fun cleanup(project: Project) {
-        val projectPath = project.basePath ?: project.name
-        listeners.remove(projectPath)?.disconnect()
     }
 }

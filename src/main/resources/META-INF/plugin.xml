@@ -48,9 +48,4 @@
         <alpinePlugin implementation="com.github.inxilpro.intellijalpine.plugins.AlpineWizardPlugin"/>
         <alpinePlugin implementation="com.github.inxilpro.intellijalpine.plugins.TooltipPlugin"/>
     </extensions>
-
-    <projectListeners>
-        <listener class="com.github.inxilpro.intellijalpine.settings.AlpineProjectListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </projectListeners>
 </idea-plugin>
