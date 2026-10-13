@@ -20,6 +20,7 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         addPrefixes()
         addDerivedAttributes()
         addTransitions()
+        addIntersect()
         addPlugins()
     }
 
@@ -33,10 +34,6 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
 
             if ("x-model" == directive) {
                 addModifiers(directive, AttributeUtil.modelModifiers)
-            }
-
-            if ("x-intersect" == directive) {
-                addModifiers(directive, AttributeUtil.intersectModifiers)
             }
 
             if ("x-resize" == directive) {
@@ -80,6 +77,20 @@ class AutoCompleteSuggestions(val htmlTag: HtmlTag, val partialAttribute: String
         for (stage in stages) {
             descriptors.add(AttributeInfo("x-transition:$stage"))
             addModifiers("x-transition:$stage", AttributeUtil.transitionModifiers)
+        }
+    }
+
+    private fun addIntersect() {
+        val stages: Array<String> = arrayOf(
+            "enter",
+            "leave"
+        )
+
+        addModifiers("x-intersect", AttributeUtil.intersectModifiers)
+
+        for (stage in stages) {
+            descriptors.add(AttributeInfo("x-intersect:$stage"))
+            addModifiers("x-intersect:$stage", AttributeUtil.intersectModifiers)
         }
     }
 

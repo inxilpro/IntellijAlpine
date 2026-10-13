@@ -33,6 +33,8 @@ class AttributeInfo(val attribute: String) {
         "x-bind" to "Bind an attribute",
         "x-mask" to "Set input mask",
         "x-intersect" to "Bind an intersection observer",
+        "x-intersect:enter" to "Bind an intersection observer and trigger when entering viewport",
+        "x-intersect:leave" to "Bind an intersection observer and trigger when leaving viewport",
         "x-trap" to "Add focus trap",
         "x-collapse" to "Collapse element when hidden",
         "x-resize" to "Listen to element size changes using ResizeObserver",
