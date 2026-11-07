@@ -19,6 +19,24 @@ import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
 
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
+    companion object {
+        // {{ ... }}, <?php ... ?> / <?= ... ?>, and @directive(...) Blade/PHP constructs
+        internal val phpMatcher = Regex("(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?")
+
+        // Must parse as a JS expression in value position
+        internal const val SERVER_VALUE_PLACEHOLDER = "__SERVER_VALUE()"
+
+        // Alpine's "(item, index) in items" destructuring form
+        internal val forParensMatcher =
+            Regex("\\(\\s*[A-Za-z_$][\\w$]*(?:\\s*,\\s*[A-Za-z_$][\\w$]*)*\\s*\\)(?=\\s+(?:in|of)\\s)")
+
+        internal val forVarsMatcher =
+            Regex("^\\s*\\(?\\s*([A-Za-z_$][\\w$]*)(?:\\s*,\\s*([A-Za-z_$][\\w$]*))?(?:\\s*,\\s*([A-Za-z_$][\\w$]*))?\\s*\\)?\\s+(?:in|of)\\s")
+    }
+
+    /** A host-relative region of server-side template code and the JavaScript that stands in for it. */
+    private data class Mask(val range: IntRange, val replacement: String)
+
     private val globalState =
         """
             /** @type {Object.<string, HTMLElement>} */
@@ -37,21 +55,21 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
              * @template ValueToPersist
              */
             function ${'$'}persist(value) {}
-            
+
             /**
              * @param {*<ValueForQueryString>} value
              * @return {ValueForQueryString}
              * @template ValueForQueryString
              */
             function ${'$'}queryString(value) {}
-            
+
         """.trimIndent()
 
     private val coreMagics =
         """
             /** @type {elType} */
             let ${'$'}el;
-            
+
             /** @type {rootType} */
             let ${'$'}root;
 
@@ -74,13 +92,13 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
              * @return void
              */
             function ${'$'}watch(property, callback) {}
-            
+
             /**
              * @param {string} scope
              * @return string
              */
             function ${'$'}id(scope) {}
-            
+
         """.trimIndent()
 
     private val eventMagics = "/** @type {eventType} */\nlet ${'$'}event;\n\n"
@@ -92,7 +110,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
             /** @type number */
             let ${'$'}height;
-                    
+
         """.trimIndent()
 
     override fun getLanguagesToInject(registrar: MultiHostRegistrar, host: PsiElement) {
@@ -107,26 +125,45 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         val attributeName = attribute.name
 
         val content = host.text
-        val ranges = getJavaScriptRanges(host, content)
 
-        var (prefix, suffix) = getPrefixAndSuffix(attributeName, host)
+        // Fragments concatenate, so each masked server-side region between two
+        // fragments is replaced by a placeholder in the following fragment's prefix
+        var shreds = getJavaScriptShreds(host, content)
+
+        if ("x-for" == attributeName) {
+            shreds = rewriteForDestructuringParens(shreds, content)
+        }
+
+        // Empty fragments are dropped, carrying their gap prefix into the next fragment
+        var carry = ""
+        val places = mutableListOf<Pair<TextRange, String>>()
+        for ((range, gapPrefix) in shreds) {
+            if (range.isEmpty) {
+                carry += gapPrefix
+            } else {
+                places.add(range to carry + gapPrefix)
+                carry = ""
+            }
+        }
+
+        // An empty value (x-show="") or one that is entirely template code (x-data="@json($config)")
+        // still gets a single zero-length place, so completion works there and the stand-in parses
+        if (places.isEmpty()) {
+            places.add(TextRange.from(shreds.last().first.startOffset, 0) to carry)
+            carry = ""
+        }
+
+        val (prefix, suffix) = getPrefixAndSuffix(attributeName, host)
 
         val jsLanguage = Language.findLanguageByID("JavaScript")
             ?: throw IllegalStateException("JavaScript language not found")
 
         registrar.startInjecting(jsLanguage)
 
-        ranges.forEachIndexed { index, range ->
-            if (index == ranges.lastIndex) {
-                registrar.addPlace(prefix, suffix, host as PsiLanguageInjectionHost, range)
-            } else {
-                registrar.addPlace(prefix, "", host as PsiLanguageInjectionHost, range)
-            }
-
-            if (ranges.lastIndex != index) {
-                prefix += range.substring(content)
-                prefix += "__PHP_CALL()"
-            }
+        places.forEachIndexed { index, (range, gapPrefix) ->
+            val placePrefix = (if (index == 0) prefix else "") + gapPrefix
+            val placeSuffix = if (index == places.lastIndex) carry + suffix else ""
+            registrar.addPlace(placePrefix, placeSuffix, host as PsiLanguageInjectionHost, range)
         }
 
         registrar.doneInjecting()
@@ -136,25 +173,102 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         return listOf(XmlAttributeValue::class.java)
     }
 
-    private fun getJavaScriptRanges(host: XmlAttributeValue, content: String): List<TextRange> {
+    /**
+     * Alpine's "(item, index) in items" is not valid JS inside "for (let ...)";
+     * drop the paren characters from the injected ranges and substitute array
+     * destructuring brackets so the parser sees "for (let [item, index] in items)".
+     */
+    private fun rewriteForDestructuringParens(
+        shreds: List<Pair<TextRange, String>>,
+        content: String,
+    ): List<Pair<TextRange, String>> {
+        val match = forParensMatcher.find(content) ?: return shreds
+        var result = dropCharAt(shreds, match.range.first, "[")
+        result = dropCharAt(result, match.range.last, "]")
+        return result
+    }
+
+    private fun dropCharAt(
+        shreds: List<Pair<TextRange, String>>,
+        offset: Int,
+        replacement: String,
+    ): List<Pair<TextRange, String>> {
+        return shreds.flatMap { (range, gapPrefix) ->
+            if (offset >= range.startOffset && offset < range.endOffset) {
+                listOf(
+                    TextRange(range.startOffset, offset) to gapPrefix,
+                    TextRange(offset + 1, range.endOffset) to replacement,
+                )
+            } else {
+                listOf(range to gapPrefix)
+            }
+        }
+    }
+
+
+    /**
+     * Splits the attribute value into JS fragments around masked server-side
+     * regions; each fragment carries the gap prefix standing in for the masked
+     * region before it.
+     */
+    private fun getJavaScriptShreds(host: XmlAttributeValue, content: String): List<Pair<TextRange, String>> {
         val valueRange = ElementManipulators.getValueTextRange(host)
+        val masks = getMasks(host, content, valueRange)
 
-        if (!LanguageUtil.hasPhpLanguage(host.containingFile)) {
-            return listOf(valueRange)
+        if (masks.isEmpty()) {
+            return listOf(valueRange to "")
         }
 
-        val phpMatcher = Regex("(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?")
-        val ranges = mutableListOf<TextRange>()
-
+        val shreds = mutableListOf<Pair<TextRange, String>>()
         var offset = valueRange.startOffset
-        phpMatcher.findAll(content).forEach {
-            ranges.add(TextRange(offset, it.range.first))
-            offset = it.range.last + 1
+        var gapPrefix = ""
+        for (mask in masks) {
+            if (mask.range.first > offset) {
+                shreds.add(TextRange(offset, mask.range.first) to gapPrefix)
+                gapPrefix = ""
+            }
+            gapPrefix += mask.replacement
+            offset = maxOf(offset, mask.range.last + 1)
+        }
+        shreds.add(TextRange(offset, maxOf(offset, valueRange.endOffset)) to gapPrefix)
+
+        return shreds
+    }
+
+    /** The attribute's value text with server-side template code replaced by its stand-in. */
+    private fun sanitizeServerSide(value: XmlAttributeValue): String {
+        val content = value.text
+        val valueRange = ElementManipulators.getValueTextRange(value)
+
+        val result = StringBuilder()
+        var offset = valueRange.startOffset
+        for (mask in getMasks(value, content, valueRange)) {
+            if (mask.range.first > offset) {
+                result.append(content, offset, mask.range.first)
+            }
+            result.append(mask.replacement)
+            offset = maxOf(offset, mask.range.last + 1)
+        }
+        if (valueRange.endOffset > offset) {
+            result.append(content, offset, valueRange.endOffset)
+        }
+        return result.toString()
+    }
+
+    /**
+     * Host-relative regions of server-side template code within the attribute value, each
+     * standing in for a value in the injected JavaScript.
+     */
+    private fun getMasks(host: XmlAttributeValue, content: String, valueRange: TextRange): List<Mask> {
+        if (!LanguageUtil.hasPhpLanguage(host.containingFile)) {
+            return emptyList()
         }
 
-        ranges.add(TextRange(offset, valueRange.endOffset))
-
-        return ranges.toList()
+        return phpMatcher.findAll(content)
+            .map { it.range }
+            .filter { it.first >= valueRange.startOffset && it.last < valueRange.endOffset }
+            .map { Mask(it, SERVER_VALUE_PLACEHOLDER) }
+            .toList()
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {
@@ -165,6 +279,9 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             context.left = addTypingToCoreMagics(host) + context.left
         }
 
+        // Loop-variable declarations must precede any expression wrapper below
+        addForScope(host, directive, context)
+
         if ("x-spread" == directive) {
             context.right += "()"
         }
@@ -173,17 +290,19 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
             context.left += addTypingToEventMagics(directive, host)
         } else if ("x-for" == directive) {
             context.left += "for (let "
-            context.right += ") {}"
+            val variableReads = getForVariables(host).joinToString("\n") { "void $it;" }
+            context.right += ") {\n$variableReads\n}"
         } else if ("x-ref" == directive) {
-            context.left += "\$refs."
-            context.right += "= \$el"
+            context.left += "\$refs[\""
+            context.right += "\"] = \$el"
         } else if ("x-teleport" == directive) {
             context.left += "{ /** @var {HTMLElement} teleport */let teleport = "
             context.right += " }"
         } else if ("x-resize" == directive) {
             context.left += resizeMagics
         } else if ("x-init" == directive || "x-effect" == directive) {
-            // We want x-init and x-effect to skip the directive wrapping
+            // x-init and x-effect run scripts (statements), so they skip the
+            // expression-only directive wrapping
         } else {
             context.left += "__ALPINE_DIRECTIVE(\n"
             context.right += "\n)"
@@ -192,6 +311,37 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         addWithData(host, directive, context)
 
         return context.toPair()
+    }
+
+    private fun getForVariables(host: XmlAttributeValue): List<String> {
+        val value = (host.parent as? XmlAttribute)?.value ?: return emptyList()
+        return forVarsMatcher.find(value)?.groupValues
+            ?.drop(1)
+            ?.filter(String::isNotEmpty)
+            ?: emptyList()
+    }
+
+    /**
+     * Declares x-for loop variables from enclosing (or same-tag) x-for directives
+     * so they resolve in sibling and child directives. Nested loops may reuse a
+     * name; each name is declared once.
+     */
+    private fun addForScope(host: XmlAttributeValue, directive: String, context: MutablePair<String, String>) {
+        val hostTag = PsiTreeUtil.findFirstParent(host) { it is HtmlTag } as? HtmlTag ?: return
+        val declared = linkedSetOf<String>()
+
+        var tag: HtmlTag? = hostTag
+        while (tag != null) {
+            val forValue = tag.getAttribute("x-for")?.value
+            if (forValue != null && !("x-for" == directive && tag == hostTag)) {
+                forVarsMatcher.find(forValue)?.groupValues?.drop(1)?.filter { it.isNotEmpty() }?.let(declared::addAll)
+            }
+            tag = PsiTreeUtil.findFirstParent(tag, true) { it is HtmlTag } as? HtmlTag
+        }
+
+        if (declared.isNotEmpty()) {
+            context.left += declared.joinToString("") { "let $it;\n" } + "\n"
+        }
     }
 
     private fun addWithData(host: XmlAttributeValue, directive: String, context: MutablePair<String, String>) {
@@ -209,10 +359,19 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         }
 
         if (dataParent is HtmlTag) {
-            val data = dataParent.getAttribute("x-data")?.value
+            val data = dataParent.getAttribute("x-data")?.valueElement
+                ?.let { sanitizeServerSide(it) }
+                ?.ifBlank { "{}" }
             if (null != data) {
+                // Alpine auto-invokes x-data expressions that evaluate to a function;
+                // the typeof guard lets the IDE infer the invoked component's shape
+                val dataExpr = if (data.trimStart().startsWith("{")) {
+                    data
+                } else {
+                    "(typeof ($data) === 'function' ? ($data)() : ($data))"
+                }
                 val (prefix, suffix) = context
-                context.left = "$globalState\nlet ${'$'}data = $data;\nwith (${'$'}data) {\n\n$prefix"
+                context.left = "$globalState\nlet ${'$'}data = $dataExpr;\nwith (${'$'}data) {\n\n$prefix"
                 context.right = "$suffix\n\n}"
             }
         }
