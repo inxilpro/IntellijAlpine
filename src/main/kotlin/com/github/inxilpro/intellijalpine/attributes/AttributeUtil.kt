@@ -45,6 +45,13 @@ object AttributeUtil {
         "x-trap",
         "x-collapse",
         "x-resize",
+        // Intersect plugin's enter/leave variants of x-intersect
+        "x-intersect:enter",
+        "x-intersect:leave",
+        // Tailwind UI's Alpine markup annotates state with these; they hold prose, not JavaScript
+        "x-description",
+        "x-state:on",
+        "x-state:off",
         "x-spread", // deprecated
     )
 
@@ -296,7 +303,14 @@ object AttributeUtil {
 
     private fun shouldInjectJavaScript(name: String, project: Project): Boolean {
         // Never inject for these core attributes
-        if (name.startsWith("x-transition:") || name == "x-mask" || name == "x-modelable") {
+        if (
+            name.startsWith("x-transition:") ||
+            name == "x-mask" ||
+            name == "x-modelable" ||
+            name == "x-description" ||
+            name == "x-state:on" ||
+            name == "x-state:off"
+        ) {
             return false
         }
 
