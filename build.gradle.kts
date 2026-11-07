@@ -7,27 +7,35 @@ plugins {
     id("org.jetbrains.changelog")
 }
 
+// Test against the locally installed PhpStorm's major version when there is one
+val localPhpStormVersion = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents/Info.plist")
+    .takeIf { it.exists() }
+    ?.readText()
+    ?.let { Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(it) }
+    ?.groupValues?.get(1)
+    ?.split(".")?.take(2)?.joinToString(".")
+
+// PhpStorm does not bundle the FreeMarker plugin, so tests against real FreeMarker PSI only build with IntelliJ IDEA
+if (localPhpStormVersion != null) {
+    sourceSets.test {
+        kotlin.exclude("**/RealFreeMarkerInjectionTest.kt")
+    }
+}
+
 dependencies {
     testImplementation("junit:junit:4.13.2")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        // Test against the locally installed PhpStorm's major version when there is one
-        val localPhpStormVersion = file("${System.getProperty("user.home")}/Applications/PhpStorm.app/Contents/Info.plist")
-            .takeIf { it.exists() }
-            ?.readText()
-            ?.let { Regex("<key>CFBundleShortVersionString</key>\\s*<string>([^<]+)</string>").find(it) }
-            ?.groupValues?.get(1)
-            ?.split(".")?.take(2)?.joinToString(".")
-
         if (localPhpStormVersion != null) {
             println("Using PhpStorm $localPhpStormVersion for testing")
             phpstorm(localPhpStormVersion)
+            bundledPlugins("JavaScript", "HtmlTools")
         } else {
             intellijIdeaUltimate("2025.1")
+            bundledPlugins("JavaScript", "HtmlTools", "com.intellij.freemarker")
         }
 
-        bundledPlugins("JavaScript", "HtmlTools")
         testFramework(TestFrameworkType.Platform)
     }
 }
