@@ -26,6 +26,10 @@
         <xml.attributeDescriptorsProvider
                 implementation="com.github.inxilpro.intellijalpine.attributes.AttributesProvider"/>
         <xml.xmlExtension implementation="com.github.inxilpro.intellijalpine.support.XmlExtension"/>
+        <daemon.highlightInfoFilter
+                implementation="com.github.inxilpro.intellijalpine.support.AlpineInjectedJsHighlightInfoFilter"/>
+        <daemon.highlightInfoFilter
+                implementation="com.github.inxilpro.intellijalpine.support.AlpineBoundLabelHighlightInfoFilter"/>
         <typedHandler implementation="com.github.inxilpro.intellijalpine.completion.AutoPopupHandler"/>
         <completion.contributor language="HTML"
                                 implementationClass="com.github.inxilpro.intellijalpine.completion.AlpineCompletionContributor"
