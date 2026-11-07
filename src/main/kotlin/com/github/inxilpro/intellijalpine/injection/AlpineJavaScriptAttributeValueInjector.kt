@@ -9,8 +9,10 @@ import com.intellij.lang.injection.MultiHostRegistrar
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.html.HtmlTag
+import com.intellij.psi.templateLanguages.OuterLanguageElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlAttribute
 import com.intellij.psi.xml.XmlAttributeValue
@@ -18,10 +20,22 @@ import com.intellij.psi.xml.XmlTag
 import org.apache.commons.lang3.tuple.MutablePair
 import org.apache.html.dom.HTMLDocumentImpl
 
+/** Finds server-side template tokens in a piece of text. */
+internal typealias Tokenizer = (String) -> List<IntRange>
+
 class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     companion object {
         // {{ ... }}, <?php ... ?> / <?= ... ?>, and @directive(...) Blade/PHP constructs
         internal val phpMatcher = Regex("(?<!@)\\{\\{.+?}}|<\\?(?:=|php).+?\\?>|@[a-zA-Z]+\\(.*\\)(?:\\.defer)?")
+
+        // FreeMarker authors use ${'$'} to emit the dollar sign that starts a
+        // JavaScript template-literal interpolation, e.g. `${'$'}{item.name}`.
+        internal val freeMarkerDollarLiteralMatcher =
+            Regex("\\${'$'}\\{\\s*['\"]\\${'$'}['\"]\\s*}")
+
+        // Opens/closes of FTL branching blocks (#if, #list) and their #else/#elseif alternatives;
+        // applied to single tags found by FreeMarkerScanner
+        private val freeMarkerBranchTag = Regex("^[\\[<](/?)#(if|list|else|elseif)\\b")
 
         // Must parse as a JS expression in value position
         internal const val SERVER_VALUE_PLACEHOLDER = "__SERVER_VALUE()"
@@ -32,6 +46,85 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
 
         internal val forVarsMatcher =
             Regex("^\\s*\\(?\\s*([A-Za-z_$][\\w$]*)(?:\\s*,\\s*([A-Za-z_$][\\w$]*))?(?:\\s*,\\s*([A-Za-z_$][\\w$]*))?\\s*\\)?\\s+(?:in|of)\\s")
+
+        /**
+         * What a masked server-side token stands for in the injected JavaScript. Interpolations and
+         * self-closing macro calls produce a value at runtime and need an expression placeholder;
+         * control-flow template tags (e.g. [#if], </#list>, {% if %}) contribute no value and must
+         * vanish entirely, or they would add bogus members to surrounding object literals.
+         */
+        internal fun placeholderForToken(token: String): String {
+            val trimmed = token.trim()
+            return when {
+                freeMarkerDollarLiteralMatcher.matches(trimmed) -> "\$"
+                // @ covers Blade directives, which keep their historical placeholder
+                // since value-producing ones like @json() are common in x-data
+                trimmed.startsWith("\${") || trimmed.startsWith("{{") || trimmed.startsWith("<?") ||
+                    trimmed.startsWith("<%=") || trimmed.startsWith("@") ->
+                    SERVER_VALUE_PLACEHOLDER
+                isSelfClosingUserDirective(trimmed) -> SERVER_VALUE_PLACEHOLDER
+                else -> ""
+            }
+        }
+
+        // Self-closing user-directive calls, e.g. [@json value=columns /], which templates use to emit
+        // a JavaScript value where a macro is more readable than an interpolation
+        private fun isSelfClosingUserDirective(token: String): Boolean =
+            (token.startsWith("[@") && token.endsWith("/]")) || (token.startsWith("<@") && token.endsWith("/>"))
+
+        /**
+         * Replacement for a masked region, which may hold several adjacent template tokens (a template
+         * plugin can report `[#if a]${x}` as one element). Each token is classified on its own so an
+         * interpolation keeps its placeholder next to a vanishing control-flow tag.
+         */
+        internal fun replacementFor(maskedText: String, tokenizer: Tokenizer?): String {
+            val tokens = tokenizer?.invoke(maskedText).orEmpty()
+            if (tokens.isEmpty()) {
+                return placeholderForToken(maskedText)
+            }
+            return tokens.joinToString("") { placeholderForToken(maskedText.substring(it)) }
+        }
+
+        /**
+         * With only the tags masked, every arm of [#if]a[#else]b[/#if] would survive
+         * as adjacent JS fragments ("a b"), which cannot parse. Only the first arm can
+         * stand in for the block, so everything from the first alternative tag through
+         * the matching close tag is masked along with it.
+         */
+        internal fun alternativeBranchIntervals(content: String): List<IntRange> {
+            val intervals = mutableListOf<IntRange>()
+            var branchStart = -1
+            var depth = 0
+            for (token in FreeMarkerScanner.tokens(content)) {
+                val groups = freeMarkerBranchTag.find(content.substring(token))?.groupValues ?: continue
+                val isClose = groups[1] == "/"
+                val name = groups[2]
+                when {
+                    name == "else" || name == "elseif" -> {
+                        if (branchStart < 0) {
+                            branchStart = token.first
+                            depth = 0
+                        }
+                    }
+                    isClose -> {
+                        if (branchStart >= 0) {
+                            if (depth == 0) {
+                                intervals.add(branchStart..token.last)
+                                branchStart = -1
+                            } else {
+                                depth--
+                            }
+                        }
+                    }
+                    else -> {
+                        if (branchStart >= 0) {
+                            depth++
+                        }
+                    }
+                }
+            }
+            return intervals
+        }
     }
 
     /** A host-relative region of server-side template code and the JavaScript that stands in for it. */
@@ -127,7 +220,7 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         val content = host.text
 
         // Fragments concatenate, so each masked server-side region between two
-        // fragments is replaced by a placeholder in the following fragment's prefix
+        // fragments is replaced by its stand-in in the following fragment's prefix
         var shreds = getJavaScriptShreds(host, content)
 
         if ("x-for" == attributeName) {
@@ -205,6 +298,11 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
         }
     }
 
+    private fun getServerSideTokenizer(file: PsiFile): Tokenizer? = when {
+        LanguageUtil.hasPhpLanguage(file) -> { text -> phpMatcher.findAll(text).map { it.range }.toList() }
+        LanguageUtil.hasFreeMarkerLanguage(file) -> FreeMarkerScanner::tokens
+        else -> null
+    }
 
     /**
      * Splits the attribute value into JS fragments around masked server-side
@@ -256,19 +354,65 @@ class AlpineJavaScriptAttributeValueInjector : MultiHostInjector {
     }
 
     /**
-     * Host-relative regions of server-side template code within the attribute value, each
-     * standing in for a value in the injected JavaScript.
+     * Host-relative regions of server-side template code within the attribute value,
+     * combining template fragments the FreeMarker plugin lexed (OuterLanguageElements) with
+     * scanned tokens for setups where no template plugin is active. Overlapping regions
+     * (an outer element and a regex match often coincide) are merged; touching ones are kept
+     * apart so each keeps its own stand-in.
      */
     private fun getMasks(host: XmlAttributeValue, content: String, valueRange: TextRange): List<Mask> {
-        if (!LanguageUtil.hasPhpLanguage(host.containingFile)) {
-            return emptyList()
+        val file = host.containingFile
+        val tokenizer = getServerSideTokenizer(file)
+        val isFreeMarker = LanguageUtil.hasFreeMarkerLanguage(file)
+        val regions = mutableListOf<IntRange>()
+
+        // Template code the FreeMarker plugin lexed; other template languages keep their existing
+        // behavior, since their outer elements (such as Velocity references) can be valid JavaScript
+        if (isFreeMarker) {
+            val hostStart = host.textRange.startOffset
+            PsiTreeUtil.findChildrenOfType(host, OuterLanguageElement::class.java).forEach {
+                val start = it.textRange.startOffset - hostStart
+                regions.add(start until start + it.textLength)
+            }
         }
 
-        return phpMatcher.findAll(content)
-            .map { it.range }
-            .filter { it.first >= valueRange.startOffset && it.last < valueRange.endOffset }
-            .map { Mask(it, SERVER_VALUE_PLACEHOLDER) }
-            .toList()
+        tokenizer?.invoke(content)?.let(regions::addAll)
+
+        val branches = if (isFreeMarker) alternativeBranchIntervals(content) else emptyList()
+        regions.addAll(branches)
+
+        val inValue = regions
+            .map { maxOf(it.first, valueRange.startOffset)..minOf(it.last, valueRange.endOffset - 1) }
+            .filter { !it.isEmpty() }
+            .sortedBy { it.first }
+
+        val merged = mutableListOf<IntRange>()
+        for (region in inValue) {
+            val last = merged.lastOrNull()
+            if (last != null && region.first <= last.last) {
+                merged[merged.lastIndex] = last.first..maxOf(last.last, region.last)
+            } else {
+                merged.add(region)
+            }
+        }
+
+        return merged.map { Mask(it, standInFor(content, it, branches, tokenizer)) }
+    }
+
+    /** Skipped #else arms contribute nothing; everything else in the region is classified token by token. */
+    private fun standInFor(content: String, region: IntRange, branches: List<IntRange>, tokenizer: Tokenizer?): String {
+        val result = StringBuilder()
+        var position = region.first
+        for (branch in branches.filter { it.first >= region.first && it.last <= region.last }.sortedBy { it.first }) {
+            if (branch.first > position) {
+                result.append(replacementFor(content.substring(position, branch.first), tokenizer))
+            }
+            position = maxOf(position, branch.last + 1)
+        }
+        if (position <= region.last) {
+            result.append(replacementFor(content.substring(position, region.last + 1), tokenizer))
+        }
+        return result.toString()
     }
 
     private fun getPrefixAndSuffix(directive: String, host: XmlAttributeValue): Pair<String, String> {

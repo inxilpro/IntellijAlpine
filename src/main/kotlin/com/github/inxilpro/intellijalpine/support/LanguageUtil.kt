@@ -11,11 +11,14 @@ object LanguageUtil {
     private val HTML_LIKE_EXTENSIONS = setOf(
         "html", "htm", "xhtml", "xml",
         "php", "twig", "smarty", "tpl", "phtml",
-        "erb", "jsp", "jsf", "ftl", "vm",
+        "erb", "jsp", "jsf", "ftl", "ftlh", "vm",
     )
 
+    private val FREEMARKER_EXTENSIONS = setOf("ftl", "ftlh")
+
     private val TEMPLATE_LANGUAGE_IDS = setOf(
-        "Blade", "PHP", "Twig", "Smarty", "FreeMarker",
+        // FreeMarker's language id is "FTL"; "FreeMarker" is only its display name
+        "Blade", "PHP", "Twig", "Smarty", "FTL", "FreeMarker",
         "Velocity", "JSP", "ERB",
     )
 
@@ -29,6 +32,14 @@ object LanguageUtil {
         return file.viewProvider.languages.any { lang ->
             lang.id == "PHP" || lang.id == "Blade"
         }
+    }
+
+    fun hasFreeMarkerLanguage(file: PsiFile): Boolean {
+        // The FreeMarker plugin's language id is "FTL", with dialects such as "FTL>" and "FTL]" for
+        // its angle- and square-bracket syntaxes; the extension fallback covers the plugin being absent
+        return file.viewProvider.languages.any { language ->
+            generateSequence(language) { it.baseLanguage }.any { it.id.startsWith("FTL") }
+        } || FREEMARKER_EXTENSIONS.any { file.name.lowercase().endsWith(".$it") }
     }
 
     private fun hasHtmlBasedLanguage(file: PsiFile): Boolean {

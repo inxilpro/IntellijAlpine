@@ -22,6 +22,8 @@ This plugin adds support for the following [Alpine.js](https://github.com/alpine
 - Auto-complete alpine directives such as `x-data`
 - Set the language to JavaScript inside your directives so that you have full
   syntax highlighting and code complete
+- Works in Blade and FreeMarker templates: server-side code inside directives is
+  masked so the surrounding JavaScript still parses
 
 <!-- Plugin description end -->
 
