@@ -33,9 +33,14 @@ class AttributeInfo(val attribute: String) {
         "x-bind" to "Bind an attribute",
         "x-mask" to "Set input mask",
         "x-intersect" to "Bind an intersection observer",
+        "x-intersect:enter" to "Run when the element enters the viewport",
+        "x-intersect:leave" to "Run when the element leaves the viewport",
         "x-trap" to "Add focus trap",
         "x-collapse" to "Collapse element when hidden",
         "x-resize" to "Listen to element size changes using ResizeObserver",
+        "x-description" to "Tailwind UI state description",
+        "x-state:on" to "Tailwind UI active state description",
+        "x-state:off" to "Tailwind UI inactive state description",
     )
 
     val name: String
